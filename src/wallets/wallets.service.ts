@@ -5,6 +5,6 @@ import { CreateWalletDto } from './dto/create-wallet.dto';
 @Injectable()
 export class WalletsService {
   public createWallet(createWalletDto: CreateWalletDto): Wallet {
-    return new Wallet(createWalletDto.name, createWalletDto.passPhrase);
+    return new Wallet(createWalletDto.name);
   }
 }
