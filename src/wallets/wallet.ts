@@ -11,4 +11,12 @@ export class Wallet {
     this.privateKey = key.privateKey.toString('hex');
     this.name = name;
   }
+
+  public getPublicKey(): string {
+    return this.publicKey;
+  }
+
+  public getName(): string {
+    return this.name;
+  }
 }
