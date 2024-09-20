@@ -5,7 +5,7 @@ A NestJS project that demonstrates (generally) how blockchain works in the conte
 # Contents
 - [Disclaimer](#disclaimer)
 - [Conceptualization](#conceptualization)
-  - [Main characteristics of this conceptualization](#main-characteristics-of-this-conceptualization)
+  - [Conceptualization vs Real-world](#conceptualization-vs-real-world)
   - [Process flow](#process-flow)
   - [Concepts](#concepts)
     - [Wallet](#wallet)
