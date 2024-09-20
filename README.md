@@ -10,19 +10,9 @@ A NestJS project that demonstrates (generally) how blockchain works in the conte
   - [Concepts](#concepts)
     - [Wallet](#wallet)
     - [Transaction](#transaction)
-      - [Inputs and outputs](#inputs-and-outputs)
-      - [Transaction validation](#transaction-validation)
     - [Block](#block)
-      - [Block mining and Proof of Work (PoW)](#block-mining-and-proof-of-work-pow)
-      - [Transaction fees and block mining reward](#transaction-fees-and-block-mining-reward)
     - [Blockchain](#blockchain)
-      - [The genesis block](#the-genesis-block)
-      - [Blockchain validation](#blockchain-validation)
     - [RabbitMQ for the transaction pools](#rabbitmq-for-the-transaction-pools)
-      - [Global transaction pool](#global-transaction-pool)
-      - [Miner mempool](#miner-mempool)
-      - [Block anouncement pool](#block-anouncement-pool)
-      - [Miner pool for anounced blocks](#miner-pool-for-anounced-blocks)
 
 # Disclaimer
 
@@ -121,16 +111,49 @@ The `coinbase transaction` is a special transaction that will be included (as tr
 
 ### Blockchain
 
+The blockchain is the collection of blocks. Each block has a reference to the previous block (except the genesis block).
+
+The blockchain is responsible for:
+- Adding a block to the blockchain.
+- Validating the blockchain.
+
 #### The genesis block
+
+The genesis block is the first block in the blockchain and will be created when the blockchain is created.
+
+This block has the following characteristics:
+- It has no previous block. 
+- Is created without PoW. 
+- Is created with a fixed hash.
+- Contains a single transaction that will create the first funds in the blockchain.
 
 #### Blockchain validation
 
+The blockchain validation is the process of validating if the blockchain is valid. A blockchain is valid if:
+- The genesis block is valid.
+- Each block is valid.
+- Each block has a reference to the previous block.
+
 ### RabbitMQ for the transaction pools
+
+The RabbitMQ is used to simulate the transaction pools and the miner pools. The RabbitMQ will be used to send and receive messages between the different services.
 
 #### Global transaction pool
 
+The global transaction pool is the pool that contains all the transactions that are not yet included in a block. These transactions are waiting to be picked up by a miner.
+
+The global transaction pool is responsible for:
+- Receiving a transaction from the wallet.
+- Sending the transaction to the miner mempool.
+
 #### Miner mempool
+
+The miner mempool is the pool that contains the transactions that are waiting to be mined. The miner will pick up the transactions from the global transaction pool and add them to the miner mempool.
 
 #### Block anouncement pool
 
+The block anouncement pool is the pool that contains the blocks that are mined by the miner. The miner will send the block to the block anouncement pool so that the blockchain can be updated.
+
 #### Miner pool for anounced blocks
+
+The miner pool for anounced blocks is the pool that belongs to a miner. This pool will receive the anounced blocks from the block anouncement pool. The miner will validate the block and, if the block is valid, the miner will add the block to the blockchain.
