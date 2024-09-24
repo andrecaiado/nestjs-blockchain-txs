@@ -22,7 +22,7 @@ This project is not intended to be a full implementation of a blockchain network
 
 # Conceptualization
 
- In this section, there will be a brief explanation of how this conceptualization was implemented.
+In this section, there will be a brief explanation of how this conceptualization was implemented.
 
 ## Conceptualization vs Real-world
 
@@ -48,34 +48,35 @@ In the next sub sections, there will be a description of the concepts implemente
 The wallet allows the user to transfer funds to another wallet and to check the balance of the wallet. 
 
 The wallet is responsible for:
-- Creating a transaction.
-- Signing the transaction.
-- Submit the transaction (sending the transaction to the transaction pool).
+- Create the transaction (add inputs and outputs and sign the transaction).
+- Submit the transaction (sends the transaction to the transaction pool).
 
 The wallet has a public key and a private key. The public key is used to identify the wallet and the private key is used to sign the transaction.
 
 ### Transaction
 
-A transaction is a transfer of funds from one wallet to another. The main attributes of a transaction are:
-- `inputs`: The inputs are the funds that are being transferred. The inputs are the outputs of previous transactions.
+The transaction holds the information about the funds that are being transferred from one wallet to another.
+
+The information is the following:
+- `inputs`: The inputs are the funds that are being transferred. The inputs refer to outputs of previous transactions that the sender has received and that were never spent.
 - `outputs`: The outputs are the funds that are being received. The outputs are the funds that are being transferred to another wallet.
 - `signature`: The signature is the proof that the transaction was signed by the wallet that owns the funds.
 
-#### Inputs and outputs:
+#### Inputs and outputs
 
 The inputs are funds that belongs to the sender and that will be used to fullfill the transaction. They refer to transactions that the sender has previsously received (`"where the money comes from"`) and that where never spent (that's why they are also known as `UTXOs - Unspent Transaction Outputs`).
 
 Basically, an input have the following attributes:
 - A reference to the output
-- The transaction output (that became an UTXO becouse it reamin unspent)
+- The transaction output (that became an UTXO because it remained unspent)
 
-The outputs are the destination of the funds to be transfered (`where the money os going`). 
+The outputs are the destination of the funds to be transfered (`"where the money os going"`). 
 
 Basically, an output have the following attributes:
 - Recipient public key
 - Amount of funds
 
-#### Transaction validation:
+#### Transaction validation
 
 The transaction validation is the process of validating if the transaction is valid. A transaction is valid if:
 - The sum of the inputs is greater than the sum of the outputs (including fees).
@@ -88,22 +89,31 @@ There will be two validations for the transaction:
 
 ### Block
 
-A block is basically a collection of transactions. Multiple transactions are added to a block so that the blockchain is smaller and the mining process is more efficient.
+A block is basically a collection of transactions. Multiple transactions can be added to a block so that the blockchain is smaller and the mining process is more efficient.
+
+For simplicity, we will add all the senders UTXOs as inputs in each transaction so we don't have filter UTXOs based on the amount of funds the sender is sending.
+
+A block will hold the following information:
+- One or multiple transactions (including the special `coinbase transaction`).
+- The block hash
+- The previous block hash
+- The nonce
+- The creation timestamp
 
 #### Block mining and Proof of Work (PoW)
 
 The block mining is the step that occurs after the block is created. In order to mine the block, a Proof of work prolem will need to be solved.
 
-The PoW is a problem to solve that will consist in finding a nonce (number) that, when added to the block, the hash of the block will have a certain number of leading zeros.
+The `PoW` is a problem to solve that will consist in finding a `nonce` (number) that, when added to the block, the hash of the block will have a certain number of leading zeros.
 
-The number os zeros (difficulty) will be a constant in the application.
+The number os zeros (`difficulty`) will be a constant in the application.
 
 #### Transaction fees and block mining reward
 
-The transaction fees is an amout that is payed for processing a transaction contained in a block. Thus, the total amount of fees will be the sum of each transaction fees in a block.
-In this project, the transaction fee will be a constant in the application.
+The `transaction fees` is an amout that is payed for processing a transaction contained in a block. Thus, the total amount of fees will be the sum of each transaction fees in a block.
+In this project, the transaction fees will be a constant in the application.
 
-The block mining reward is an amount that is payed to the miner by the `network` for the mining work. In this project, the mining reward will be a constant in the application.
+The block `mining reward` is an amount that is payed to the miner by the `network` for the mining work. In this project, the mining reward will be a constant in the application.
 
 The `coinbase transaction` is a special transaction that will be included (as transaction #0) in a block by the miner when the block is created. This transaction inputs and outputs will be the following:
 - Inputs: none
@@ -119,14 +129,19 @@ The blockchain is responsible for:
 - Adding a block to the blockchain.
 - Validating the blockchain.
 
+A single instance of the blockchain object will be created when the application is started and will set the following constants:
+- Mining reward
+- Transaction fees
+- Amount of coins that can be created (minted)
+
 #### The genesis block
 
 The genesis block is the first block in the blockchain and will be created when the blockchain is created.
 
 This block has the following characteristics:
 - It has no previous block. 
-- Is created without PoW. 
-- Is created with a fixed hash.
+- It is created without PoW. 
+- It is created with a fixed hash.
 - Contains a single transaction that will create the first funds in the blockchain.
 
 #### Blockchain validation
