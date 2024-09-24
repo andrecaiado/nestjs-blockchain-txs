@@ -13,6 +13,8 @@ A NestJS project that demonstrates (generally) how blockchain works in the conte
     - [Block](#block)
     - [Blockchain](#blockchain)
     - [RabbitMQ for the transaction pools](#rabbitmq-for-the-transaction-pools)
+- [Implementation](#implementation)
+  - [Dependencies](#dependencies)
 
 # Disclaimer
 
@@ -157,3 +159,13 @@ The block anouncement pool is the pool that contains the blocks that are mined b
 #### Miner pool for anounced blocks
 
 The miner pool for anounced blocks is the pool that belongs to a miner. This pool will receive the anounced blocks from the block anouncement pool. The miner will validate the block and, if the block is valid, the miner will add the block to the blockchain.
+
+# Implementation
+
+In this section, there will be a brief explanation of how the concepts were implemented.
+
+## Dependencies
+
+Beside the NestJS dependencies, the following additional dependencies were used:
+
+- [ecpair](https://www.npmjs.com/package/ecpair) and [tiny-secp256k1](https://www.npmjs.com/package/tiny-secp256k1): Used to generate the public and private keys for the wallets, sign the transactions and verify the signatures.
