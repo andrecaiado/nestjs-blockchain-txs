@@ -7,9 +7,9 @@ export class Wallet {
 
   constructor(name: string) {
     const key = coinKey.createRandom();
-    this.publicKey = key.publicAddress;
-    this.privateKey = key.privateKey.toString('hex');
     this.name = name;
+    this.publicKey = key.publicKey.toString('hex');
+    this.privateKey = key.privateKey.toString('hex');
   }
 
   public getPublicKey(): string {
@@ -18,5 +18,9 @@ export class Wallet {
 
   public getName(): string {
     return this.name;
+  }
+
+  public getPrivateKey(): string {
+    return this.privateKey;
   }
 }

@@ -1,6 +1,8 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Post } from '@nestjs/common';
 import { WalletsService } from './wallets.service';
 import { CreateWalletDto } from './dto/create-wallet.dto';
+import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { Transaction } from 'src/transactions/transaction';
 
 @Controller('wallets')
 export class WalletsController {
@@ -19,5 +21,17 @@ export class WalletsController {
   @Get(':publicKey')
   getWallet(@Param('publicKey') publicKey: string) {
     return this.walletsService.getWallet(publicKey);
+  }
+
+  @Post(':publicKey/transactions')
+  @HttpCode(200)
+  createTransaction(
+    @Param('publicKey') publicKey: string,
+    @Body() createTransactionDto: CreateTransactionDto,
+  ): Transaction {
+    return this.walletsService.createTransaction(
+      publicKey,
+      createTransactionDto,
+    );
   }
 }

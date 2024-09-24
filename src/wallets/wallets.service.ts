@@ -5,12 +5,20 @@ import {
 } from '@nestjs/common';
 import { Wallet } from './wallet';
 import { CreateWalletDto } from './dto/create-wallet.dto';
+import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { Transaction } from 'src/transactions/transaction';
+import { BlockchainService } from 'src/blockchain/blockchain.service';
+import ECPairFactory from 'ecpair';
+import * as ecc from 'tiny-secp256k1';
+
+// Removed unused and incorrect import
+import { createHash } from 'node:crypto';
 
 @Injectable()
 export class WalletsService {
   private wallets: Wallet[] = [];
 
-  constructor() {
+  constructor(private readonly blockchainService: BlockchainService) {
     this.createDefaultWallets();
   }
 
@@ -34,15 +42,17 @@ export class WalletsService {
   }
 
   public getWallet(publicKey: string): Wallet {
-    const wallet = this.wallets.find(
-      (wallet) => wallet.getPublicKey() === publicKey,
-    );
+    const wallet = this.findWalletByPublicKey(publicKey);
     if (wallet === null || wallet === undefined) {
       throw new NotFoundException(
-        `Wallet with publicKey '${publicKey}' not found!`,
+        `Wallet with public address '${publicKey}' not found!`,
       );
     }
     return wallet;
+  }
+
+  private findWalletByPublicKey(publicKey: string): Wallet {
+    return this.wallets.find((wallet) => wallet.getPublicKey() === publicKey);
   }
 
   private validateWalletCreation(createWalletDto: CreateWalletDto) {
@@ -53,6 +63,96 @@ export class WalletsService {
     const wallet = this.wallets.find((wallet) => wallet.getName() === name);
     if (wallet !== null && wallet !== undefined) {
       throw new ConflictException(`Wallet with name '${name}' already exists!`);
+    }
+  }
+
+  public createTransaction(
+    senderPublicKey: string,
+    createTransactionDto: CreateTransactionDto,
+  ): Transaction {
+    this.validateCreateTransactionRequest(
+      senderPublicKey,
+      createTransactionDto,
+    );
+
+    const senderWallet = this.findWalletByPublicKey(senderPublicKey);
+
+    const transaction = new Transaction();
+    transaction.transactionId = this.createTransactionId(
+      senderWallet.getPublicKey(),
+      createTransactionDto.recipientPublicKey,
+      createTransactionDto.amount,
+    );
+    transaction.senderPublicKey = senderWallet.getPublicKey();
+    transaction.recipientPublicKey = createTransactionDto.recipientPublicKey;
+    transaction.inputs = [];
+    transaction.outputs = [];
+    transaction.amount = createTransactionDto.amount;
+
+    const data =
+      transaction.senderPublicKey +
+      transaction.recipientPublicKey +
+      transaction.amount.toString();
+
+    transaction.signature = this.generateSignature(
+      data,
+      senderWallet.getPrivateKey(),
+    );
+
+    return transaction;
+  }
+
+  private createTransactionId(
+    publicKey: string,
+    recipientAddress: string,
+    amount: number,
+  ): string {
+    return createHash('sha256')
+      .update(publicKey)
+      .update(recipientAddress)
+      .update(amount.toString())
+      .update(new Date().toISOString())
+      .digest('hex');
+  }
+
+  private generateSignature(data: string, privateKey: string): string {
+    const hash = createHash('sha256').update(data).digest();
+    const ECPair = ECPairFactory(ecc);
+    const keyPair = ECPair.fromPrivateKey(Buffer.from(privateKey, 'hex'));
+    const signature = keyPair.sign(hash);
+    return Buffer.from(signature).toString('hex');
+  }
+
+  private verifySignature(
+    data: string,
+    signature: string,
+    publicKey: string,
+  ): boolean {
+    const hash = createHash('sha256').update(data).digest();
+    const ECPair = ECPairFactory(ecc);
+    const keyPair = ECPair.fromPublicKey(Buffer.from(publicKey, 'hex'));
+    return keyPair.verify(hash, Buffer.from(signature, 'hex'));
+  }
+
+  private validateCreateTransactionRequest(
+    senderPublicKey: string,
+    createTransactionDto: CreateTransactionDto,
+  ) {
+    // Verify that the sender wallet exists
+    const senderWallet = this.findWalletByPublicKey(senderPublicKey);
+    if (senderWallet === null || senderWallet === undefined) {
+      throw new NotFoundException(
+        `Sender Wallet with public key '${senderPublicKey}' not found!`,
+      );
+    }
+    // Verify that the recipient wallet exists
+    const recipientWallet = this.findWalletByPublicKey(
+      createTransactionDto.recipientPublicKey,
+    );
+    if (recipientWallet === null || recipientWallet === undefined) {
+      throw new NotFoundException(
+        `Recipient Wallet with public key '${createTransactionDto.recipientPublicKey}' not found!`,
+      );
     }
   }
 }
