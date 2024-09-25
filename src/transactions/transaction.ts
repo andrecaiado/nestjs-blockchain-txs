@@ -17,4 +17,5 @@ export class TransactionOutput {
   recipientPublicKey: string;
   amount: number;
   parentTransactionId: string;
+  id: string;
 }

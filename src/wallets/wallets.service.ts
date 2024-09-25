@@ -6,7 +6,7 @@ import {
 import { Wallet } from './wallet';
 import { CreateWalletDto } from './dto/create-wallet.dto';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { Transaction } from 'src/transactions/transaction';
+import { Transaction, TransactionInput, TransactionOutput } from 'src/transactions/transaction';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import ECPairFactory from 'ecpair';
 import * as ecc from 'tiny-secp256k1';
@@ -85,8 +85,12 @@ export class WalletsService {
     );
     transaction.senderPublicKey = senderWallet.getPublicKey();
     transaction.recipientPublicKey = createTransactionDto.recipientPublicKey;
-    transaction.inputs = [];
-    transaction.outputs = [];
+    transaction.inputs = this.createTransactionInputs(senderPublicKey);
+    transaction.outputs = this.createTransactionOutputs(
+      createTransactionDto.recipientPublicKey,
+      createTransactionDto.amount,
+      transaction.transactionId,
+    );
     transaction.amount = createTransactionDto.amount;
 
     const data =
@@ -155,4 +159,51 @@ export class WalletsService {
       );
     }
   }
+
+  private createTransactionInputs(publicKey: string): TransactionInput[] {
+    const UTXOs = this.blockchainService.getWalletUTXOs(publicKey);
+    return UTXOs.map((UTXO) => {
+      const input = {
+        transactionOutputId: UTXO.id,
+        UTXO,
+      };
+      return input;
+    });
+  }
+
+  private createTransactionOutputs(
+    recipientPublicKey: string,
+    amount: number,
+    parentTransactionId: string,
+  ): TransactionOutput[] {
+    const outputs: TransactionOutput[] = [];
+    const output = new TransactionOutput();
+    output.amount = amount;
+    output.id = this.createTransactionOutputId(
+      recipientPublicKey,
+      amount,
+      parentTransactionId,
+    );
+    output.parentTransactionId = parentTransactionId;
+    output.recipientPublicKey = recipientPublicKey;
+    outputs.push(output);
+    return outputs;
+  }
+
+  private createTransactionOutputId(
+    recipientPublicKey: string,
+    amount: number,
+    parentTransactionId: string,
+  ): string {
+    return createHash('sha256')
+      .update(recipientPublicKey)
+      .update(parentTransactionId)
+      .update(amount.toString())
+      .digest('hex');
+  }
+
+  // public getWalletBalance(publicKey: string): number {
+  //   const UTXOs = this.blockchainService.getWalletUTXOs(publicKey);
+  //   return UTXOs.reduce((acc, UTXO) => acc + UTXO.amount, 0);
+  // }
 }
