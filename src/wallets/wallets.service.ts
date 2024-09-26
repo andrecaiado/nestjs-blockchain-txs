@@ -1,5 +1,7 @@
 import {
+  BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -14,16 +16,18 @@ import {
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import ECPairFactory from 'ecpair';
 import * as ecc from 'tiny-secp256k1';
-
-// Removed unused and incorrect import
 import { createHash } from 'node:crypto';
 import { WalletDto } from './dto/wallet.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class WalletsService {
   private wallets: Wallet[] = [];
 
-  constructor(private readonly blockchainService: BlockchainService) {
+  constructor(
+    private readonly blockchainService: BlockchainService,
+    @Inject() private readonly configService: ConfigService,
+  ) {
     this.createDefaultWallets();
   }
 
@@ -75,36 +79,39 @@ export class WalletsService {
     senderPublicKey: string,
     createTransactionDto: CreateTransactionDto,
   ): Transaction {
-    this.validateCreateTransactionRequest(
-      senderPublicKey,
-      createTransactionDto,
+    const { senderWallet, recipientWallet, senderWalletBalance, UTXOs } =
+      this.validateCreateTransactionRequest(
+        senderPublicKey,
+        createTransactionDto.recipientPublicKey,
+        createTransactionDto.amount,
+      );
+    const recipientPublicKey = recipientWallet.getPublicKey();
+    const transactionFees = this.configService.get<number>(
+      'blockchain.transactionFees',
     );
-
-    const senderWallet = this.findWalletByPublicKey(senderPublicKey);
+    const transactionChange =
+      senderWalletBalance - (createTransactionDto.amount + transactionFees);
 
     const transaction = new Transaction();
     transaction.transactionId = this.createTransactionId(
-      senderWallet.getPublicKey(),
-      createTransactionDto.recipientPublicKey,
+      senderPublicKey,
+      recipientPublicKey,
       createTransactionDto.amount,
     );
-    transaction.senderPublicKey = senderWallet.getPublicKey();
-    transaction.recipientPublicKey = createTransactionDto.recipientPublicKey;
-    transaction.inputs = this.createTransactionInputs(senderPublicKey);
+    transaction.senderPublicKey = senderPublicKey;
+    transaction.recipientPublicKey = recipientPublicKey;
+    transaction.inputs = this.createTransactionInputs(UTXOs);
     transaction.outputs = this.createTransactionOutputs(
-      createTransactionDto.recipientPublicKey,
+      recipientPublicKey,
       createTransactionDto.amount,
       transaction.transactionId,
+      transactionChange,
     );
     transaction.amount = createTransactionDto.amount;
-
-    const data =
-      transaction.senderPublicKey +
-      transaction.recipientPublicKey +
-      transaction.amount.toString();
+    transaction.transactionFees = transactionFees;
 
     transaction.signature = this.generateSignature(
-      data,
+      transaction,
       senderWallet.getPrivateKey(),
     );
 
@@ -124,7 +131,12 @@ export class WalletsService {
       .digest('hex');
   }
 
-  private generateSignature(data: string, privateKey: string): string {
+  private generateSignature(
+    transaction: Transaction,
+    privateKey: string,
+  ): string {
+    const data = transaction.toString();
+
     const hash = createHash('sha256').update(data).digest();
     const ECPair = ECPairFactory(ecc);
     const keyPair = ECPair.fromPrivateKey(Buffer.from(privateKey, 'hex'));
@@ -145,8 +157,14 @@ export class WalletsService {
 
   private validateCreateTransactionRequest(
     senderPublicKey: string,
-    createTransactionDto: CreateTransactionDto,
-  ) {
+    recipientPublicKey: string,
+    amount: number,
+  ): {
+    senderWallet: Wallet;
+    recipientWallet: Wallet;
+    senderWalletBalance: number;
+    UTXOs: TransactionOutput[];
+  } {
     // Verify that the sender wallet exists
     const senderWallet = this.findWalletByPublicKey(senderPublicKey);
     if (senderWallet === null || senderWallet === undefined) {
@@ -154,19 +172,54 @@ export class WalletsService {
         `Sender Wallet with public key '${senderPublicKey}' not found!`,
       );
     }
+
     // Verify that the recipient wallet exists
-    const recipientWallet = this.findWalletByPublicKey(
-      createTransactionDto.recipientPublicKey,
-    );
+    const recipientWallet = this.findWalletByPublicKey(recipientPublicKey);
     if (recipientWallet === null || recipientWallet === undefined) {
       throw new NotFoundException(
-        `Recipient Wallet with public key '${createTransactionDto.recipientPublicKey}' not found!`,
+        `Recipient Wallet with public key '${recipientPublicKey}' not found!`,
       );
     }
+
+    // Verify that the sender and recipient are not the same
+    if (senderPublicKey === recipientPublicKey) {
+      throw new BadRequestException(
+        `Sender and Recipient wallets cannot be the same!`,
+      );
+    }
+
+    // Verify that the amount is positive
+    if (amount <= 0) {
+      throw new BadRequestException(`Amount must be positive!`);
+    }
+
+    // Validate that the sender has enough balance to cover the transaction (amount + transaction fees)
+    // We will need to get the sender UTXOs to calculate the balance
+    // This can be an expensive operation so we are going to use them inside this function but also return them
+    const UTXOs = this.getWalletUTXOs(senderPublicKey);
+    // Calculate the balance from the UTXOs
+    const senderWalletBalance = this.calculateBalanceFromUTXOS(UTXOs);
+    // Validate the balance
+    // const senderWalletBalance = this.validateBalanceForTransaction(
+    //   balance,
+    //   amount,
+    //   senderPublicKey,
+    // );
+    const transactionFees = this.configService.get<number>(
+      'blockchain.transactionFees',
+    );
+    if (senderWalletBalance < amount + transactionFees) {
+      throw new BadRequestException(
+        `Insufficient balance for wallet '${senderPublicKey}'!\n Balance is: ${senderWalletBalance}. Required: ${amount + transactionFees} (amount + transaction fees)`,
+      );
+    }
+
+    return { senderWallet, recipientWallet, senderWalletBalance, UTXOs };
   }
 
-  private createTransactionInputs(publicKey: string): TransactionInput[] {
-    const UTXOs = this.blockchainService.getWalletUTXOs(publicKey);
+  private createTransactionInputs(
+    UTXOs: TransactionOutput[],
+  ): TransactionInput[] {
     return UTXOs.map((UTXO) => {
       const input = {
         transactionOutputId: UTXO.id,
@@ -180,7 +233,9 @@ export class WalletsService {
     recipientPublicKey: string,
     amount: number,
     parentTransactionId: string,
+    transactionChange: number,
   ): TransactionOutput[] {
+    // Create transaction output for recipient
     const outputs: TransactionOutput[] = [];
     const output = new TransactionOutput();
     output.amount = amount;
@@ -192,6 +247,19 @@ export class WalletsService {
     output.parentTransactionId = parentTransactionId;
     output.recipientPublicKey = recipientPublicKey;
     outputs.push(output);
+    // Add change output (if any) to sender
+    if (transactionChange > 0) {
+      const changeOutput = new TransactionOutput();
+      changeOutput.amount = transactionChange;
+      changeOutput.id = this.createTransactionOutputId(
+        recipientPublicKey,
+        transactionChange,
+        parentTransactionId,
+      );
+      changeOutput.parentTransactionId = parentTransactionId;
+      changeOutput.recipientPublicKey = recipientPublicKey;
+      outputs.push(changeOutput);
+    }
     return outputs;
   }
 
@@ -207,9 +275,12 @@ export class WalletsService {
       .digest('hex');
   }
 
-  public getWalletBalance(publicKey: string): number {
-    const UTXOs = this.blockchainService.getWalletUTXOs(publicKey);
+  private calculateBalanceFromUTXOS(UTXOs: TransactionOutput[]): number {
     return UTXOs.reduce((acc, UTXO) => acc + UTXO.amount, 0);
+  }
+
+  private getWalletUTXOs(publicKey: string): TransactionOutput[] {
+    return this.blockchainService.getWalletUTXOs(publicKey);
   }
 
   private mapWalletToWalletDto(wallet: Wallet): WalletDto {
@@ -219,5 +290,10 @@ export class WalletsService {
     walletDto.balance = this.getWalletBalance(wallet.getPublicKey());
 
     return walletDto;
+  }
+
+  private getWalletBalance(publicKey: string): number {
+    const UTXOs = this.getWalletUTXOs(publicKey);
+    return this.calculateBalanceFromUTXOS(UTXOs);
   }
 }

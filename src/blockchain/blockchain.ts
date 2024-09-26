@@ -1,7 +1,5 @@
 export class Blockchain {
   //private chain: Block[] = [];
-  private difficulty = 2;
-  private miningReward = 100;
 
   constructor() {
     //this.createGenesisBlock();
