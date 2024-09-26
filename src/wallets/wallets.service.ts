@@ -6,13 +6,18 @@ import {
 import { Wallet } from './wallet';
 import { CreateWalletDto } from './dto/create-wallet.dto';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { Transaction, TransactionInput, TransactionOutput } from 'src/transactions/transaction';
+import {
+  Transaction,
+  TransactionInput,
+  TransactionOutput,
+} from 'src/transactions/transaction';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import ECPairFactory from 'ecpair';
 import * as ecc from 'tiny-secp256k1';
 
 // Removed unused and incorrect import
 import { createHash } from 'node:crypto';
+import { WalletDto } from './dto/wallet.dto';
 
 @Injectable()
 export class WalletsService {
@@ -41,14 +46,14 @@ export class WalletsService {
     return this.wallets;
   }
 
-  public getWallet(publicKey: string): Wallet {
+  public getWallet(publicKey: string): WalletDto {
     const wallet = this.findWalletByPublicKey(publicKey);
     if (wallet === null || wallet === undefined) {
       throw new NotFoundException(
         `Wallet with public address '${publicKey}' not found!`,
       );
     }
-    return wallet;
+    return this.mapWalletToWalletDto(wallet);
   }
 
   private findWalletByPublicKey(publicKey: string): Wallet {
@@ -202,8 +207,17 @@ export class WalletsService {
       .digest('hex');
   }
 
-  // public getWalletBalance(publicKey: string): number {
-  //   const UTXOs = this.blockchainService.getWalletUTXOs(publicKey);
-  //   return UTXOs.reduce((acc, UTXO) => acc + UTXO.amount, 0);
-  // }
+  public getWalletBalance(publicKey: string): number {
+    const UTXOs = this.blockchainService.getWalletUTXOs(publicKey);
+    return UTXOs.reduce((acc, UTXO) => acc + UTXO.amount, 0);
+  }
+
+  private mapWalletToWalletDto(wallet: Wallet): WalletDto {
+    const walletDto = new WalletDto();
+    walletDto.name = wallet.getName();
+    walletDto.publicKey = wallet.getPublicKey();
+    walletDto.balance = this.getWalletBalance(wallet.getPublicKey());
+
+    return walletDto;
+  }
 }

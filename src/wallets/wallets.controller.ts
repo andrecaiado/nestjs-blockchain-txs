@@ -3,6 +3,7 @@ import { WalletsService } from './wallets.service';
 import { CreateWalletDto } from './dto/create-wallet.dto';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { Transaction } from 'src/transactions/transaction';
+import { WalletDto } from './dto/wallet.dto';
 
 @Controller('wallets')
 export class WalletsController {
@@ -19,7 +20,7 @@ export class WalletsController {
   }
 
   @Get(':publicKey')
-  getWallet(@Param('publicKey') publicKey: string) {
+  getWallet(@Param('publicKey') publicKey: string): WalletDto {
     return this.walletsService.getWallet(publicKey);
   }
 

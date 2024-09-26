@@ -16,7 +16,7 @@ export class BlockchainService {
     console.log(`Getting UTXOs for wallet ${walletPublicKey}...`);
     // This is mocked data.
     const txo = new TransactionOutput();
-    txo.amount = 100;
+    txo.amount = 100.54;
     txo.id = '123';
     txo.parentTransactionId = '123';
     txo.recipientPublicKey = walletPublicKey;
