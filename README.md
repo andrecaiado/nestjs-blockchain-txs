@@ -45,22 +45,46 @@ In the next sub sections, there will be a description of the concepts implemente
 
 ### Wallet
 
-The wallet allows the user to transfer funds to another wallet and to check the balance of the wallet. 
+The wallet is basically an object containing a public key and a private key that are generated when the wallet is created.
+- The public key is used to identify the wallet and verify signatures.
+- The private key is used to sign transactions.
 
-The wallet is responsible for:
-- Create the transaction (add inputs and outputs and sign the transaction).
-- Submit the transaction (sends the transaction to the transaction pool).
+For more information on how the keys are generated, please refer to the [Dependencies](#dependencies) section.
 
-The wallet has a public key and a private key. The public key is used to identify the wallet and the private key is used to sign the transaction.
+The application creates 2 wallets when it starts, but the user can create more wallets.
+
+The application has a wallet service that is responsible for:
+- Create wallets.
+- Get all wallets.
+- Get a wallet by public key (it will also return the wallet balance).
+- Create transactions:
+  - Check if the sender has enough funds (and other validations).
+  - Add the inputs (UTXOs) to the transaction.
+  - Add the outputs to the transaction.
+  - Sign the transaction.
 
 ### Transaction
 
 The transaction holds the information about the funds that are being transferred from one wallet to another.
 
 The information is the following:
+- `id`: The transaction id is a hash of the transaction data (sender, recipient, amount and the timestamp to prevent duplicate transaction ids).
+- `sender public key`: The sender public key is the public key of the wallet that is sending the funds.
+- `recipient public key`: The recipient public key is the public key of the wallet that is receiving the funds.
+- `amount`: The amount is the funds that are being transferred.
+- `transaction fees`: The transaction fees is the amount that is payed for processing the transaction.
 - `inputs`: The inputs are the funds that are being transferred. The inputs refer to outputs of previous transactions that the sender has received and that were never spent.
 - `outputs`: The outputs are the funds that are being received. The outputs are the funds that are being transferred to another wallet.
 - `signature`: The signature is the proof that the transaction was signed by the wallet that owns the funds.
+
+The application has a transaction service is responsible for:
+- Validate a transaction before adding it to the global transaction pool. The validation includes:
+  - VALIDATE THIS!!!!
+  - Check if the sum of the inputs is greater than the sum of the outputs.
+  - Check if the signature is valid.
+  - Check if the inputs (UTXOs) are not already spent.
+- Submit a transaction to the global transaction pool.
+- ADD MORE HERE!!!!
 
 #### Inputs and outputs
 
@@ -184,3 +208,7 @@ In this section, there will be a brief explanation of how the concepts were impl
 Beside the NestJS dependencies, the following additional dependencies were used:
 
 - [ecpair](https://www.npmjs.com/package/ecpair) and [tiny-secp256k1](https://www.npmjs.com/package/tiny-secp256k1): Used to generate the public and private keys for the wallets, sign the transactions and verify the signatures.
+
+## Wallet
+
+### Wallet service
