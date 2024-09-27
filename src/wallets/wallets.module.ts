@@ -7,5 +7,6 @@ import { BlockchainModule } from 'src/blockchain/blockchain.module';
   providers: [WalletsService],
   controllers: [WalletsController],
   imports: [BlockchainModule],
+  exports: [WalletsService],
 })
 export class WalletsModule {}

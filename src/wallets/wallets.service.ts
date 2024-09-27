@@ -25,7 +25,7 @@ export class WalletsService {
   private wallets: Wallet[] = [];
 
   constructor(
-    private readonly blockchainService: BlockchainService,
+    @Inject() private readonly blockchainService: BlockchainService,
     @Inject() private readonly configService: ConfigService,
   ) {
     this.createDefaultWallets();
