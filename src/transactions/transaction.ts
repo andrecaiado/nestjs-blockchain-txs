@@ -15,18 +15,15 @@ export class Transaction {
       this.recipientPublicKey +
       this.amount.toString() +
       this.transactionFees.toString() +
-      this.inputs.toString() +
-      this.outputs.toString()
+      this.inputs
+        .map((input) => input.toString())
+        .join('')
+        .toString() +
+      this.outputs
+        .map((output) => output.toString())
+        .join('')
+        .toString()
     );
-  }
-}
-
-export class TransactionInput {
-  transactionOutputId: string;
-  UTXO: TransactionOutput;
-
-  toString(): string {
-    return this.transactionOutputId + this.UTXO.toString();
   }
 }
 
@@ -38,7 +35,19 @@ export class TransactionOutput {
 
   toString(): string {
     return (
-      this.recipientPublicKey + this.amount + this.parentTransactionId + this.id
+      this.recipientPublicKey +
+      this.amount.toString() +
+      this.parentTransactionId +
+      this.id
     );
+  }
+}
+
+export class TransactionInput {
+  transactionOutputId: string;
+  UTXO: TransactionOutput;
+
+  toString(): string {
+    return this.transactionOutputId + this.UTXO.toString();
   }
 }

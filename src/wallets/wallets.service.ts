@@ -111,7 +111,7 @@ export class WalletsService {
     transaction.transactionFees = transactionFees;
 
     transaction.signature = this.generateSignature(
-      transaction,
+      transaction.toString(),
       senderWallet.getPrivateKey(),
     );
 
@@ -131,28 +131,12 @@ export class WalletsService {
       .digest('hex');
   }
 
-  private generateSignature(
-    transaction: Transaction,
-    privateKey: string,
-  ): string {
-    const data = transaction.toString();
-
+  private generateSignature(data: string, privateKey: string): string {
     const hash = createHash('sha256').update(data).digest();
     const ECPair = ECPairFactory(ecc);
     const keyPair = ECPair.fromPrivateKey(Buffer.from(privateKey, 'hex'));
     const signature = keyPair.sign(hash);
     return Buffer.from(signature).toString('hex');
-  }
-
-  private verifySignature(
-    data: string,
-    signature: string,
-    publicKey: string,
-  ): boolean {
-    const hash = createHash('sha256').update(data).digest();
-    const ECPair = ECPairFactory(ecc);
-    const keyPair = ECPair.fromPublicKey(Buffer.from(publicKey, 'hex'));
-    return keyPair.verify(hash, Buffer.from(signature, 'hex'));
   }
 
   private validateCreateTransactionRequest(
@@ -221,11 +205,10 @@ export class WalletsService {
     UTXOs: TransactionOutput[],
   ): TransactionInput[] {
     return UTXOs.map((UTXO) => {
-      const input = {
-        transactionOutputId: UTXO.id,
-        UTXO,
-      };
-      return input;
+      const transaction = new TransactionInput();
+      transaction.transactionOutputId = UTXO.id;
+      transaction.UTXO = UTXO;
+      return transaction;
     });
   }
 

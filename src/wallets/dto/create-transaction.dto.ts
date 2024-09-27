@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
 
 export class CreateTransactionDto {
   @IsNotEmpty()
@@ -7,5 +7,6 @@ export class CreateTransactionDto {
 
   @IsNotEmpty()
   @IsNumber()
+  @IsPositive()
   amount: number;
 }
