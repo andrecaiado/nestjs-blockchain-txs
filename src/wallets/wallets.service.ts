@@ -79,16 +79,21 @@ export class WalletsService {
     senderPublicKey: string,
     createTransactionDto: CreateTransactionDto,
   ): Transaction {
-    const { senderWallet, recipientWallet, senderWalletBalance, UTXOs } =
+    const UTXOs = this.getWalletUTXOs(senderPublicKey);
+    const transactionFees = this.configService.get<number>(
+      'blockchain.transactionFees',
+    );
+
+    const { senderWallet, senderWalletBalance } =
       this.validateCreateTransactionRequest(
         senderPublicKey,
         createTransactionDto.recipientPublicKey,
         createTransactionDto.amount,
+        UTXOs,
+        transactionFees,
       );
-    const recipientPublicKey = recipientWallet.getPublicKey();
-    const transactionFees = this.configService.get<number>(
-      'blockchain.transactionFees',
-    );
+
+    const recipientPublicKey = createTransactionDto.recipientPublicKey;
     const transactionChange =
       senderWalletBalance - (createTransactionDto.amount + transactionFees);
 
@@ -143,11 +148,11 @@ export class WalletsService {
     senderPublicKey: string,
     recipientPublicKey: string,
     amount: number,
+    UTXOs: TransactionOutput[],
+    transactionFees: number,
   ): {
     senderWallet: Wallet;
-    recipientWallet: Wallet;
     senderWalletBalance: number;
-    UTXOs: TransactionOutput[];
   } {
     // Verify that the sender wallet exists
     const senderWallet = this.findWalletByPublicKey(senderPublicKey);
@@ -172,33 +177,16 @@ export class WalletsService {
       );
     }
 
-    // Verify that the amount is positive
-    if (amount <= 0) {
-      throw new BadRequestException(`Amount must be positive!`);
-    }
-
     // Validate that the sender has enough balance to cover the transaction (amount + transaction fees)
-    // We will need to get the sender UTXOs to calculate the balance
-    // This can be an expensive operation so we are going to use them inside this function but also return them
-    const UTXOs = this.getWalletUTXOs(senderPublicKey);
     // Calculate the balance from the UTXOs
     const senderWalletBalance = this.calculateBalanceFromUTXOS(UTXOs);
-    // Validate the balance
-    // const senderWalletBalance = this.validateBalanceForTransaction(
-    //   balance,
-    //   amount,
-    //   senderPublicKey,
-    // );
-    const transactionFees = this.configService.get<number>(
-      'blockchain.transactionFees',
-    );
     if (senderWalletBalance < amount + transactionFees) {
       throw new BadRequestException(
         `Insufficient balance for wallet '${senderPublicKey}'!\n Balance is: ${senderWalletBalance}. Required: ${amount + transactionFees} (amount + transaction fees)`,
       );
     }
 
-    return { senderWallet, recipientWallet, senderWalletBalance, UTXOs };
+    return { senderWallet, senderWalletBalance };
   }
 
   private createTransactionInputs(
