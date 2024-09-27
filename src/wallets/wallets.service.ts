@@ -79,6 +79,8 @@ export class WalletsService {
     senderPublicKey: string,
     createTransactionDto: CreateTransactionDto,
   ): Transaction {
+    console.log(`Wallet ${senderPublicKey}: creating a transaction...`);
+
     const UTXOs = this.getWalletUTXOs(senderPublicKey);
     const transactionFees = this.configService.get<number>(
       'blockchain.transactionFees',
@@ -120,6 +122,10 @@ export class WalletsService {
       senderWallet.getPrivateKey(),
     );
 
+    console.log(
+      `Wallet ${senderPublicKey}: transaction ID is '${transaction.transactionId}'`,
+    );
+
     return transaction;
   }
 
@@ -154,37 +160,43 @@ export class WalletsService {
     senderWallet: Wallet;
     senderWalletBalance: number;
   } {
+    console.log(`Wallet ${senderPublicKey}: transaction is being validated...`);
+
+    let errorMsg: string;
+
     // Verify that the sender wallet exists
     const senderWallet = this.findWalletByPublicKey(senderPublicKey);
     if (senderWallet === null || senderWallet === undefined) {
-      throw new NotFoundException(
-        `Sender Wallet with public key '${senderPublicKey}' not found!`,
-      );
+      errorMsg = `Sender Wallet with public key '${senderPublicKey}' not found!`;
+      console.error(errorMsg);
+      throw new NotFoundException(errorMsg);
     }
 
     // Verify that the recipient wallet exists
     const recipientWallet = this.findWalletByPublicKey(recipientPublicKey);
     if (recipientWallet === null || recipientWallet === undefined) {
-      throw new NotFoundException(
-        `Recipient Wallet with public key '${recipientPublicKey}' not found!`,
-      );
+      errorMsg = `Recipient Wallet with public key '${recipientPublicKey}' not found!`;
+      console.error(errorMsg);
+      throw new NotFoundException(errorMsg);
     }
 
     // Verify that the sender and recipient are not the same
     if (senderPublicKey === recipientPublicKey) {
-      throw new BadRequestException(
-        `Sender and Recipient wallets cannot be the same!`,
-      );
+      errorMsg = `Sender and Recipient wallets cannot be the same!`;
+      console.error(errorMsg);
+      throw new BadRequestException(errorMsg);
     }
 
     // Validate that the sender has enough balance to cover the transaction (amount + transaction fees)
     // Calculate the balance from the UTXOs
     const senderWalletBalance = this.calculateBalanceFromUTXOS(UTXOs);
     if (senderWalletBalance < amount + transactionFees) {
-      throw new BadRequestException(
-        `Insufficient balance for wallet '${senderPublicKey}'!\n Balance is: ${senderWalletBalance}. Required: ${amount + transactionFees} (amount + transaction fees)`,
-      );
+      errorMsg = `Insufficient balance for wallet '${senderPublicKey}'!\n Balance is: ${senderWalletBalance}. Required: ${amount + transactionFees} (amount + transaction fees)`;
+      console.error(errorMsg);
+      throw new BadRequestException(errorMsg);
     }
+
+    console.log(`Wallet ${senderPublicKey}: transaction is valid.`);
 
     return { senderWallet, senderWalletBalance };
   }
@@ -251,6 +263,7 @@ export class WalletsService {
   }
 
   private getWalletUTXOs(publicKey: string): TransactionOutput[] {
+    console.log(`Wallet ${publicKey}: fetching UTXOs...`);
     return this.blockchainService.getWalletUTXOs(publicKey);
   }
 

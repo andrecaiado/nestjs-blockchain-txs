@@ -16,13 +16,21 @@ import {
 @Injectable()
 export class TransactionsService {
   public submitTransaction(transactionDto: TransactionDto): string {
+    console.log(`Transaction ${transactionDto.transactionId}: submiting...`);
+
     this.validateTransaction(
       this.mapTransactionDtoToTransaction(transactionDto),
     );
-    return 'Transaction submitted';
+
+    const successMsg = `Transaction ${transactionDto.transactionId}: submitted successfully.`;
+    console.log(successMsg);
+
+    return successMsg;
   }
 
-  private validateTransaction(transaction: Transaction): boolean {
+  private validateTransaction(transaction: Transaction) {
+    let errorMsg: string;
+
     // Verify signature
     if (
       !this.verifySignature(
@@ -31,10 +39,14 @@ export class TransactionsService {
         transaction.senderPublicKey,
       )
     ) {
-      throw new BadRequestException('Invalid signature');
+      errorMsg = `Transaction ${transaction.transactionId}: signature is invalid`;
+      console.error(errorMsg);
+      throw new BadRequestException(errorMsg);
     }
 
-    return true;
+    console.log(`Transaction ${transaction.transactionId}: signature is valid`);
+
+    return;
   }
 
   private verifySignature(
