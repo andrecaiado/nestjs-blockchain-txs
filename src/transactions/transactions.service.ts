@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import {
   Transaction,
   TransactionInput,
@@ -12,9 +12,16 @@ import {
   TransactionInputDto,
   TransactionOutputDto,
 } from './dto/transaction.dto';
+import { BlockchainService } from 'src/blockchain/blockchain.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class TransactionsService {
+  constructor(
+    @Inject() private readonly blockchainService: BlockchainService,
+    @Inject() private readonly configService: ConfigService,
+  ) {}
+
   public submitTransaction(transactionDto: TransactionDto): string {
     console.log(`Transaction ${transactionDto.transactionId}: submiting...`);
 
@@ -39,14 +46,92 @@ export class TransactionsService {
         transaction.senderPublicKey,
       )
     ) {
-      errorMsg = `Transaction ${transaction.transactionId}: signature is invalid`;
+      errorMsg = `Transaction ${transaction.transactionId} validation: signature is invalid`;
       console.error(errorMsg);
       throw new BadRequestException(errorMsg);
     }
+    console.log(
+      `Transaction ${transaction.transactionId} validation: signature is valid`,
+    );
 
-    console.log(`Transaction ${transaction.transactionId}: signature is valid`);
+    // Get the transaction inputs for subsequent validations
+    const txUTXOs = transaction.inputs.map((input) => input.UTXO);
+
+    // Verify if the inputs UTXOs belong to the sender
+    if (
+      !this.verifyTransactionInputsOwnership(
+        txUTXOs,
+        transaction.senderPublicKey,
+      )
+    ) {
+      errorMsg = `Transaction ${transaction.transactionId} validation: There are UTXOs in the inputs that do not belong to the sender`;
+      console.error(errorMsg);
+      throw new BadRequestException(errorMsg);
+    }
+    console.log(
+      `Transaction ${transaction.transactionId} validation: inputs UTXOs belong to the sender`,
+    );
+
+    // Get UTXOs from the sender's wallet for subsequent validations
+    const walletUTXOs = this.getWalletUTXOs(transaction.senderPublicKey);
+
+    // Verify if UTXOs are unspent
+    if (!this.verifyUTXOsAreUnspent(txUTXOs, walletUTXOs)) {
+      errorMsg = `Transaction ${transaction.transactionId}: there are UTXOs that are not unspent`;
+      console.error(errorMsg);
+      throw new BadRequestException(errorMsg);
+    }
+    console.log(
+      `Transaction ${transaction.transactionId} validation: UTXOs are unspent`,
+    );
+
+    // Get the transaction fees
+    const transactionFees = this.configService.get<number>(
+      'blockchain.transactionFees',
+    );
+
+    // Verify if the inputs are enough to cover the outputs
+    if (
+      !this.validateTransactionOutputsCoverage(transaction, transactionFees)
+    ) {
+      errorMsg = `Transaction ${transaction.transactionId}: inputs are not enough to cover the outputs`;
+      console.error(errorMsg);
+      throw new BadRequestException(errorMsg);
+    }
+    console.log(
+      `Transaction ${transaction.transactionId} validation: inputs are enough to cover the outputs`,
+    );
 
     return;
+  }
+
+  private calculateInputsAmount(inputs: TransactionInput[]): number {
+    return inputs.reduce((acc, input) => acc + input.UTXO.amount, 0);
+  }
+
+  private calculateOutputsAmount(outputs: TransactionOutput[]): number {
+    return outputs.reduce((acc, output) => acc + output.amount, 0);
+  }
+
+  private validateTransactionOutputsCoverage(
+    transaction: Transaction,
+    transactionFees: number,
+  ): boolean {
+    const transactionInputsAmount = this.calculateInputsAmount(
+      transaction.inputs,
+    );
+    const transactionOutputsAmount = this.calculateOutputsAmount(
+      transaction.outputs,
+    );
+    const expectedAmount = transactionOutputsAmount + transactionFees;
+    return transactionInputsAmount >= expectedAmount;
+  }
+
+  private verifyTransactionInputsOwnership(
+    UTXOs: TransactionOutput[],
+    publicKey: string,
+  ): boolean {
+    return UTXOs.every((UTXO) => UTXO.recipientPublicKey === publicKey);
   }
 
   private verifySignature(
@@ -58,6 +143,20 @@ export class TransactionsService {
     const ECPair = ECPairFactory(ecc);
     const keyPair = ECPair.fromPublicKey(Buffer.from(publicKey, 'hex'));
     return keyPair.verify(hash, Buffer.from(signature, 'hex'));
+  }
+
+  private verifyUTXOsAreUnspent(
+    txUTXOs: TransactionOutput[],
+    walletUTXOs: TransactionOutput[],
+  ): boolean {
+    return txUTXOs.every((txUTXO) =>
+      walletUTXOs.some((walletUTXO) => walletUTXO.id === txUTXO.id),
+    );
+  }
+
+  private getWalletUTXOs(publicKey: string): TransactionOutput[] {
+    // console.log(`Transaction validation ${publicKey}: fetching UTXOs...`);
+    return this.blockchainService.getWalletUTXOs(publicKey);
   }
 
   private mapTransactionDtoToTransaction(
