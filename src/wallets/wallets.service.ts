@@ -96,8 +96,9 @@ export class WalletsService {
       );
 
     const recipientPublicKey = createTransactionDto.recipientPublicKey;
-    const transactionChange =
+    let transactionChange =
       senderWalletBalance - (createTransactionDto.amount + transactionFees);
+    transactionChange = Number(transactionChange.toFixed(3));
 
     const transaction = new Transaction();
     transaction.transactionId = this.createTransactionId(
