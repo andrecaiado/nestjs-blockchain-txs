@@ -2,7 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { WalletsService } from './wallets.service';
 import { ConfigService } from '@nestjs/config';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { TransactionOutput } from 'src/transactions/transaction';
 
 describe('WalletsService', () => {
@@ -116,5 +120,50 @@ describe('WalletsService', () => {
     expect(transaction.outputs.length).toBe(2);
     expect(transaction.outputs[0].amount).toBe(10);
     expect(transaction.outputs[1].amount).toBe(90 - transactionFees);
+  });
+
+  it('should throw an error when sender wallet is not found', () => {
+    expect(() =>
+      service.createTransaction('invalid-public-key', {
+        recipientPublicKey: 'recipient-public-key',
+        amount: 10,
+      }),
+    ).toThrow(
+      new NotFoundException(
+        `Sender Wallet with public key 'invalid-public-key' not found!`,
+      ),
+    );
+  });
+
+  it('should throw as error when the sender and recipients as ther same', () => {
+    const wallet1 = service.createWallet({ name: 'Wallet-1' });
+    expect(() =>
+      service.createTransaction(wallet1.getPublicKey(), {
+        recipientPublicKey: wallet1.getPublicKey(),
+        amount: 10,
+      }),
+    ).toThrow(
+      new BadRequestException(
+        `Sender and Recipient wallets cannot be the same!`,
+      ),
+    );
+  });
+
+  it('should throw an exception if the sender has not enough balance', () => {
+    const wallet1 = service.createWallet({ name: 'Wallet-1' });
+    const wallet2 = service.createWallet({ name: 'Wallet-2' });
+    const transactionFees = configService.get<number>(
+      'blockchain.transactionFees',
+    );
+    expect(() =>
+      service.createTransaction(wallet1.getPublicKey(), {
+        recipientPublicKey: wallet2.getPublicKey(),
+        amount: 100,
+      }),
+    ).toThrow(
+      new BadRequestException(
+        `Insufficient balance for wallet '${wallet1.getPublicKey()}'!\n Balance is: 100. Required: ${100 + transactionFees} (amount + transaction fees)`,
+      ),
+    );
   });
 });
