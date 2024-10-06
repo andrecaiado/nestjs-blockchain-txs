@@ -2,213 +2,52 @@
 
 A NestJS project that demonstrates (generally) how blockchain works in the context of cryptocurrency transactions.
 
-# Contents
-- [Disclaimer](#disclaimer)
-- [Conceptualization](#conceptualization)
-  - [Conceptualization vs Real-world](#conceptualization-vs-real-world)
-  - [Process flow](#process-flow)
-  - [Concepts](#concepts)
-    - [Wallet](#wallet)
-    - [Transaction](#transaction)
-    - [Block](#block)
-    - [Blockchain](#blockchain)
-    - [RabbitMQ for the transaction pools](#rabbitmq-for-the-transaction-pools)
-- [Implementation](#implementation)
-  - [Dependencies](#dependencies)
-
-# Disclaimer
+## Disclaimer
 
 This project is not intended to be a full implementation of a blockchain network. It is a conceptualization of how blockchain works in the context of cryptocurrency transactions. Thus, most of the concepts are simplified and not compliant with the real-world blockchain networks.
 
-# Conceptualization
+# Getting started
 
-In this section, there will be a brief explanation of how this conceptualization was implemented.
+This section provides a step-by-step guide on how to run the project.
 
-## Conceptualization vs Real-world
+## Requirements
 
-The following are the main characteristics of this conceptualization that differs this project from a real-world blockchain network:
+To run this project, you will need to have the following installedon your local machine:
+- [Node.js](https://nodejs.org/en/download/package-manager)
+- [Docker](https://docs.docker.com/engine/install/)
+- [Docker compose](https://docs.docker.com/compose/install/)
 
-- There is no peer-to-peer network.
-- There are no multiple miners competing to mine the block.
-- There is only one ledger (blockchain).
-- All the actors and services are running in the same process.
+## Installing and running the project
 
-## Process flow
+1. Clone the repository
+```shell
+git clone git@github.com:andrecaiado/nestjs-blockchain-txs.git
+```
 
-For a better understanding of the process flow and the different intervenients, please refer to the following diagram:
+2. Navigate into the project directory
+```shell
+cd your-repository-name
+```
 
-![Process flow](./docs/process-flow.png)
+3. Install the dependencies
+```shell
+npm install
+```
 
-## Concepts
+4. Run the application
+```shell 
+npm run start:dev
+```
 
-In the next sub sections, there will be a description of the concepts implemented in this project.
+## Try it out with the postman collection
 
-### Wallet
+The Postman collection is available here: [NestJS Blockchain Txs.postman_collection.json](./docs/NestJS%20Blockchain%20Txs.postman_collection.json)
 
-The wallet is basically an object containing a public key and a private key that are generated when the wallet is created.
-- The public key is used to identify the wallet and verify signatures.
-- The private key is used to sign transactions.
+To better understand how the API works, please refer to the following guide: [API guide](./docs/api-guide.md)
 
-For more information on how the keys are generated, please refer to the [Dependencies](#dependencies) section.
+# Contents
 
-The application creates 2 wallets when it starts, but the user can create more wallets.
+To understand how this project was conceptualized and implemented, please refer to the following sections.
 
-The application has a wallet service that is responsible for:
-- Create wallets.
-- Get all wallets.
-- Get a wallet by public key (it will also return the wallet balance).
-- Create transactions:
-  - Check if the sender has enough funds (and other validations).
-  - Add the inputs (UTXOs) to the transaction.
-  - Add the outputs to the transaction.
-  - Sign the transaction.
-
-### Transaction
-
-The transaction holds the information about the funds that are being transferred from one wallet to another.
-
-The information is the following:
-- `id`: The transaction id is a hash of the transaction data (sender, recipient, amount and the timestamp to prevent duplicate transaction ids).
-- `sender public key`: The sender public key is the public key of the wallet that is sending the funds.
-- `recipient public key`: The recipient public key is the public key of the wallet that is receiving the funds.
-- `amount`: The amount is the funds that are being transferred.
-- `transaction fees`: The transaction fees is the amount that is payed for processing the transaction.
-- `inputs`: The inputs are the funds that are being transferred. The inputs refer to outputs of previous transactions that the sender has received and that were never spent.
-- `outputs`: The outputs are the funds that are being received. The outputs are the funds that are being transferred to another wallet.
-- `signature`: The signature is the proof that the transaction was signed by the wallet that owns the funds.
-
-The application has a transaction service is responsible for:
-- Validate a transaction before adding it to the global transaction pool. The validation includes:
-  - VALIDATE THIS!!!!
-  - Check if the sum of the inputs is greater than the sum of the outputs.
-  - Check if the signature is valid.
-  - Check if the inputs (UTXOs) are not already spent.
-- Submit a transaction to the global transaction pool.
-- ADD MORE HERE!!!!
-
-#### Inputs and outputs
-
-The inputs are funds that belongs to the sender and that will be used to fullfill the transaction. They refer to transactions that the sender has previsously received (`"where the money comes from"`) and that where never spent (that's why they are also known as `UTXOs - Unspent Transaction Outputs`).
-
-Basically, an input have the following attributes:
-- A reference to the output
-- The transaction output (that became an UTXO because it remained unspent)
-
-The outputs are the destination of the funds to be transfered (`"where the money os going"`). 
-
-Basically, an output have the following attributes:
-- Recipient public key
-- Amount of funds
-
-#### Transaction validation
-
-The transaction validation is the process of validating if the transaction is valid. A transaction is valid if:
-- The sum of the inputs is greater than the sum of the outputs (including fees).
-- The signature is valid.
-- The inputs (UTXOs) are not already spent.
-
-There will be two validations for the transaction:
-- A validation before the miner adds the transaction to its mempool (local transaction pool).
-- A validation before the miner mines the block. This second validation is done to check is the inputs (UTXOs) remains unspent.
-
-### Block
-
-A block is basically a collection of transactions. Multiple transactions can be added to a block so that the blockchain is smaller and the mining process is more efficient.
-
-For simplicity, we will add all the senders UTXOs as inputs in each transaction so we don't have filter UTXOs based on the amount of funds the sender is sending.
-
-A block will hold the following information:
-- One or multiple transactions (including the special `coinbase transaction`).
-- The block hash
-- The previous block hash
-- The nonce
-- The creation timestamp
-
-#### Block mining and Proof of Work (PoW)
-
-The block mining is the step that occurs after the block is created. In order to mine the block, a Proof of work prolem will need to be solved.
-
-The `PoW` is a problem to solve that will consist in finding a `nonce` (number) that, when added to the block, the hash of the block will have a certain number of leading zeros.
-
-The number os zeros (`difficulty`) will be a constant in the application.
-
-#### Transaction fees and block mining reward
-
-The `transaction fees` is an amout that is payed for processing a transaction contained in a block. Thus, the total amount of fees will be the sum of each transaction fees in a block.
-In this project, the transaction fees will be a constant in the application.
-
-The block `mining reward` is an amount that is payed to the miner by the `network` for the mining work. In this project, the mining reward will be a constant in the application.
-
-The `coinbase transaction` is a special transaction that will be included (as transaction #0) in a block by the miner when the block is created. This transaction inputs and outputs will be the following:
-- Inputs: none
-- Outputs: 
-  - Recipient: miner address (public key)
-  - Amount: sum of the mining reward and the total transaction fees
-
-### Blockchain
-
-The blockchain is the collection of blocks. Each block has a reference to the previous block (except the genesis block).
-
-The blockchain is responsible for:
-- Adding a block to the blockchain.
-- Validating the blockchain.
-
-A single instance of the blockchain object will be created when the application is started and will set the following constants:
-- Mining reward
-- Transaction fees
-- Amount of coins that can be created (minted)
-
-#### The genesis block
-
-The genesis block is the first block in the blockchain and will be created when the blockchain is created.
-
-This block has the following characteristics:
-- It has no previous block. 
-- It is created without PoW. 
-- It is created with a fixed hash.
-- Contains a single transaction that will create the first funds in the blockchain.
-
-#### Blockchain validation
-
-The blockchain validation is the process of validating if the blockchain is valid. A blockchain is valid if:
-- The genesis block is valid.
-- Each block is valid.
-- Each block has a reference to the previous block.
-
-### RabbitMQ for the transaction pools
-
-The RabbitMQ is used to simulate the transaction pools and the miner pools. The RabbitMQ will be used to send and receive messages between the different services.
-
-#### Global transaction pool
-
-The global transaction pool is the pool that contains all the transactions that are not yet included in a block. These transactions are waiting to be picked up by a miner.
-
-The global transaction pool is responsible for:
-- Receiving a transaction from the wallet.
-- Sending the transaction to the miner mempool.
-
-#### Miner mempool
-
-The miner mempool is the pool that contains the transactions that are waiting to be mined. The miner will pick up the transactions from the global transaction pool and add them to the miner mempool.
-
-#### Block anouncement pool
-
-The block anouncement pool is the pool that contains the blocks that are mined by the miner. The miner will send the block to the block anouncement pool so that the blockchain can be updated.
-
-#### Miner pool for anounced blocks
-
-The miner pool for anounced blocks is the pool that belongs to a miner. This pool will receive the anounced blocks from the block anouncement pool. The miner will validate the block and, if the block is valid, the miner will add the block to the blockchain.
-
-# Implementation
-
-In this section, there will be a brief explanation of how the concepts were implemented.
-
-## Dependencies
-
-Beside the NestJS dependencies, the following additional dependencies were used:
-
-- [ecpair](https://www.npmjs.com/package/ecpair) and [tiny-secp256k1](https://www.npmjs.com/package/tiny-secp256k1): Used to generate the public and private keys for the wallets, sign the transactions and verify the signatures.
-
-## Wallet
-
-### Wallet service
+- [Conceptualization](./docs/conceptualization.md)
+- [Implementation](#implementation)

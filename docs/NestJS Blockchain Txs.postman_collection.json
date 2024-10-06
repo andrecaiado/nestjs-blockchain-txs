@@ -1,0 +1,145 @@
+{
+	"info": {
+		"_postman_id": "4fdc2cb4-4cf4-48af-88e6-0e6db4bf5912",
+		"name": "NestJS Blockchain Txs",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "4423866"
+	},
+	"item": [
+		{
+			"name": "Wallets",
+			"item": [
+				{
+					"name": "Create wallet",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"caiado\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/wallets",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"wallets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get wallets",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/wallets",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"wallets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get wallet by public key",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/wallets/0308660e097c3e24dd370585c69a0c75e0b7668a5c7f478e768186f450b3523002",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"wallets",
+								"0308660e097c3e24dd370585c69a0c75e0b7668a5c7f478e768186f450b3523002"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New transaction",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"recipientPublicKey\": \"0336e019ca786cad806c7542e8d5a652e6209beb933450f24587593728f43a92fd\",\n    \"amount\": 50\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/wallets/020f37c48b932cc049651c61f5256a505179eceac96c29edef15216c0cd6904776/transactions",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"wallets",
+								"020f37c48b932cc049651c61f5256a505179eceac96c29edef15216c0cd6904776",
+								"transactions"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Transactions",
+			"item": [
+				{
+					"name": "Submit transaction",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"transactionId\": \"b8287ebaca1fc9e72704344b8c0b713e173d4301c2ffd67bd6005ce4449d24ef\",\n    \"senderPublicKey\": \"038c89809bfe8d74791debd6b0770df945294f696974030cf49132086165203ad2\",\n    \"recipientPublicKey\": \"03726c8526b5b8a49f262ced87cc04d6838f051d08aa54b1012dbd652ad92447ca\",\n    \"inputs\": [\n        {\n            \"transactionOutputId\": \"123\",\n            \"UTXO\": {\n                \"amount\": 100.54,\n                \"id\": \"123\",\n                \"parentTransactionId\": \"123\",\n                \"recipientPublicKey\": \"038c89809bfe8d74791debd6b0770df945294f696974030cf49132086165203ad2\"\n            }\n        }\n    ],\n    \"outputs\": [\n        {\n            \"amount\": 50,\n            \"id\": \"aaa0f07e21572e0fdbd8c270f50a92b8917a93e5c32d18809c3a7ce58c43b1a5\",\n            \"parentTransactionId\": \"b8287ebaca1fc9e72704344b8c0b713e173d4301c2ffd67bd6005ce4449d24ef\",\n            \"recipientPublicKey\": \"03726c8526b5b8a49f262ced87cc04d6838f051d08aa54b1012dbd652ad92447ca\"\n        },\n        {\n            \"amount\": 50.539,\n            \"id\": \"9bda262fc69d85ced9a297981a65f0fdbbb72c195c7455ae09d79956b625e993\",\n            \"parentTransactionId\": \"b8287ebaca1fc9e72704344b8c0b713e173d4301c2ffd67bd6005ce4449d24ef\",\n            \"recipientPublicKey\": \"03726c8526b5b8a49f262ced87cc04d6838f051d08aa54b1012dbd652ad92447ca\"\n        }\n    ],\n    \"amount\": 50,\n    \"transactionFees\": 0.001,\n    \"signature\": \"5e17063610388d2bc9b8866a15f331ad4119adc3bc703476729fa867e7c9c9b52432f991d76577092d20f16335839343522e8be0c7f8fd7ac553333b04d7b672\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/transactions",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"transactions"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
