@@ -64,7 +64,7 @@ export class TransactionsService {
         transaction.senderPublicKey,
       )
     ) {
-      errorMsg = `Transaction ${transaction.transactionId} validation: There are UTXOs in the inputs that do not belong to the sender`;
+      errorMsg = `Transaction ${transaction.transactionId} validation: there are UTXOs in the inputs that do not belong to the sender`;
       console.error(errorMsg);
       throw new BadRequestException(errorMsg);
     }
