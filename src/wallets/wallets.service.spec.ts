@@ -67,7 +67,7 @@ describe('WalletsService', () => {
   it('should create a wallet', () => {
     const wallet = service.createWallet({ name: 'Wallet-1' });
     expect(wallet).toBeDefined();
-    expect(wallet.getName()).toBe('Wallet-1');
+    expect(wallet.name).toBe('Wallet-1');
     expect(service.getWallets().length).toBe(1);
   });
 
@@ -87,9 +87,9 @@ describe('WalletsService', () => {
 
   it('should get a wallet', () => {
     const wallet = service.createWallet({ name: 'Wallet-1' });
-    const walletDto = service.getWallet(wallet.getPublicKey());
+    const walletDto = service.getWallet(wallet.publicKey);
     expect(walletDto).toBeDefined();
-    expect(walletDto.publicKey).toBe(wallet.getPublicKey());
+    expect(walletDto.publicKey).toBe(wallet.publicKey);
   });
 
   it('should throw an error when wallet is not found', () => {
@@ -103,16 +103,16 @@ describe('WalletsService', () => {
   it('should create a transaction', () => {
     const wallet1 = service.createWallet({ name: 'Wallet-1' });
     const wallet2 = service.createWallet({ name: 'Wallet-2' });
-    const transaction = service.createTransaction(wallet1.getPublicKey(), {
-      recipientPublicKey: wallet2.getPublicKey(),
+    const transaction = service.createTransaction(wallet1.publicKey, {
+      recipientPublicKey: wallet2.publicKey,
       amount: 10,
     });
     const transactionFees = configService.get<number>(
       'blockchain.transactionFees',
     );
     expect(transaction).toBeDefined();
-    expect(transaction.senderPublicKey).toBe(wallet1.getPublicKey());
-    expect(transaction.recipientPublicKey).toBe(wallet2.getPublicKey());
+    expect(transaction.senderPublicKey).toBe(wallet1.publicKey);
+    expect(transaction.recipientPublicKey).toBe(wallet2.publicKey);
     expect(transaction.amount).toBe(10);
     expect(transaction.transactionFees).toBe(transactionFees);
     expect(transaction.inputs.length).toBe(1);
@@ -138,8 +138,8 @@ describe('WalletsService', () => {
   it('should throw as error when the sender and recipients as ther same', () => {
     const wallet1 = service.createWallet({ name: 'Wallet-1' });
     expect(() =>
-      service.createTransaction(wallet1.getPublicKey(), {
-        recipientPublicKey: wallet1.getPublicKey(),
+      service.createTransaction(wallet1.publicKey, {
+        recipientPublicKey: wallet1.publicKey,
         amount: 10,
       }),
     ).toThrow(
@@ -156,13 +156,13 @@ describe('WalletsService', () => {
       'blockchain.transactionFees',
     );
     expect(() =>
-      service.createTransaction(wallet1.getPublicKey(), {
-        recipientPublicKey: wallet2.getPublicKey(),
+      service.createTransaction(wallet1.publicKey, {
+        recipientPublicKey: wallet2.publicKey,
         amount: 100,
       }),
     ).toThrow(
       new BadRequestException(
-        `Insufficient balance for wallet '${wallet1.getPublicKey()}'!\n Balance is: 100. Required: ${100 + transactionFees} (amount + transaction fees)`,
+        `Insufficient balance for wallet '${wallet1.publicKey}'!\n Balance is: 100. Required: ${100 + transactionFees} (amount + transaction fees)`,
       ),
     );
   });
