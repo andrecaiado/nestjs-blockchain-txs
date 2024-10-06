@@ -39,9 +39,9 @@ npm install
 npm run start:dev
 ```
 
-## Try it out with the postman collection
+## Try it out with Swagger UI
 
-The Postman collection is available here: [NestJS Blockchain Txs.postman_collection.json](./docs/NestJS%20Blockchain%20Txs.postman_collection.json)
+The Swagger UI is available at: [http://localhost:3000/api](http://localhost:3000/api)
 
 To better understand how the API works, please refer to the following guide: [API guide](./docs/api-guide.md)
 
