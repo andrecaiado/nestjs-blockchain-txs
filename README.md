@@ -34,7 +34,12 @@ cd your-repository-name
 npm install
 ```
 
-4. Run the application
+4. Start RabbitMQ with Docker Compose
+```shell
+docker compose up -d
+```
+
+5. Run the application
 ```shell 
 npm run start:dev
 ```
