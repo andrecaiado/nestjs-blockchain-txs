@@ -1,4 +1,9 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   Transaction,
   TransactionInput,
@@ -13,6 +18,7 @@ import {
   TransactionOutputDto,
 } from './dto/transaction.dto';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
+import { WalletsService } from 'src/wallets/wallets.service';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -20,6 +26,7 @@ export class TransactionsService {
   constructor(
     @Inject() private readonly blockchainService: BlockchainService,
     @Inject() private readonly configService: ConfigService,
+    @Inject() private readonly walletsService: WalletsService,
   ) {}
 
   public submitTransaction(transactionDto: TransactionDto): string {
@@ -53,6 +60,24 @@ export class TransactionsService {
     console.log(
       `Transaction ${transaction.transactionId} validation: signature is valid`,
     );
+
+    // Validate the wallets
+    const senderWallet = this.walletsService.findWalletByPublicKey(
+      transaction.senderPublicKey,
+    );
+    if (senderWallet === null || senderWallet === undefined) {
+      errorMsg = `Transaction ${transaction.transactionId} validation: sender wallet not found`;
+      console.error(errorMsg);
+      throw new NotFoundException(errorMsg);
+    }
+    const recipientWallet = this.walletsService.findWalletByPublicKey(
+      transaction.recipientPublicKey,
+    );
+    if (recipientWallet === null || recipientWallet === undefined) {
+      errorMsg = `Transaction ${transaction.transactionId} validation: recipient wallet not found`;
+      console.error(errorMsg);
+      throw new NotFoundException(errorMsg);
+    }
 
     // Get the transaction inputs for subsequent validations
     const txUTXOs = transaction.inputs.map((input) => input.UTXO);

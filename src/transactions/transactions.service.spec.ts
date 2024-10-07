@@ -3,10 +3,12 @@ import { TransactionsService } from './transactions.service';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { ConfigService } from '@nestjs/config';
 import { BadRequestException } from '@nestjs/common';
+import { WalletsService } from 'src/wallets/wallets.service';
 
 describe('TransactionsService', () => {
   let service: TransactionsService;
   let blockchainService: BlockchainService;
+  let walletsService: WalletsService;
 
   const transactionDto = {
     transactionId:
@@ -58,6 +60,7 @@ describe('TransactionsService', () => {
       providers: [
         TransactionsService,
         BlockchainService,
+        WalletsService,
         {
           provide: ConfigService,
           useValue: {
@@ -75,6 +78,7 @@ describe('TransactionsService', () => {
 
     service = module.get<TransactionsService>(TransactionsService);
     blockchainService = module.get<BlockchainService>(BlockchainService);
+    walletsService = module.get<WalletsService>(WalletsService);
   });
 
   it('should be defined', () => {
@@ -97,6 +101,16 @@ describe('TransactionsService', () => {
     expect(() => service.submitTransaction(invalidTransactionDto)).toThrow(
       new BadRequestException(
         `Transaction ${invalidTransactionDto.transactionId} validation: signature is invalid`,
+      ),
+    );
+  });
+
+  it('should throw an error when the sender wallet is not found', () => {
+    jest.spyOn(walletsService, 'findWalletByPublicKey').mockReturnValue(null);
+
+    expect(() => service.submitTransaction(transactionDto)).toThrow(
+      new BadRequestException(
+        `Transaction ${transactionDto.transactionId} validation: sender wallet not found`,
       ),
     );
   });

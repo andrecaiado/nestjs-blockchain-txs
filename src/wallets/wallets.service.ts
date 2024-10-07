@@ -19,7 +19,11 @@ import * as ecc from 'tiny-secp256k1';
 import { createHash } from 'node:crypto';
 import { WalletDto } from './dto/wallet.dto';
 import { ConfigService } from '@nestjs/config';
-import { TransactionDto, TransactionInputDto, TransactionOutputDto } from 'src/transactions/dto/transaction.dto';
+import {
+  TransactionDto,
+  TransactionInputDto,
+  TransactionOutputDto,
+} from 'src/transactions/dto/transaction.dto';
 
 @Injectable()
 export class WalletsService {
@@ -61,7 +65,7 @@ export class WalletsService {
     return this.mapWalletToWalletDto(wallet);
   }
 
-  private findWalletByPublicKey(publicKey: string): Wallet {
+  public findWalletByPublicKey(publicKey: string): Wallet {
     return this.wallets.find((wallet) => wallet.getPublicKey() === publicKey);
   }
 
