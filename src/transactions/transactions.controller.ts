@@ -1,4 +1,11 @@
-import { Body, Controller, HttpStatus, Inject, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Inject,
+  Post,
+} from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { TransactionDto } from './dto/transaction.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -27,6 +34,7 @@ export class TransactionsController {
     description: `There are UTXOs that are not unspent.\t\nInputs are not enough to cover the outputs.`,
   })
   @Post()
+  @HttpCode(HttpStatus.OK)
   submitTransaction(@Body() transactionDto: TransactionDto): string {
     return this.transactionsService.submitTransaction(transactionDto);
   }
