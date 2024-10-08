@@ -8,28 +8,8 @@
       "write": ".*"
     }
   ],
-  "bindings": [
-    {
-      "arguments": {},
-      "destination": "global-tx-pool-queue",
-      "destination_type": "queue",
-      "routing_key": "global-tx-pool-routing-key",
-      "source": "global-tx-pool-exchange",
-      "vhost": "/"
-    }
-  ],
-  "queues": [
-    {
-      "arguments": {
-        "x-queue-type": "classic"
-      },
-      "auto_delete": false,
-      "durable": true,
-      "name": "global-tx-pool-queue",
-      "type": "classic",
-      "vhost": "/"
-    }
-  ],
+  "bindings": [],
+  "queues": [],
   "parameters": [],
   "policies": [],
   "rabbitmq_version": "3.13.7",
@@ -40,7 +20,7 @@
       "auto_delete": false,
       "durable": true,
       "name": "global-tx-pool-exchange",
-      "type": "direct",
+      "type": "fanout",
       "vhost": "/"
     }
   ],
@@ -61,7 +41,8 @@
       "limits": [],
       "metadata": {
         "description": "",
-        "tags": []
+        "tags": [],
+        "default_queue_type": "undefined"
       },
       "name": "/"
     }
