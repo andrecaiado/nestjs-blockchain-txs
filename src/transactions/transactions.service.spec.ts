@@ -4,11 +4,16 @@ import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { ConfigService } from '@nestjs/config';
 import { BadRequestException } from '@nestjs/common';
 import { WalletsService } from 'src/wallets/wallets.service';
+import { PoolsService } from 'src/pools/pools.service';
+import { Wallet } from 'src/wallets/wallet';
 
 describe('TransactionsService', () => {
   let service: TransactionsService;
   let blockchainService: BlockchainService;
   let walletsService: WalletsService;
+  let poolsServiceMock: Partial<PoolsService>;
+
+  const wallet1 = new Wallet('wallet-1');
 
   const transactionDto = {
     transactionId:
@@ -56,10 +61,16 @@ describe('TransactionsService', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
 
+    poolsServiceMock = {
+      publish: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TransactionsService,
+        { provide: PoolsService, useValue: poolsServiceMock },
         BlockchainService,
+        ConfigService,
         WalletsService,
         {
           provide: ConfigService,
@@ -85,8 +96,21 @@ describe('TransactionsService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should submit a transaction', () => {
-    const result = service.submitTransaction(transactionDto);
+  it('should submit a transaction', async () => {
+    jest
+      .spyOn(walletsService, 'findWalletByPublicKey')
+      .mockReturnValue(wallet1);
+
+    jest
+      .spyOn(poolsServiceMock, 'publish')
+      .mockImplementation((exchange, routingKey, data) => {
+        console.log(
+          `Mock publish called with exchange: ${exchange}, routingKey: ${routingKey}, data: ${data}`,
+        );
+        return Promise.resolve(); // Return a resolved promise
+      });
+
+    const result = await service.submitTransaction(transactionDto);
 
     expect(result).toBe(
       `Transaction ${transactionDto.transactionId}: submitted successfully.`,
@@ -116,6 +140,10 @@ describe('TransactionsService', () => {
   });
 
   it('should throw an error when the inputs UTXOs are not unspent', () => {
+    jest
+      .spyOn(walletsService, 'findWalletByPublicKey')
+      .mockReturnValue(wallet1);
+
     jest.spyOn(blockchainService, 'getWalletUTXOs').mockReturnValue([]);
 
     expect(() => service.submitTransaction(transactionDto)).toThrow(

@@ -12,4 +12,17 @@ export const config = (): ConfigProps => ({
       amount: parseFloat(process.env.GENESIS_BLOCK_AMOUNT) || 0,
     },
   },
+  rabbitmq: {
+    exchanges: [
+      {
+        name: process.env.RABBITMQ_EXCHANGE_NAME_GLOBAL_TX_POOL || 'blockchain',
+        type: process.env.RABBITMQ_EXCHANGE_TYPE_GLOBAL_TX_POOL || 'direct',
+        options: {
+          durable:
+            process.env.RABBITMQ_EXCHANGE_DURABLE_GLOBAL_TX_POOL === 'true',
+        },
+      },
+    ],
+    uri: process.env.RABBITMQ_URI || 'amqp://localhost',
+  },
 });

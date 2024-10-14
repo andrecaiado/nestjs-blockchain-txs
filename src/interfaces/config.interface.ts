@@ -10,6 +10,18 @@ interface BlockchainConfigProps {
   };
 }
 
+interface RabbitMQConfigProps {
+  exchanges: [
+    {
+      name: string;
+      type: string;
+      options?: Record<string, any>;
+    },
+  ];
+  uri: string;
+}
+
 export interface ConfigProps {
   blockchain: BlockchainConfigProps;
+  rabbitmq: RabbitMQConfigProps;
 }

@@ -20,6 +20,7 @@ import {
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { WalletsService } from 'src/wallets/wallets.service';
 import { ConfigService } from '@nestjs/config';
+import { PoolsService } from 'src/pools/pools.service';
 
 @Injectable()
 export class TransactionsService {
@@ -27,6 +28,7 @@ export class TransactionsService {
     @Inject() private readonly blockchainService: BlockchainService,
     @Inject() private readonly configService: ConfigService,
     @Inject() private readonly walletsService: WalletsService,
+    @Inject() private readonly poolsService: PoolsService,
   ) {}
 
   public submitTransaction(transactionDto: TransactionDto): string {
@@ -35,6 +37,8 @@ export class TransactionsService {
     this.validateTransaction(
       this.mapTransactionDtoToTransaction(transactionDto),
     );
+
+    this.poolsService.publish('global-tx-pool-exchange', null, transactionDto);
 
     const successMsg = `Transaction ${transactionDto.transactionId}: submitted successfully.`;
     console.log(successMsg);

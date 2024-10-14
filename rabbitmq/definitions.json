@@ -1,4 +1,14 @@
 {
+  "bindings": [
+    {
+      "arguments": {},
+      "destination": "miner-mempool-queue",
+      "destination_type": "queue",
+      "routing_key": "",
+      "source": "global-tx-pool-exchange",
+      "vhost": "/"
+    }
+  ],
   "permissions": [
     {
       "configure": ".*",
@@ -8,8 +18,18 @@
       "write": ".*"
     }
   ],
-  "bindings": [],
-  "queues": [],
+  "queues": [
+    {
+      "arguments": {
+        "x-queue-type": "undefined"
+      },
+      "auto_delete": false,
+      "durable": true,
+      "name": "miner-mempool-queue",
+      "type": "classic",
+      "vhost": "/"
+    }
+  ],
   "parameters": [],
   "policies": [],
   "rabbitmq_version": "3.13.7",
