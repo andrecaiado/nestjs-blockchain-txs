@@ -103,50 +103,57 @@ describe('TransactionsService', () => {
 
     jest
       .spyOn(poolsServiceMock, 'publish')
-      .mockImplementation((exchange, routingKey, data) => {
-        console.log(
-          `Mock publish called with exchange: ${exchange}, routingKey: ${routingKey}, data: ${data}`,
-        );
-        return Promise.resolve(); // Return a resolved promise
-      });
+      .mockImplementation(async () => true);
 
     const result = await service.submitTransaction(transactionDto);
 
-    expect(result).toBe(
-      `Transaction ${transactionDto.transactionId}: submitted successfully.`,
+    expect(result).toEqual({
+      message: `Transaction ${transactionDto.transactionId}: submitted successfully.`,
+    });
+
+    expect(poolsServiceMock.publish).toHaveBeenCalledWith(
+      'global-tx-pool-exchange',
+      null,
+      transactionDto,
     );
   });
 
-  it('should throw an error when the signature is invalid', () => {
+  it('should throw an error when the signature is invalid', async () => {
     const invalidTransactionDto = { ...transactionDto };
     invalidTransactionDto.signature =
       '5e17063610388d2bc9b8866a15f331ad4119adc3bc703476729fa867e7c9c9b52432f991d76577092d20f16335839343522e8be0c7f8fd7ac553333b04d7b672';
 
-    expect(() => service.submitTransaction(invalidTransactionDto)).toThrow(
+    await expect(
+      service.submitTransaction(invalidTransactionDto),
+    ).rejects.toThrow(
       new BadRequestException(
         `Transaction ${invalidTransactionDto.transactionId} validation: signature is invalid`,
       ),
     );
   });
 
-  it('should throw an error when the sender wallet is not found', () => {
+  it('should throw an error when the sender wallet is not found', async () => {
     jest.spyOn(walletsService, 'findWalletByPublicKey').mockReturnValue(null);
 
-    expect(() => service.submitTransaction(transactionDto)).toThrow(
+    await expect(() =>
+      service.submitTransaction(transactionDto),
+    ).rejects.toThrow(
       new BadRequestException(
         `Transaction ${transactionDto.transactionId} validation: sender wallet not found`,
       ),
     );
   });
 
-  it('should throw an error when the inputs UTXOs are not unspent', () => {
+  it('should throw an error when the inputs UTXOs are not unspent', async () => {
     jest
       .spyOn(walletsService, 'findWalletByPublicKey')
       .mockReturnValue(wallet1);
 
     jest.spyOn(blockchainService, 'getWalletUTXOs').mockReturnValue([]);
 
-    expect(() => service.submitTransaction(transactionDto)).toThrow(
+    await expect(() =>
+      service.submitTransaction(transactionDto),
+    ).rejects.toThrow(
       new BadRequestException(
         `Transaction ${transactionDto.transactionId}: there are UTXOs that are not unspent`,
       ),

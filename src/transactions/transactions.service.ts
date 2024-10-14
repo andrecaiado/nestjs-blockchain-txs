@@ -31,19 +31,31 @@ export class TransactionsService {
     @Inject() private readonly poolsService: PoolsService,
   ) {}
 
-  public submitTransaction(transactionDto: TransactionDto): string {
+  public async submitTransaction(transactionDto: TransactionDto): Promise<any> {
     console.log(`Transaction ${transactionDto.transactionId}: submiting...`);
 
     this.validateTransaction(
       this.mapTransactionDtoToTransaction(transactionDto),
     );
 
-    this.poolsService.publish('global-tx-pool-exchange', null, transactionDto);
+    const result = await this.poolsService.publish(
+      'global-tx-pool-exchange',
+      null,
+      transactionDto,
+    );
+
+    if (!result) {
+      const errorMsg = `Transaction ${transactionDto.transactionId}: failed to submit`;
+      console.error(errorMsg);
+      throw new BadRequestException(errorMsg);
+    }
 
     const successMsg = `Transaction ${transactionDto.transactionId}: submitted successfully.`;
     console.log(successMsg);
 
-    return successMsg;
+    return {
+      message: successMsg,
+    };
   }
 
   private validateTransaction(transaction: Transaction) {

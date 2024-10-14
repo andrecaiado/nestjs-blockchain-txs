@@ -35,7 +35,7 @@ export class TransactionsController {
   })
   @Post()
   @HttpCode(HttpStatus.OK)
-  submitTransaction(@Body() transactionDto: TransactionDto): string {
+  submitTransaction(@Body() transactionDto: TransactionDto): Promise<any> {
     return this.transactionsService.submitTransaction(transactionDto);
   }
 }
