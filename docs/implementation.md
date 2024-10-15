@@ -80,7 +80,7 @@ export class TransactionInput {
 
 An input always refers to a previous output. In order to be added in a transaction, that output must be unspent, that's why it is refered as a `UTXO (Unspent Transaction Output)`.
 
-The [TransactionService](../src/transactions/transactions.service.ts) `submitTransaction` function processes the transaction submitted to the `/transactions/` endpoint.
+The [TransactionService](../src/transactions/transactions.service.ts) `submitTransaction` function processes the transaction submitted (POST) to the `/transactions` endpoint.
 
 Before publishing the transaction to the `global-tx-pool-exchange`, it validates the transaction for the following:
 - Check if the transaction signature is valid (using the sender public key).
