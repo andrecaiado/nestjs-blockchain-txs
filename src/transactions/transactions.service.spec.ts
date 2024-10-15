@@ -12,6 +12,7 @@ describe('TransactionsService', () => {
   let blockchainService: BlockchainService;
   let walletsService: WalletsService;
   let poolsServiceMock: Partial<PoolsService>;
+  let configService: Partial<ConfigService>;
 
   const wallet1 = new Wallet('wallet-1');
 
@@ -90,6 +91,7 @@ describe('TransactionsService', () => {
     service = module.get<TransactionsService>(TransactionsService);
     blockchainService = module.get<BlockchainService>(BlockchainService);
     walletsService = module.get<WalletsService>(WalletsService);
+    configService = module.get<ConfigService>(ConfigService);
   });
 
   it('should be defined', () => {
@@ -107,15 +109,15 @@ describe('TransactionsService', () => {
 
     const result = await service.submitTransaction(transactionDto);
 
-    expect(result).toEqual({
-      message: `Transaction ${transactionDto.transactionId}: submitted successfully.`,
-    });
-
     expect(poolsServiceMock.publish).toHaveBeenCalledWith(
       'global-tx-pool-exchange',
       null,
       transactionDto,
     );
+
+    expect(result).toEqual({
+      message: `Transaction ${transactionDto.transactionId}: submitted successfully.`,
+    });
   });
 
   it('should throw an error when the signature is invalid', async () => {
@@ -156,6 +158,31 @@ describe('TransactionsService', () => {
     ).rejects.toThrow(
       new BadRequestException(
         `Transaction ${transactionDto.transactionId}: there are UTXOs that are not unspent`,
+      ),
+    );
+  });
+
+  it('should throw an error when the inputs are not enough to cover the outputs', async () => {
+    jest
+      .spyOn(walletsService, 'findWalletByPublicKey')
+      .mockReturnValue(wallet1);
+
+    jest
+      .spyOn(blockchainService, 'getWalletUTXOs')
+      .mockReturnValue([transactionDto.inputs[0].UTXO]);
+
+    jest.spyOn(configService, 'get').mockImplementation((key: string) => {
+      if (key === 'blockchain.transactionFees') {
+        return 1000;
+      }
+      return null;
+    });
+
+    await expect(() =>
+      service.submitTransaction(transactionDto),
+    ).rejects.toThrow(
+      new BadRequestException(
+        `Transaction ${transactionDto.transactionId}: inputs are not enough to cover the outputs`,
       ),
     );
   });
