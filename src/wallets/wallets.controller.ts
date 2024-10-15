@@ -10,10 +10,8 @@ import {
 import { WalletsService } from './wallets.service';
 import { CreateWalletDto } from './dto/create-wallet.dto';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { Transaction } from 'src/transactions/transaction';
 import { WalletDto } from './dto/wallet.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Wallet } from './wallet';
 import { TransactionDto } from 'src/transactions/dto/transaction.dto';
 
 @ApiTags('Wallets')

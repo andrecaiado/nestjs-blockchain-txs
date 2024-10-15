@@ -63,7 +63,7 @@ The application has a wallet service that is responsible for:
 
 ## Transaction
 
-The transaction holds the information about the funds that are being transferred from one wallet to another.
+The transaction holds the information about the funds that are transferred from one wallet to another.
 
 The information is the following:
 - `id`: The transaction id is a hash of the transaction data (sender, recipient, amount and the timestamp to prevent duplicate transaction ids).
@@ -77,12 +77,12 @@ The information is the following:
 
 The application has a transaction service is responsible for:
 - Validate a transaction before adding it to the global transaction pool. The validation includes:
-  - VALIDATE THIS!!!!
-  - Check if the sum of the inputs is greater than the sum of the outputs.
-  - Check if the signature is valid.
+  - Check if the transaction signature is valid (using the sender public key).
+  - Validate the sender and recipients wallets exist.
+  - Validate if the inputs belong to the sender.
   - Check if the inputs (UTXOs) are not already spent.
+  - Check if inputs are enough to cover the outputs.
 - Submit a transaction to the global transaction pool.
-- ADD MORE HERE!!!!
 
 ### Inputs and outputs
 
