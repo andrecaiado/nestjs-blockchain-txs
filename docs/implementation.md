@@ -6,7 +6,9 @@ In this section, there will be a brief explanation of how the concepts were impl
 - [Dependencies](#dependencies)
 - [Wallets](#wallets)
 - [Transactions](#transactions)
-- [Global transaction pool exchange](#global-transaction-pool-exchange)
+- [Pools](#pools)
+  - [Global transaction pool exchange](#global-transaction-pool-exchange)
+- [RabbitMQ](#rabbitmq)
 
 # Dependencies
 
@@ -89,10 +91,63 @@ Before publishing the transaction to the `global-tx-pool-exchange`, it validates
 - Check if the inputs (UTXOs) are not already spent.
 - Check if inputs are enough to cover the outputs.
 
-# Global transaction pool exchange
+# Pools
+
+All pools are implemented as RabbitMQ exchanges and queues. The pools are:
+- Global transaction pool
+- Miner mempool
+- Block announcement pool
+- Miner pool for announced blocks
+
+## Global transaction pool exchange
 
 The `global-tx-pool-exchange` is a RabbitMQ exchange of type `fanout`. This means that the messages published to the exchange will be routed to the all the queues bounded to the exchange.
 
 In this project, the only queue bounded to the exchange is the `miner-mempool-queue`.
 
 The `publish` function to the exchange is implemented in the [PoolsService](../src/pools/pools.service.ts).
+
+# RabbitMQ
+
+The RabbitMQ external service is defined in the [docker-compose.yaml](../docker-compose.yaml) file. 
+
+There are default configurations configured in the [definitions.json](../rabbitmq/definitions.json) file. The configurations are:
+- A user `admin` with password `admin` and tags `administrator`.
+- A virtual host `/` with the user `admin` having all permissions.
+- An exchange `global-tx-pool-exchange` of type `fanout`.
+- A queue `miner-mempool-queue` bounded to the `global-tx-pool-exchange`.
+
+These configurations are applied when the RabbitMQ container is started because the files `rabbitmq.conf` and `definitions.json` are being mounted to a specific directory in the `rabbitmq` container. The files mounting is defined in the `docker-compose.yaml` file.
+ 
+```yaml
+services:
+  rabbitmq:
+    ...
+    volumes:
+      - './rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro'
+      - './rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro'
+...
+```
+
+The RabbitMQ connection is established in the [PoolsModule](../src/pools/pools.module.ts) file. The configuration is read from the ConfigService.
+
+There is a conditional configuration for the RabbitMQ connection, where the connection is not established when the environment is `test`.
+
+```typescript
+@Module({
+  imports: [
+    RabbitMQModule.forRootAsync(
+      RabbitMQModule,
+      process.env.NODE_ENV !== 'test'
+        ? {
+            imports: [ConfigModule],
+            useFactory: (config: ConfigService) => config.get('rabbitmq'),
+            inject: [ConfigService],
+          }
+        : undefined,
+    ),
+  ],
+  ...
+})
+export class PoolsModule {}
+```
