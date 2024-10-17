@@ -9,6 +9,7 @@ In this section, there will be a brief explanation of how the concepts were impl
 - [Pools](#pools)
   - [Global transaction pool exchange](#global-transaction-pool-exchange)
 - [RabbitMQ](#rabbitmq)
+- [Configuration Service](#configuration-service)
 
 # Dependencies
 
@@ -16,6 +17,7 @@ Beside the NestJS dependencies, the following additional dependencies were used:
 
 - [coinkey](https://www.npmjs.com/package/coinkey): Used to generate the public and private keys for the wallets.
 - [ecpair](https://www.npmjs.com/package/ecpair) and [tiny-secp256k1](https://www.npmjs.com/package/tiny-secp256k1): Used to sign the transactions and verify the signatures.
+- [@golevelup/nestjs-rabbitmq](https://www.npmjs.com/package/@golevelup/nestjs-rabbitmq): Used to establish the RabbitMQ connection and publish and consume messages to and from the RabbitMQ exchanges and queues.
 
 # Wallets
 
@@ -129,7 +131,7 @@ services:
 ...
 ```
 
-The RabbitMQ connection is established in the [PoolsModule](../src/pools/pools.module.ts) file. The configuration is read from the ConfigService.
+The RabbitMQ connection is established in the [PoolsModule](../src/pools/pools.module.ts) file usinf the `@golevelup/nestjs-rabbitmq` library. The configuration properties are read from the ConfigService.
 
 There is a conditional configuration for the RabbitMQ connection, where the connection is not established when the environment is `test`.
 
@@ -151,3 +153,5 @@ There is a conditional configuration for the RabbitMQ connection, where the conn
 })
 export class PoolsModule {}
 ```
+
+# Configuration Service
