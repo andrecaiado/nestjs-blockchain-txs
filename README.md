@@ -55,4 +55,4 @@ To better understand how the API works, please refer to the following guide: [AP
 To understand how this project was conceptualized and implemented, please refer to the following sections.
 
 - [Conceptualization](./docs/conceptualization.md)
-- [Implementation](./docs/implementation)
+- [Implementation](./docs/implementation.md)
