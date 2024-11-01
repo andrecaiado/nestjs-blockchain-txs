@@ -183,7 +183,7 @@ export class TransactionsService {
     return keyPair.verify(hash, Buffer.from(signature, 'hex'));
   }
 
-  private verifyUTXOsAreUnspent(
+  public verifyUTXOsAreUnspent(
     txUTXOs: TransactionOutput[],
     walletUTXOs: TransactionOutput[],
   ): boolean {

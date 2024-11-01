@@ -5,6 +5,7 @@ import { TransactionsModule } from './transactions/transactions.module';
 import { ConfigModule } from '@nestjs/config';
 import { config } from './config/config';
 import { PoolsModule } from './pools/pools.module';
+import { MiningModule } from './mining/mining.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { PoolsModule } from './pools/pools.module';
       load: [config],
     }),
     PoolsModule,
+    MiningModule,
   ],
 })
 export class AppModule {}
