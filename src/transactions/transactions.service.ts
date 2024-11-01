@@ -12,15 +12,12 @@ import {
 import ECPairFactory from 'ecpair';
 import * as ecc from 'tiny-secp256k1';
 import { createHash } from 'node:crypto';
-import {
-  TransactionDto,
-  TransactionInputDto,
-  TransactionOutputDto,
-} from './dto/transaction.dto';
+import { TransactionDto } from './dto/transaction.dto';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { WalletsService } from 'src/wallets/wallets.service';
 import { ConfigService } from '@nestjs/config';
 import { PoolsService } from 'src/pools/pools.service';
+import { TransactionDtoMapper } from './dto/mappers/transaction.mapper';
 
 @Injectable()
 export class TransactionsService {
@@ -35,7 +32,7 @@ export class TransactionsService {
     console.log(`Transaction ${transactionDto.transactionId}: submiting...`);
 
     this.validateTransaction(
-      this.mapTransactionDtoToTransaction(transactionDto),
+      TransactionDtoMapper.toTransaction(transactionDto),
     );
 
     const result = await this.poolsService.publish(
@@ -198,49 +195,5 @@ export class TransactionsService {
   private getWalletUTXOs(publicKey: string): TransactionOutput[] {
     // console.log(`Transaction validation ${publicKey}: fetching UTXOs...`);
     return this.blockchainService.getWalletUTXOs(publicKey);
-  }
-
-  private mapTransactionDtoToTransaction(
-    transactionDto: TransactionDto,
-  ): Transaction {
-    const transaction = new Transaction();
-    transaction.transactionId = transactionDto.transactionId;
-    transaction.senderPublicKey = transactionDto.senderPublicKey;
-    transaction.recipientPublicKey = transactionDto.recipientPublicKey;
-    transaction.amount = transactionDto.amount;
-    transaction.signature = transactionDto.signature;
-    transaction.inputs = transactionDto.inputs.map((input) =>
-      this.mapTransactionInputDtoToTransactionInput(input),
-    );
-    transaction.outputs = transactionDto.outputs.map((output) =>
-      this.mapTransactionOutputDtoToTransactionOutput(output),
-    );
-    transaction.transactionFees = transactionDto.transactionFees;
-    return transaction;
-  }
-
-  private mapTransactionInputDtoToTransactionInput(
-    transactionInputDto: TransactionInputDto,
-  ): TransactionInput {
-    const transactionInput = new TransactionInput();
-    transactionInput.transactionOutputId =
-      transactionInputDto.transactionOutputId;
-    transactionInput.UTXO = this.mapTransactionOutputDtoToTransactionOutput(
-      transactionInputDto.UTXO,
-    );
-    return transactionInput;
-  }
-
-  private mapTransactionOutputDtoToTransactionOutput(
-    transactionOutputDto: TransactionOutputDto,
-  ): TransactionOutput {
-    const transactionOutput = new TransactionOutput();
-    transactionOutput.recipientPublicKey =
-      transactionOutputDto.recipientPublicKey;
-    transactionOutput.amount = transactionOutputDto.amount;
-    transactionOutput.parentTransactionId =
-      transactionOutputDto.parentTransactionId;
-    transactionOutput.id = transactionOutputDto.id;
-    return transactionOutput;
   }
 }

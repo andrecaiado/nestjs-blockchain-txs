@@ -19,11 +19,8 @@ import * as ecc from 'tiny-secp256k1';
 import { createHash } from 'node:crypto';
 import { WalletDto } from './dto/wallet.dto';
 import { ConfigService } from '@nestjs/config';
-import {
-  TransactionDto,
-  TransactionInputDto,
-  TransactionOutputDto,
-} from 'src/transactions/dto/transaction.dto';
+import { TransactionDto } from 'src/transactions/dto/transaction.dto';
+import { WalletMapper } from './mappers/wallet.mapper';
 
 @Injectable()
 export class WalletsService {
@@ -48,11 +45,20 @@ export class WalletsService {
     this.validateWalletCreation(createWalletDto);
     const wallet = new Wallet(createWalletDto.name);
     this.wallets.push(wallet);
-    return this.mapWalletToWalletDto(wallet);
+
+    const walletDto = WalletMapper.toWalletDto(wallet);
+    walletDto.balance = this.getWalletBalance(wallet.getPublicKey());
+
+    return walletDto;
   }
 
   public getWallets(): WalletDto[] {
-    return this.wallets.map((wallet) => this.mapWalletToWalletDto(wallet));
+    return this.wallets.map((wallet) => {
+      const walletDto = WalletMapper.toWalletDto(wallet);
+      walletDto.balance = this.getWalletBalance(wallet.getPublicKey());
+
+      return walletDto;
+    });
   }
 
   public getWallet(publicKey: string): WalletDto {
@@ -62,7 +68,10 @@ export class WalletsService {
         `Wallet with public address '${publicKey}' not found!`,
       );
     }
-    return this.mapWalletToWalletDto(wallet);
+    const walletDto = WalletMapper.toWalletDto(wallet);
+    walletDto.balance = this.getWalletBalance(wallet.getPublicKey());
+
+    return walletDto;
   }
 
   public findWalletByPublicKey(publicKey: string): Wallet {
@@ -132,7 +141,7 @@ export class WalletsService {
       `Wallet ${senderPublicKey}: transaction ID is '${transaction.transactionId}'`,
     );
 
-    return this.mapTransactionToTransactionDto(transaction);
+    return WalletMapper.toTransactionDto(transaction);
   }
 
   private createTransactionId(
@@ -273,59 +282,8 @@ export class WalletsService {
     return this.blockchainService.getWalletUTXOs(publicKey);
   }
 
-  private mapWalletToWalletDto(wallet: Wallet): WalletDto {
-    const walletDto = new WalletDto();
-    walletDto.name = wallet.getName();
-    walletDto.publicKey = wallet.getPublicKey();
-    walletDto.balance = this.getWalletBalance(wallet.getPublicKey());
-
-    return walletDto;
-  }
-
   private getWalletBalance(publicKey: string): number {
     const UTXOs = this.getWalletUTXOs(publicKey);
     return this.calculateBalanceFromUTXOS(UTXOs);
-  }
-
-  private mapTransactionToTransactionDto(transaction: Transaction) {
-    const transactionDto = new TransactionDto();
-    transactionDto.transactionId = transaction.transactionId;
-    transactionDto.amount = transaction.amount;
-    transactionDto.recipientPublicKey = transaction.recipientPublicKey;
-    transactionDto.senderPublicKey = transaction.senderPublicKey;
-    transactionDto.signature = transaction.signature;
-    transactionDto.transactionFees = transaction.transactionFees;
-    transactionDto.inputs = transaction.inputs.map((input) => {
-      return this.mapTransactionInputToTransactionInputDto(input);
-    });
-    transactionDto.outputs = transaction.outputs.map((output) => {
-      return this.mapTransactionOutputToTransactionOutputDto(output);
-    });
-    return transactionDto;
-  }
-
-  private mapTransactionOutputToTransactionOutputDto(
-    transactionOutput: TransactionOutput,
-  ) {
-    const transactionOutputDto = new TransactionOutputDto();
-    transactionOutputDto.amount = transactionOutput.amount;
-    transactionOutputDto.id = transactionOutput.id;
-    transactionOutputDto.parentTransactionId =
-      transactionOutput.parentTransactionId;
-    transactionOutputDto.recipientPublicKey =
-      transactionOutput.recipientPublicKey;
-    return transactionOutputDto;
-  }
-
-  private mapTransactionInputToTransactionInputDto(
-    transactionInput: TransactionInput,
-  ) {
-    const transactionInputDto = new TransactionInputDto();
-    transactionInputDto.transactionOutputId =
-      transactionInput.transactionOutputId;
-    transactionInputDto.UTXO = this.mapTransactionOutputToTransactionOutputDto(
-      transactionInput.UTXO,
-    );
-    return transactionInputDto;
   }
 }
