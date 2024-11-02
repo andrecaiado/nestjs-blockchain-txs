@@ -1,6 +1,7 @@
 import { RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
 import { Inject, Injectable } from '@nestjs/common';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
+import { Block } from 'src/blocks/block';
 import { TransactionDtoMapper } from 'src/transactions/dto/mappers/transaction.mapper';
 import { TransactionDto } from 'src/transactions/dto/transaction.dto';
 import { Transaction } from 'src/transactions/transaction';
@@ -11,12 +12,13 @@ export class MiningService {
   constructor(
     @Inject() private blockchainService: BlockchainService,
     @Inject() private transactionsService: TransactionsService,
+    //@Inject() private configService: ConfigService,
   ) {}
 
   @RabbitSubscribe({
     queue: 'miner-mempool-queue',
   })
-  public async mempoolTxsHandler(msg: object) {
+  public async mempoolTxsHandler(msg: object): Promise<Block> {
     console.log(
       `Mining service: received new transaction ${JSON.stringify(msg)}`,
     );
@@ -29,7 +31,7 @@ export class MiningService {
       console.log(
         'Mining service: error mapping message to transaction, transaction discarded.',
       );
-      return error;
+      return;
     }
 
     // Validate transaction: are UTXOs still unspent?
@@ -39,6 +41,8 @@ export class MiningService {
       );
       return;
     }
+
+    return new Block();
   }
 
   private validateTransaction(transaction: Transaction): boolean {

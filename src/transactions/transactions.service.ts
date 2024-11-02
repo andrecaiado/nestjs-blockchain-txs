@@ -36,7 +36,7 @@ export class TransactionsService {
     );
 
     const result = await this.poolsService.publish(
-      'global-tx-pool-exchange',
+      this.configService.get<string>('rabbitmq.exchanges[0].name'),
       null,
       transactionDto,
     );

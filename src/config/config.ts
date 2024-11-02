@@ -23,6 +23,11 @@ export const config = (): ConfigProps => ({
         },
       },
     ],
+    queues: [
+      {
+        name: 'miner-mempool-queue',
+      },
+    ],
     uri: process.env.RABBITMQ_URI || 'amqp://localhost',
   },
 });

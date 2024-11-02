@@ -92,6 +92,8 @@ Basically, an input have the following attributes:
 - A reference to the output
 - The transaction output (that became an UTXO because it remained unspent)
 
+For simplicity, we will add all the senders UTXOs as inputs in each transaction so we don't have filter UTXOs based on the amount of funds the sender is sending.
+
 The outputs are the destination of the funds to be transfered (`"where the money os going"`). 
 
 Basically, an output have the following attributes:
@@ -112,8 +114,6 @@ There will be two validations for the transaction:
 ## Block
 
 A block is basically a collection of transactions. Multiple transactions can be added to a block so that the blockchain is smaller and the mining process is more efficient.
-
-For simplicity, we will add all the senders UTXOs as inputs in each transaction so we don't have filter UTXOs based on the amount of funds the sender is sending.
 
 A block will hold the following information:
 - One or multiple transactions (including the special `coinbase transaction`).

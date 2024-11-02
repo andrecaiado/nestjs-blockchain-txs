@@ -18,6 +18,11 @@ interface RabbitMQConfigProps {
       options?: Record<string, any>;
     },
   ];
+  queues: [
+    {
+      name: string;
+    },
+  ];
   uri: string;
 }
 

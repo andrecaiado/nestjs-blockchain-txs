@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { config } from './config/config';
 import { PoolsModule } from './pools/pools.module';
 import { MiningModule } from './mining/mining.module';
+import { BlocksModule } from './blocks/blocks.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { MiningModule } from './mining/mining.module';
     }),
     PoolsModule,
     MiningModule,
+    BlocksModule,
   ],
 })
 export class AppModule {}
