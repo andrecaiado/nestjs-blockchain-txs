@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Blockchain } from './blockchain';
 import { TransactionOutput } from 'src/transactions/transaction';
+import { Block } from 'src/blocks/block';
 
 @Injectable()
 export class BlockchainService {
@@ -20,5 +21,13 @@ export class BlockchainService {
     txo.parentTransactionId = '123';
     txo.recipientPublicKey = walletPublicKey;
     return [txo];
+  }
+
+  addGenesisBlock(genesisBlock: Block) {
+    console.log(
+      'Blockchain service: Adding genesis block to the blockchain...',
+    );
+    this.blockchain.getChain().push(genesisBlock);
+    console.log('Blockchain service: Genesis block added to the blockchain.');
   }
 }

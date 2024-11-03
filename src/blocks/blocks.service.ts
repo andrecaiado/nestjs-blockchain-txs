@@ -7,18 +7,19 @@ import * as ecc from 'tiny-secp256k1';
 import { createHash } from 'node:crypto';
 import { WalletsService } from 'src/wallets/wallets.service';
 import { Wallet } from 'src/wallets/wallet';
+import { BlockchainService } from 'src/blockchain/blockchain.service';
 
 @Injectable()
 export class BlocksService {
   constructor(
     @Inject() private configService: ConfigService,
     @Inject() private walletsService: WalletsService,
+    @Inject() private blockchainService: BlockchainService,
   ) {
     console.log('Blocks service: Creating genesis block...');
-    this.createGenesisBlock();
-    console.log(
-      'Blocks service: Done. The genesis block was created and added to the blockchain!',
-    );
+    const genesisBlock = this.createGenesisBlock();
+    console.log('Blocks service: Done. The genesis block was created!');
+    this.blockchainService.addGenesisBlock(genesisBlock);
   }
 
   public createGenesisBlock() {

@@ -1,8 +1,14 @@
+import { Block } from 'src/blocks/block';
+
 export class Blockchain {
-  //private chain: Block[] = [];
+  private chain: Block[] = [];
 
   constructor() {
     //this.createGenesisBlock();
+  }
+
+  public getChain() {
+    return this.chain;
   }
 
   // public createGenesisBlock(): void {
