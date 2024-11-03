@@ -25,20 +25,33 @@ import { WalletMapper } from './mappers/wallet.mapper';
 @Injectable()
 export class WalletsService {
   private wallets: Wallet[] = [];
+  private coinbaseWallet: Wallet;
 
   constructor(
     @Inject() private readonly blockchainService: BlockchainService,
     @Inject() private readonly configService: ConfigService,
   ) {
+    this.createCoinbaseWallet();
     this.createDefaultWallets();
   }
 
   private createDefaultWallets(): void {
-    this.wallets = [];
-    console.log('Creating default wallets...');
+    console.log('Wallet service: Creating first wallets...');
     this.createWallet({ name: 'Wallet-1' });
     this.createWallet({ name: 'Wallet-2' });
-    console.log(`Done. Created ${this.wallets.length} wallets!`);
+    console.log(
+      `Wallet service: Done. Created ${this.wallets.length} wallets!`,
+    );
+  }
+
+  private createCoinbaseWallet() {
+    console.log('Wallet service: Creating Coinbase wallet...');
+    this.coinbaseWallet = new Wallet('CoinbaseWallet');
+    console.log('Wallet service: Done. The Coinbase wallet was created!');
+  }
+
+  public getCoinbaseWallet() {
+    return this.coinbaseWallet;
   }
 
   public createWallet(createWalletDto: CreateWalletDto): WalletDto {
@@ -59,6 +72,10 @@ export class WalletsService {
 
       return walletDto;
     });
+  }
+
+  public getRandomWallet(): Wallet {
+    return this.wallets[Math.floor(Math.random() * Array.length)];
   }
 
   public getWallet(publicKey: string): WalletDto {
@@ -138,7 +155,7 @@ export class WalletsService {
     );
 
     console.log(
-      `Wallet ${senderPublicKey}: transaction ID is '${transaction.transactionId}'`,
+      `Wallet service: Wallet ${senderPublicKey}: transaction ID is '${transaction.transactionId}'`,
     );
 
     return WalletMapper.toTransactionDto(transaction);
@@ -278,7 +295,7 @@ export class WalletsService {
   }
 
   private getWalletUTXOs(publicKey: string): TransactionOutput[] {
-    console.log(`Wallet ${publicKey}: fetching UTXOs...`);
+    console.log(`Wallet service: Wallet ${publicKey}: fetching UTXOs...`);
     return this.blockchainService.getWalletUTXOs(publicKey);
   }
 

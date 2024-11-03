@@ -7,9 +7,9 @@ export class BlockchainService {
   private blockchain: Blockchain;
 
   constructor() {
-    console.log('Creating blockchain...');
+    console.log('Blockchain service: Creating blockchain...');
     this.blockchain = new Blockchain();
-    console.log('Blockchain created!');
+    console.log('Blockchain service: Blockchain created!');
   }
 
   public getWalletUTXOs(walletPublicKey: string): TransactionOutput[] {

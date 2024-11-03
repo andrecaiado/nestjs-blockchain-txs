@@ -42,7 +42,7 @@ export class MiningService {
       return;
     }
 
-    return new Block();
+    return null;
   }
 
   private validateTransaction(transaction: Transaction): boolean {
