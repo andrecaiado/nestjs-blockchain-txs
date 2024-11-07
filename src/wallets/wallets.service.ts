@@ -60,7 +60,7 @@ export class WalletsService {
     this.wallets.push(wallet);
 
     const walletDto = WalletMapper.toWalletDto(wallet);
-    walletDto.balance = this.getWalletBalance(wallet.getPublicKey());
+    walletDto.balance = this.getWalletBalance(wallet.publicKey);
 
     return walletDto;
   }
@@ -68,7 +68,7 @@ export class WalletsService {
   public getWallets(): WalletDto[] {
     return this.wallets.map((wallet) => {
       const walletDto = WalletMapper.toWalletDto(wallet);
-      walletDto.balance = this.getWalletBalance(wallet.getPublicKey());
+      walletDto.balance = this.getWalletBalance(wallet.publicKey);
 
       return walletDto;
     });
@@ -86,13 +86,13 @@ export class WalletsService {
       );
     }
     const walletDto = WalletMapper.toWalletDto(wallet);
-    walletDto.balance = this.getWalletBalance(wallet.getPublicKey());
+    walletDto.balance = this.getWalletBalance(wallet.publicKey);
 
     return walletDto;
   }
 
   public findWalletByPublicKey(publicKey: string): Wallet {
-    return this.wallets.find((wallet) => wallet.getPublicKey() === publicKey);
+    return this.wallets.find((wallet) => wallet.publicKey === publicKey);
   }
 
   private validateWalletCreation(createWalletDto: CreateWalletDto) {
@@ -100,7 +100,7 @@ export class WalletsService {
   }
 
   private validateWalletName(name: string) {
-    const wallet = this.wallets.find((wallet) => wallet.getName() === name);
+    const wallet = this.wallets.find((wallet) => wallet.name === name);
     if (wallet !== null && wallet !== undefined) {
       throw new ConflictException(`Wallet with name '${name}' already exists!`);
     }
@@ -151,7 +151,7 @@ export class WalletsService {
 
     transaction.signature = this.generateSignature(
       transaction.toString(),
-      senderWallet.getPrivateKey(),
+      senderWallet.privateKey,
     );
 
     console.log(

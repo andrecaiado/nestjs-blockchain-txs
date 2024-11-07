@@ -18,16 +18,37 @@ describe('BlockchainService', () => {
   });
 
   it('should add a genesis block', () => {
-    const genesisBlock = new Block([], '0', '0', 0, new Date());
+    const genesisBlock: Block = {
+      transactions: [],
+      hash: '0',
+      previousHash: '0',
+      nonce: 0,
+      timestamp: new Date(),
+    };
     service.addGenesisBlock(genesisBlock);
+
     expect(service.getLastBlock()).toEqual(genesisBlock);
   });
 
   it('should get the last block', () => {
-    const genesisBlock = new Block([], '0', '0', 0, new Date());
+    const genesisBlock: Block = {
+      transactions: [],
+      hash: '0',
+      previousHash: '0',
+      nonce: 0,
+      timestamp: new Date(),
+    };
     service.addBlock(genesisBlock);
-    const lastBlock = new Block([], '1', '0', 1, new Date());
+
+    const lastBlock: Block = {
+      transactions: [],
+      hash: '1',
+      previousHash: '0',
+      nonce: 1,
+      timestamp: new Date(),
+    };
     service.addBlock(lastBlock);
+
     expect(service.getLastBlock()).toEqual(lastBlock);
   });
 });

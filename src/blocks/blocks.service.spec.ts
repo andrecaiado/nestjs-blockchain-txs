@@ -87,8 +87,8 @@ describe('BlocksService', () => {
 
     const { senderPublicKey, recipientPublicKey, amount } =
       genesisBlock.transactions[0];
-    expect(senderPublicKey).toBe(coinbaseWallet.getPublicKey());
-    expect(recipientPublicKey).toBe(recipientWallet.getPublicKey());
+    expect(senderPublicKey).toBe(coinbaseWallet.publicKey);
+    expect(recipientPublicKey).toBe(recipientWallet.publicKey);
     expect(amount).toBe(1000);
   });
 
@@ -149,14 +149,14 @@ describe('BlocksService', () => {
       .spyOn(transactionsServiceMock, 'createCoinbaseTransaction')
       .mockReturnValue({
         transactionId: '0',
-        senderPublicKey: coinbaseWallet.getPublicKey(),
-        recipientPublicKey: recipientWallet.getPublicKey(),
+        senderPublicKey: coinbaseWallet.publicKey,
+        recipientPublicKey: recipientWallet.publicKey,
         amount: 50,
         signature: '0',
         inputs: [],
         outputs: [
           {
-            recipientPublicKey: recipientWallet.getPublicKey(),
+            recipientPublicKey: recipientWallet.publicKey,
             amount: 50,
             parentTransactionId: '0',
             id: '0',
@@ -175,10 +175,10 @@ describe('BlocksService', () => {
     expect(block.nonce).toBeNull();
     expect(block.transactions[0].transactionId).toBe('0');
     expect(block.transactions[0].senderPublicKey).toBe(
-      coinbaseWallet.getPublicKey(),
+      coinbaseWallet.publicKey,
     );
     expect(block.transactions[0].recipientPublicKey).toBe(
-      recipientWallet.getPublicKey(),
+      recipientWallet.publicKey,
     );
     expect(block.transactions[1].transactionId).toBe(
       'ece5ebdec6341c1d06fe134f9f546e9455d5fe1a813b4f68d5eb42cd3eb0b706',

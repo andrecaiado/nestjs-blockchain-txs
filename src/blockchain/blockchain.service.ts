@@ -27,17 +27,17 @@ export class BlockchainService {
     console.log(
       'Blockchain service: Adding genesis block to the blockchain...',
     );
-    this.blockchain.getChain().push(genesisBlock);
+    this.blockchain.chain.push(genesisBlock);
     console.log('Blockchain service: Genesis block added to the blockchain.');
   }
 
   public getLastBlock() {
-    return this.blockchain.getChain()[this.blockchain.getChain().length - 1];
+    return this.blockchain.chain[this.blockchain.chain.length - 1];
   }
 
   public addBlock(block: Block) {
     console.log('Blockchain service: Adding block to the blockchain...');
-    this.blockchain.getChain().push(block);
+    this.blockchain.chain.push(block);
     console.log('Blockchain service: Block added to the blockchain.');
   }
 }

@@ -38,16 +38,16 @@ export class BlocksService {
 
     const transaction = this.createGenesisTransaction(
       coinbaseWallet,
-      recipientWallet.getPublicKey(),
+      recipientWallet.publicKey,
       amount,
     );
-    const genesisBlock: Block = new Block(
-      [transaction],
-      hash,
-      '0',
-      nonce,
-      new Date(),
-    );
+    const genesisBlock: Block = {
+      transactions: [transaction],
+      hash: hash,
+      previousHash: '0',
+      nonce: nonce,
+      timestamp: new Date(),
+    };
 
     return genesisBlock;
   }
@@ -58,7 +58,7 @@ export class BlocksService {
     amount: number,
   ): Transaction {
     const transaction = new Transaction();
-    transaction.senderPublicKey = coinbaseWallet.getPublicKey();
+    transaction.senderPublicKey = coinbaseWallet.publicKey;
     transaction.recipientPublicKey = recipientWalletPublicKey;
     transaction.amount = amount;
     transaction.inputs = [];
@@ -74,7 +74,7 @@ export class BlocksService {
     transaction.transactionId = '0';
     transaction.signature = this.generateSignature(
       transaction.toString(),
-      coinbaseWallet.getPrivateKey(),
+      coinbaseWallet.privateKey,
     );
 
     return transaction;
@@ -99,7 +99,13 @@ export class BlocksService {
       this.transactionsService.createCoinbaseTransaction();
     transactions.unshift(coinbaseTransaction);
 
-    const newBlock = new Block(transactions, null, previousHash, null, null);
+    const newBlock: Block = {
+      transactions: transactions,
+      hash: null,
+      previousHash: previousHash,
+      nonce: null,
+      timestamp: null,
+    };
 
     console.log('Blocks service: New block created.');
 

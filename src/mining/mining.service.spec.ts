@@ -149,8 +149,13 @@ describe('MiningService', () => {
       .spyOn(transactionsServiceMock, 'verifyUTXOsAreUnspent')
       .mockImplementation(() => true);
 
-    const expectedBlock = new Block([], 'hash', '0', 0, new Date());
-
+    const expectedBlock: Block = {
+      transactions: [],
+      hash: 'hash',
+      previousHash: '0',
+      nonce: 0,
+      timestamp: new Date(),
+    };
     jest.spyOn(blocksServiceMock, 'createBlock').mockImplementation(() => {
       return expectedBlock;
     });

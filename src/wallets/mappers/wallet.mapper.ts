@@ -14,8 +14,8 @@ import { Wallet } from '../wallet';
 export class WalletMapper {
   static toWalletDto(wallet: Wallet): WalletDto {
     const walletDto = new WalletDto();
-    walletDto.name = wallet.getName();
-    walletDto.publicKey = wallet.getPublicKey();
+    walletDto.name = wallet.name;
+    walletDto.publicKey = wallet.publicKey;
 
     return walletDto;
   }
