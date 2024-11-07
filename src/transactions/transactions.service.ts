@@ -29,29 +29,33 @@ export class TransactionsService {
   ) {}
 
   public async submitTransaction(transactionDto: TransactionDto): Promise<any> {
-    console.log(`Transaction ${transactionDto.transactionId}: submiting...`);
+    console.log(
+      `Transactions service: Transaction ${transactionDto.transactionId}: submitting...`,
+    );
 
     this.validateTransaction(
       TransactionDtoMapper.toTransaction(transactionDto),
     );
 
-    const result = await this.poolsService.publish(
+    this.poolsService.publish(
       this.configService.get<string>('rabbitmq.exchanges[0].name'),
-      null,
       transactionDto,
     );
 
-    if (!result) {
-      const errorMsg = `Transaction ${transactionDto.transactionId}: failed to submit`;
-      console.error(errorMsg);
-      throw new BadRequestException(errorMsg);
-    }
+    // if (!result) {
+    //   const errorMsg = `Transaction ${transactionDto.transactionId}: failed to submit`;
+    //   console.error(errorMsg);
+    //   throw new BadRequestException(errorMsg);
+    // }
 
-    const successMsg = `Transaction ${transactionDto.transactionId}: submitted successfully.`;
-    console.log(successMsg);
+    // const successMsg = `Transaction ${transactionDto.transactionId}: submitted successfully.`;
+    // console.log(successMsg);
+
+    const msg = `Transaction ${transactionDto.transactionId}: submitted.`;
+    console.log(msg);
 
     return {
-      message: successMsg,
+      message: msg,
     };
   }
 
@@ -195,5 +199,9 @@ export class TransactionsService {
   private getWalletUTXOs(publicKey: string): TransactionOutput[] {
     // console.log(`Transaction validation ${publicKey}: fetching UTXOs...`);
     return this.blockchainService.getWalletUTXOs(publicKey);
+  }
+
+  public createCoinbaseTransaction(): Transaction {
+    return new Transaction();
   }
 }

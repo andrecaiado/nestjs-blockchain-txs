@@ -3,11 +3,14 @@ import { MiningService } from './mining.service';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { TransactionsService } from 'src/transactions/transactions.service';
 import { TransactionDtoMapper } from 'src/transactions/dto/mappers/transaction.mapper';
+import { BlocksService } from 'src/blocks/blocks.service';
+import { Block } from 'src/blocks/block';
 
 describe('MiningService', () => {
   let service: MiningService;
   let transactionsServiceMock: Partial<TransactionsService>;
   let blockchainServiceMock: Partial<BlockchainService>;
+  let blocksServiceMock: Partial<BlocksService>;
 
   const msg = {
     transactionId:
@@ -70,6 +73,12 @@ describe('MiningService', () => {
             verifyUTXOsAreUnspent: jest.fn(),
           },
         },
+        {
+          provide: BlocksService,
+          useValue: {
+            createBlock: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -77,21 +86,27 @@ describe('MiningService', () => {
     blockchainServiceMock = module.get<BlockchainService>(BlockchainService);
     transactionsServiceMock =
       module.get<TransactionsService>(TransactionsService);
+    blocksServiceMock = module.get<BlocksService>(BlocksService);
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+    expect(blockchainServiceMock).toBeDefined();
+    expect(transactionsServiceMock).toBeDefined();
+    expect(blocksServiceMock).toBeDefined();
   });
 
   it('should log an error if mapping fails', async () => {
     const consoleSpy = jest.spyOn(console, 'log');
-    jest.spyOn(TransactionDtoMapper, 'toTransaction').mockImplementation(() => {
-      throw new Error('Mapping error');
-    });
+    jest
+      .spyOn(TransactionDtoMapper, 'toTransaction')
+      .mockImplementationOnce(() => {
+        throw new Error('Mapping error');
+      });
 
     await service.mempoolTxsHandler(msg);
     expect(consoleSpy).toHaveBeenCalledWith(
-      'Mining service: error mapping message to transaction, transaction discarded.',
+      'Mining service: Error mapping message to transaction, transaction discarded.',
     );
   });
 
@@ -119,21 +134,27 @@ describe('MiningService', () => {
     expect(block).toBe(undefined);
   });
 
-  // it('should successfully handle a valid transaction', async () => {
-  //   jest.spyOn(blockchainServiceMock, 'getWalletUTXOs').mockReturnValue([
-  //     {
-  //       amount: 100.54,
-  //       id: '123',
-  //       parentTransactionId: '123',
-  //       recipientPublicKey:
-  //         '02fe07359370462589889e1cfa81d2a52e674caa101f2908e884ee2d9cfeaf531d',
-  //     },
-  //   ]);
-  //   jest
-  //     .spyOn(transactionsServiceMock, 'verifyUTXOsAreUnspent')
-  //     .mockImplementation(() => true);
+  it('should create a new block', async () => {
+    jest.spyOn(blockchainServiceMock, 'getWalletUTXOs').mockReturnValue([
+      {
+        amount: 100.54,
+        id: '123',
+        parentTransactionId: '123',
+        recipientPublicKey:
+          '02fe07359370462589889e1cfa81d2a52e674caa101f2908e884ee2d9cfeaf531d',
+      },
+    ]);
 
-  //   const block = await service.mempoolTxsHandler(msg);
-  //   expect(block).toBeInstanceOf(Block);
-  // });
+    jest
+      .spyOn(transactionsServiceMock, 'verifyUTXOsAreUnspent')
+      .mockImplementation(() => true);
+
+    const expectedBlock = new Block([], 'hash', '0', 0, new Date());
+
+    jest.spyOn(blocksServiceMock, 'createBlock').mockImplementation(() => {
+      return expectedBlock;
+    });
+
+    await expect(service.mempoolTxsHandler(msg)).resolves.toBe(expectedBlock);
+  });
 });

@@ -2,6 +2,7 @@ import { RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
 import { Inject, Injectable } from '@nestjs/common';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { Block } from 'src/blocks/block';
+import { BlocksService } from 'src/blocks/blocks.service';
 import { TransactionDtoMapper } from 'src/transactions/dto/mappers/transaction.mapper';
 import { TransactionDto } from 'src/transactions/dto/transaction.dto';
 import { Transaction } from 'src/transactions/transaction';
@@ -12,7 +13,7 @@ export class MiningService {
   constructor(
     @Inject() private blockchainService: BlockchainService,
     @Inject() private transactionsService: TransactionsService,
-    //@Inject() private configService: ConfigService,
+    @Inject() private blocksService: BlocksService,
   ) {}
 
   @RabbitSubscribe({
@@ -20,7 +21,7 @@ export class MiningService {
   })
   public async mempoolTxsHandler(msg: object): Promise<Block> {
     console.log(
-      `Mining service: received new transaction ${JSON.stringify(msg)}`,
+      `Mining service: Received new transaction ${JSON.stringify(msg)}`,
     );
 
     // Map msg to Transaction model
@@ -29,7 +30,7 @@ export class MiningService {
       transaction = TransactionDtoMapper.toTransaction(msg as TransactionDto);
     } catch (error) {
       console.log(
-        'Mining service: error mapping message to transaction, transaction discarded.',
+        'Mining service: Error mapping message to transaction, transaction discarded.',
       );
       return;
     }
@@ -37,12 +38,30 @@ export class MiningService {
     // Validate transaction: are UTXOs still unspent?
     if (!this.validateTransaction(transaction)) {
       console.error(
-        `Mining service: transaction ${transaction.transactionId}: there are UTXOs that are not unspent, transaction discarded.`,
+        `Mining service: Transaction ${transaction.transactionId}: there are UTXOs that are not unspent, transaction discarded.`,
       );
       return;
     }
 
-    return null;
+    // Create new block
+    let block = this.blocksService.createBlock([transaction]);
+
+    // Mine block
+    block = this.mineBlock(block);
+
+    // Broadcast mined block
+
+    // Delete msgs from queue
+    // I believe they are instantly deleted by default...
+    // Remove this step from the process?
+
+    console.log(`Mining service: Block mined`);
+
+    return block;
+  }
+
+  private mineBlock(block: Block): Block {
+    return block;
   }
 
   private validateTransaction(transaction: Transaction): boolean {

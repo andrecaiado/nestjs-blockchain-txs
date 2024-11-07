@@ -8,6 +8,7 @@ import { createHash } from 'node:crypto';
 import { WalletsService } from 'src/wallets/wallets.service';
 import { Wallet } from 'src/wallets/wallet';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
+import { TransactionsService } from 'src/transactions/transactions.service';
 
 @Injectable()
 export class BlocksService {
@@ -15,6 +16,7 @@ export class BlocksService {
     @Inject() private configService: ConfigService,
     @Inject() private walletsService: WalletsService,
     @Inject() private blockchainService: BlockchainService,
+    @Inject() private transactionsService: TransactionsService,
   ) {
     console.log('Blocks service: Creating genesis block...');
     const genesisBlock = this.createGenesisBlock();
@@ -84,5 +86,23 @@ export class BlocksService {
     const keyPair = ECPair.fromPrivateKey(Buffer.from(privateKey, 'hex'));
     const signature = keyPair.sign(hash);
     return Buffer.from(signature).toString('hex');
+  }
+
+  public createBlock(transactions: Transaction[]): Block {
+    console.log(
+      `Blocks service: Creating new block with ${transactions.length + 1} transaction(s)...`,
+    );
+    const previousBlock = this.blockchainService.getLastBlock();
+    const previousHash = previousBlock.hash;
+
+    const coinbaseTransaction =
+      this.transactionsService.createCoinbaseTransaction();
+    transactions.unshift(coinbaseTransaction);
+
+    const newBlock = new Block(transactions, null, previousHash, null, null);
+
+    console.log('Blocks service: New block created.');
+
+    return newBlock;
   }
 }

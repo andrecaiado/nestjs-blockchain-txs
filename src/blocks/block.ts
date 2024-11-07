@@ -1,11 +1,11 @@
 import { Transaction } from 'src/transactions/transaction';
 
 export class Block {
-  private transactions: Transaction[];
-  private hash: string;
-  private previousHash;
-  private nonce: number;
-  private timestamp: Date;
+  transactions: Transaction[];
+  hash: string;
+  previousHash;
+  nonce: number;
+  timestamp: Date;
 
   constructor(
     transactions: Transaction[],

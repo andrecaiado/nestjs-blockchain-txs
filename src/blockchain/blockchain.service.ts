@@ -23,11 +23,21 @@ export class BlockchainService {
     return [txo];
   }
 
-  addGenesisBlock(genesisBlock: Block) {
+  public addGenesisBlock(genesisBlock: Block) {
     console.log(
       'Blockchain service: Adding genesis block to the blockchain...',
     );
     this.blockchain.getChain().push(genesisBlock);
     console.log('Blockchain service: Genesis block added to the blockchain.');
+  }
+
+  public getLastBlock() {
+    return this.blockchain.getChain()[this.blockchain.getChain().length - 1];
+  }
+
+  public addBlock(block: Block) {
+    console.log('Blockchain service: Adding block to the blockchain...');
+    this.blockchain.getChain().push(block);
+    console.log('Blockchain service: Block added to the blockchain.');
   }
 }

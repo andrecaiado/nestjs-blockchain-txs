@@ -81,6 +81,9 @@ describe('TransactionsService', () => {
               if (key === 'blockchain.transactionFees') {
                 return 0.001;
               }
+              if (key === 'rabbitmq.exchanges[0].name') {
+                return 'global-tx-pool-exchange';
+              }
               return null;
             }),
           },
@@ -96,6 +99,10 @@ describe('TransactionsService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+    expect(blockchainService).toBeDefined();
+    expect(walletsService).toBeDefined();
+    expect(configService).toBeDefined();
+    expect(poolsServiceMock).toBeDefined();
   });
 
   it('should submit a transaction', async () => {
@@ -105,18 +112,17 @@ describe('TransactionsService', () => {
 
     jest
       .spyOn(poolsServiceMock, 'publish')
-      .mockImplementation(async () => true);
+      .mockImplementation(async () => new Promise((resolve) => resolve()));
 
     const result = await service.submitTransaction(transactionDto);
 
     expect(poolsServiceMock.publish).toHaveBeenCalledWith(
       'global-tx-pool-exchange',
-      null,
       transactionDto,
     );
 
     expect(result).toEqual({
-      message: `Transaction ${transactionDto.transactionId}: submitted successfully.`,
+      message: `Transaction ${transactionDto.transactionId}: submitted.`,
     });
   });
 
