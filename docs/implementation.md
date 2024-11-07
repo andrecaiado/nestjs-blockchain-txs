@@ -8,6 +8,10 @@ In this section, there will be a brief explanation of how the concepts were impl
 - [Transactions](#transactions)
 - [Pools](#pools)
   - [Global transaction pool exchange](#global-transaction-pool-exchange)
+  - [Miner mempool queue](#miner-mempool-queue)
+- [Mining Service](#mining-service)
+- [Block](#block)
+- [Blockchain](#blockchain)
 - [RabbitMQ](#rabbitmq)
 - [Configuration Service](#configuration-service)
 
@@ -107,7 +111,78 @@ The `global-tx-pool-exchange` is a RabbitMQ exchange of type `fanout`. This mean
 
 In this project, the only queue bounded to the exchange is the `miner-mempool-queue`.
 
-The `publish` function to the exchange is implemented in the [PoolsService](../src/pools/pools.service.ts).
+The `publish` function is implemented in the [PoolsService](../src/pools/pools.service.ts). This function is used to publish a message to any exchange.
+
+```typescript
+public async publish(exchange: string, message: any): Promise<void> {
+    console.log(
+      `Pools service: Publishing message to exchange '${exchange}'...`,
+    );
+
+    const data = Buffer.from(JSON.stringify(message));
+    this.amqpConnection.channel.publish(exchange, '', data, {});
+
+    console.log(`Pools service: Message published to exchange '${exchange}'.`);
+  }
+```
+
+## Miner mempool queue
+
+The `miner-mempool-queue` is a RabbitMQ queue bounded to the `global-tx-pool-exchange`. This queue is used by the miners (the `mining service`) to fetch transactions to be included in the block.
+
+In this project, the `miner-mempool-queue` is consumed by the [MiningService](../src/mining/mining.service.ts).
+
+# Mining Service
+
+The mining service is implemented in the [MiningService](../src/mining/mining.service.ts) class. This service is responsible for getting transactions from the `miner-mempool-queue`, validating the transactions, creating a block, mining the block, and broadcasting the mined block to the `block-announcement-pool-exchange`.
+
+```typescript
+@RabbitSubscribe({
+  queue: 'miner-mempool-queue',
+})
+public async mempoolTxsHandler(msg: object): Promise<Block> {
+  // Map msg to Transaction model
+  ...
+  // Validate transaction: are UTXOs still unspent?
+  ...
+  // Create new block
+  ...
+  // Mine block
+  ...
+  // Broadcast mined block
+  ...
+}
+```
+
+# Block
+
+The block is represented by the [Block](../src/blocks/block.ts) class.
+
+```typescript
+export class Block {
+  transactions: Transaction[];
+  hash: string;
+  previousHash;
+  nonce: number;
+  timestamp: Date;
+}
+```
+
+The block service is implemented in the [BlockService](../src/blocks/blocks.service.ts) class. The `createBlock` function is responsible for creating the `genesis block` when the service is initialized and for creating new `blocks`.
+
+# Blockchain
+
+THIS SECTION WILL BE HEAVLY UPDATED
+
+The blockchain is represented by the [Blockchain](../src/blockchain/blockchain.ts) class.
+
+```typescript
+export class Blockchain {
+  chain: Block[];
+}
+```
+
+The blockchain service is implemented in the [BlockchainService](../src/blockchain/blockchain.service.ts) class. The service is responsible for adding new blocks to the blockchain.
 
 # RabbitMQ
 
