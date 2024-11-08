@@ -1,5 +1,6 @@
 import { RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
 import { Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { Block } from 'src/blocks/block';
 import { BlocksService } from 'src/blocks/blocks.service';
@@ -7,6 +8,8 @@ import { TransactionDtoMapper } from 'src/transactions/dto/mappers/transaction.m
 import { TransactionDto } from 'src/transactions/dto/transaction.dto';
 import { Transaction } from 'src/transactions/transaction';
 import { TransactionsService } from 'src/transactions/transactions.service';
+import { createHash } from 'node:crypto';
+import { WalletsService } from 'src/wallets/wallets.service';
 
 @Injectable()
 export class MiningService {
@@ -14,12 +17,17 @@ export class MiningService {
     @Inject() private blockchainService: BlockchainService,
     @Inject() private transactionsService: TransactionsService,
     @Inject() private blocksService: BlocksService,
+    @Inject() private configService: ConfigService,
+    @Inject() private walletsService: WalletsService,
   ) {}
 
   @RabbitSubscribe({
     queue: 'miner-mempool-queue',
   })
   public async mempoolTxsHandler(msg: object): Promise<Block> {
+    // Get a random wallet to use as the miner's wallet
+    const minerWallet = this.walletsService.getRandomWallet();
+
     console.log(
       `Mining service: Received new transaction ${JSON.stringify(msg)}`,
     );
@@ -44,7 +52,7 @@ export class MiningService {
     }
 
     // Create new block
-    let block = this.blocksService.createBlock([transaction]);
+    let block = this.blocksService.createBlock([transaction], minerWallet);
 
     // Mine block
     block = this.mineBlock(block);
@@ -61,6 +69,22 @@ export class MiningService {
   }
 
   private mineBlock(block: Block): Block {
+    console.log(`Mining service: Mining block #${block.id}...`);
+    const difficulty = this.configService.get<number>(
+      'blockchain.miningDifficulty',
+    );
+    const blockHashPrefix = '0'.repeat(difficulty);
+    let blockHash: string = '';
+    let nonce: number = 0;
+    while (!blockHash.startsWith(blockHashPrefix)) {
+      block.nonce = nonce;
+      blockHash = createHash('sha256').update(block.toString()).digest('hex');
+      console.log(blockHash);
+      console.log(block.nonce);
+      nonce++;
+    }
+    block.hash = blockHash;
+    console.log(`Mining service: Block #${block.id} mined...`);
     return block;
   }
 

@@ -1,5 +1,5 @@
 interface BlockchainConfigProps {
-  mineReward: number;
+  minerReward: number;
   miningDifficulty: number;
   transactionFees: number;
   genesisBlock: {

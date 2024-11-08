@@ -16,6 +16,7 @@ describe('BlocksService', () => {
 
   const coinbaseWallet = new Wallet('coinbase');
   const recipientWallet = new Wallet('recipient');
+  const minerWallet = new Wallet('miner');
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -137,6 +138,7 @@ describe('BlocksService', () => {
     };
 
     const latestBlock: Block = {
+      id: 1,
       transactions: [transaction],
       hash: '123',
       previousHash: '0',
@@ -149,10 +151,10 @@ describe('BlocksService', () => {
       .spyOn(transactionsServiceMock, 'createCoinbaseTransaction')
       .mockReturnValue({
         transactionId: '0',
-        senderPublicKey: coinbaseWallet.publicKey,
-        recipientPublicKey: recipientWallet.publicKey,
+        senderPublicKey: '',
+        recipientPublicKey: minerWallet.publicKey,
         amount: 50,
-        signature: '0',
+        signature: '',
         inputs: [],
         outputs: [
           {
@@ -163,22 +165,18 @@ describe('BlocksService', () => {
           },
         ],
         transactionFees: 0,
-        toString: () => '0',
       });
 
-    const block = service.createBlock([transaction]);
+    const block = service.createBlock([transaction], minerWallet);
     expect(block).toBeDefined();
     expect(block.previousHash).toBe('123');
     expect(block.transactions.length).toBe(2);
-    expect(block.hash).toBe(null);
-    expect(block.timestamp).toBeNull();
-    expect(block.nonce).toBeNull();
+    expect(block.hash).toBe('');
+    expect(block.nonce).toBe(0);
     expect(block.transactions[0].transactionId).toBe('0');
-    expect(block.transactions[0].senderPublicKey).toBe(
-      coinbaseWallet.publicKey,
-    );
+    expect(block.transactions[0].senderPublicKey).toBe('');
     expect(block.transactions[0].recipientPublicKey).toBe(
-      recipientWallet.publicKey,
+      minerWallet.publicKey,
     );
     expect(block.transactions[1].transactionId).toBe(
       'ece5ebdec6341c1d06fe134f9f546e9455d5fe1a813b4f68d5eb42cd3eb0b706',

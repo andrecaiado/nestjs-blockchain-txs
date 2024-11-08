@@ -19,6 +19,7 @@ describe('BlockchainService', () => {
 
   it('should add a genesis block', () => {
     const genesisBlock: Block = {
+      id: 0,
       transactions: [],
       hash: '0',
       previousHash: '0',
@@ -32,6 +33,7 @@ describe('BlockchainService', () => {
 
   it('should get the last block', () => {
     const genesisBlock: Block = {
+      id: 0,
       transactions: [],
       hash: '0',
       previousHash: '0',
@@ -41,6 +43,7 @@ describe('BlockchainService', () => {
     service.addBlock(genesisBlock);
 
     const lastBlock: Block = {
+      id: 1,
       transactions: [],
       hash: '1',
       previousHash: '0',

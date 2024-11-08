@@ -5,12 +5,17 @@ import { TransactionsService } from 'src/transactions/transactions.service';
 import { TransactionDtoMapper } from 'src/transactions/dto/mappers/transaction.mapper';
 import { BlocksService } from 'src/blocks/blocks.service';
 import { Block } from 'src/blocks/block';
+import { WalletsService } from 'src/wallets/wallets.service';
+import { ConfigService } from '@nestjs/config';
+import { Wallet } from 'src/wallets/wallet';
 
 describe('MiningService', () => {
   let service: MiningService;
   let transactionsServiceMock: Partial<TransactionsService>;
   let blockchainServiceMock: Partial<BlockchainService>;
   let blocksServiceMock: Partial<BlocksService>;
+  let configServiceMock: Partial<ConfigService>;
+  let walletsServiceMock: Partial<WalletsService>;
 
   const msg = {
     transactionId:
@@ -79,6 +84,24 @@ describe('MiningService', () => {
             createBlock: jest.fn(),
           },
         },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn((key: string) => {
+              // this is being super extra, in the case that you need multiple keys with the `get` method
+              if (key === 'blockchain.miningDifficulty') {
+                return 1;
+              }
+              return null;
+            }),
+          },
+        },
+        {
+          provide: WalletsService,
+          useValue: {
+            getRandomWallet: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -87,6 +110,8 @@ describe('MiningService', () => {
     transactionsServiceMock =
       module.get<TransactionsService>(TransactionsService);
     blocksServiceMock = module.get<BlocksService>(BlocksService);
+    configServiceMock = module.get<ConfigService>(ConfigService);
+    walletsServiceMock = module.get<WalletsService>(WalletsService);
   });
 
   it('should be defined', () => {
@@ -94,6 +119,8 @@ describe('MiningService', () => {
     expect(blockchainServiceMock).toBeDefined();
     expect(transactionsServiceMock).toBeDefined();
     expect(blocksServiceMock).toBeDefined();
+    expect(configServiceMock).toBeDefined();
+    expect(walletsServiceMock).toBeDefined();
   });
 
   it('should log an error if mapping fails', async () => {
@@ -134,32 +161,30 @@ describe('MiningService', () => {
     expect(block).toBe(undefined);
   });
 
-  it('should create a new block', async () => {
-    jest.spyOn(blockchainServiceMock, 'getWalletUTXOs').mockReturnValue([
-      {
-        amount: 100.54,
-        id: '123',
-        parentTransactionId: '123',
-        recipientPublicKey:
-          '02fe07359370462589889e1cfa81d2a52e674caa101f2908e884ee2d9cfeaf531d',
-      },
-    ]);
-
+  it('should mine block', async () => {
     jest
       .spyOn(transactionsServiceMock, 'verifyUTXOsAreUnspent')
       .mockImplementation(() => true);
 
-    const expectedBlock: Block = {
-      transactions: [],
-      hash: 'hash',
-      previousHash: '0',
-      nonce: 0,
-      timestamp: new Date(),
-    };
+    jest.spyOn(walletsServiceMock, 'getRandomWallet').mockImplementation(() => {
+      return new Wallet('wallet-1');
+    });
+
+    const expectedBlock: Block = new Block();
+    expectedBlock.id = 1;
+    expectedBlock.transactions = [];
+    expectedBlock.hash = '';
+    expectedBlock.previousHash = '0';
+    expectedBlock.nonce = 0;
+    expectedBlock.timestamp = new Date();
+
     jest.spyOn(blocksServiceMock, 'createBlock').mockImplementation(() => {
       return expectedBlock;
     });
 
-    await expect(service.mempoolTxsHandler(msg)).resolves.toBe(expectedBlock);
+    const minedBlock = await service.mempoolTxsHandler(msg);
+    expect(minedBlock.nonce).toBeGreaterThan(0);
+    expect(minedBlock.hash).toHaveLength(64);
+    expect(minedBlock.hash.startsWith('0')).toBeTruthy;
   });
 });

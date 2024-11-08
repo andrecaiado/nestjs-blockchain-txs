@@ -18,6 +18,7 @@ import { WalletsService } from 'src/wallets/wallets.service';
 import { ConfigService } from '@nestjs/config';
 import { PoolsService } from 'src/pools/pools.service';
 import { TransactionDtoMapper } from './dto/mappers/transaction.mapper';
+import { Wallet } from 'src/wallets/wallet';
 
 @Injectable()
 export class TransactionsService {
@@ -201,7 +202,30 @@ export class TransactionsService {
     return this.blockchainService.getWalletUTXOs(publicKey);
   }
 
-  public createCoinbaseTransaction(): Transaction {
-    return new Transaction();
+  public createCoinbaseTransaction(
+    minerWallet: Wallet,
+    transactionFees: number,
+  ): Transaction {
+    const minerReward: number =
+      this.configService.get<number>('blockchain.minerReward') +
+      transactionFees;
+    const transaction: Transaction = {
+      transactionId: '0',
+      senderPublicKey: '',
+      recipientPublicKey: minerWallet.publicKey,
+      amount: minerReward,
+      inputs: [],
+      outputs: [
+        {
+          recipientPublicKey: minerWallet.publicKey,
+          amount: minerReward,
+          parentTransactionId: '0',
+          id: '0',
+        },
+      ],
+      transactionFees: 0,
+      signature: '',
+    };
+    return transaction;
   }
 }

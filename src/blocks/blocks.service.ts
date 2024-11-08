@@ -42,6 +42,7 @@ export class BlocksService {
       amount,
     );
     const genesisBlock: Block = {
+      id: 0,
       transactions: [transaction],
       hash: hash,
       previousHash: '0',
@@ -88,26 +89,41 @@ export class BlocksService {
     return Buffer.from(signature).toString('hex');
   }
 
-  public createBlock(transactions: Transaction[]): Block {
-    console.log(
-      `Blocks service: Creating new block with ${transactions.length + 1} transaction(s)...`,
-    );
+  public createBlock(transactions: Transaction[], minerWallet: Wallet): Block {
+    console.log(`Blocks service: Creating new block ...`);
     const previousBlock = this.blockchainService.getLastBlock();
+    const lastBlockId = previousBlock.id;
     const previousHash = previousBlock.hash;
+    const transactionFees = transactions.reduce(
+      (feeAcc, tx) => feeAcc + tx.transactionFees,
+      0,
+    );
 
     const coinbaseTransaction =
-      this.transactionsService.createCoinbaseTransaction();
+      this.transactionsService.createCoinbaseTransaction(
+        minerWallet,
+        transactionFees,
+      );
     transactions.unshift(coinbaseTransaction);
 
-    const newBlock: Block = {
-      transactions: transactions,
-      hash: null,
-      previousHash: previousHash,
-      nonce: null,
-      timestamp: null,
-    };
+    const newBlock: Block = new Block();
+    newBlock.id = lastBlockId + 1;
+    newBlock.transactions = transactions;
+    newBlock.hash = '';
+    newBlock.previousHash = previousHash;
+    newBlock.nonce = 0;
+    newBlock.timestamp = new Date();
+    // {
+    //   transactions: transactions,
+    //   hash: '',
+    //   previousHash: previousHash,
+    //   nonce: 0,
+    //   timestamp: new Date(),
+    // };
 
-    console.log('Blocks service: New block created.');
+    console.log(
+      `Blocks service: Created new block with ${transactions.length} transaction(s).`,
+    );
 
     return newBlock;
   }

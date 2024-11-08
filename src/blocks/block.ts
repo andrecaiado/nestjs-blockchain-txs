@@ -1,9 +1,22 @@
 import { Transaction } from 'src/transactions/transaction';
 
 export class Block {
+  id: number;
   transactions: Transaction[];
   hash: string;
-  previousHash;
+  previousHash: string;
   nonce: number;
   timestamp: Date;
+
+  toString(): string {
+    return (
+      this.transactions
+        .map((transaction) => transaction.toString())
+        .join('')
+        .toString() +
+      this.previousHash +
+      this.nonce.toString() +
+      this.timestamp.toString()
+    );
+  }
 }

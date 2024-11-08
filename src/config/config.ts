@@ -2,7 +2,7 @@ import { ConfigProps } from 'src/interfaces/config.interface';
 
 export const config = (): ConfigProps => ({
   blockchain: {
-    mineReward: parseFloat(process.env.MINE_REWARD) || 50,
+    minerReward: parseFloat(process.env.MINE_REWARD) || 50,
     miningDifficulty: parseInt(process.env.MINING_DIFFICULTY, 10) || 2,
     transactionFees: parseFloat(process.env.TRANSACTION_FEES) || 0.001,
     genesisBlock: {
