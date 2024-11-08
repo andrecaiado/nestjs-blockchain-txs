@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BlocksService } from './blocks.service';
 import { ConfigService } from '@nestjs/config';
-import { WalletsService } from 'src/wallets/wallets.service';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { TransactionsService } from 'src/transactions/transactions.service';
 import { Wallet } from 'src/wallets/wallet';
@@ -10,7 +9,6 @@ import { Block } from './block';
 
 describe('BlocksService', () => {
   let service: BlocksService;
-  let walletsServiceMock: Partial<WalletsService>;
   let blockchainService: BlockchainService;
   let transactionsServiceMock: Partial<TransactionsService>;
 
@@ -33,18 +31,8 @@ describe('BlocksService', () => {
               if (key === 'blockchain.genesisBlock.nonce') {
                 return 0;
               }
-              if (key === 'blockchain.genesisBlock.amount') {
-                return 1000;
-              }
               return null;
             }),
-          },
-        },
-        {
-          provide: WalletsService,
-          useValue: {
-            getCoinbaseWallet: jest.fn().mockReturnValue(coinbaseWallet),
-            getRandomWallet: jest.fn().mockReturnValue(recipientWallet),
           },
         },
         BlockchainService,
@@ -52,13 +40,13 @@ describe('BlocksService', () => {
           provide: TransactionsService,
           useValue: {
             createCoinbaseTransaction: jest.fn(),
+            createGenesisTransaction: jest.fn(),
           },
         },
       ],
     }).compile();
 
     service = module.get<BlocksService>(BlocksService);
-    walletsServiceMock = module.get<WalletsService>(WalletsService);
     blockchainService = module.get<BlockchainService>(BlockchainService);
     transactionsServiceMock =
       module.get<TransactionsService>(TransactionsService);
@@ -66,18 +54,30 @@ describe('BlocksService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
-    expect(walletsServiceMock).toBeDefined();
     expect(blockchainService).toBeDefined();
     expect(transactionsServiceMock).toBeDefined();
   });
 
   it('should create a genesis block', () => {
     jest
-      .spyOn(walletsServiceMock, 'getCoinbaseWallet')
-      .mockReturnValue(coinbaseWallet);
-    jest
-      .spyOn(walletsServiceMock, 'getRandomWallet')
-      .mockReturnValue(recipientWallet);
+      .spyOn(transactionsServiceMock, 'createGenesisTransaction')
+      .mockReturnValue({
+        senderPublicKey: coinbaseWallet.publicKey,
+        recipientPublicKey: recipientWallet.publicKey,
+        amount: 1000,
+        inputs: [],
+        outputs: [
+          {
+            recipientPublicKey: recipientWallet.publicKey,
+            amount: 1000,
+            parentTransactionId: '0',
+            id: '0',
+          },
+        ],
+        transactionFees: 0,
+        transactionId: '0',
+        signature: '123',
+      });
 
     const genesisBlock = service.createGenesisBlock();
     expect(genesisBlock).toBeDefined();

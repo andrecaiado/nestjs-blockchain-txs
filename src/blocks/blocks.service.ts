@@ -2,10 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Block } from './block';
 import { Transaction } from 'src/transactions/transaction';
-import ECPairFactory from 'ecpair';
-import * as ecc from 'tiny-secp256k1';
-import { createHash } from 'node:crypto';
-import { WalletsService } from 'src/wallets/wallets.service';
 import { Wallet } from 'src/wallets/wallet';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { TransactionsService } from 'src/transactions/transactions.service';
@@ -14,7 +10,6 @@ import { TransactionsService } from 'src/transactions/transactions.service';
 export class BlocksService {
   constructor(
     @Inject() private configService: ConfigService,
-    @Inject() private walletsService: WalletsService,
     @Inject() private blockchainService: BlockchainService,
     @Inject() private transactionsService: TransactionsService,
   ) {
@@ -29,18 +24,8 @@ export class BlocksService {
     const nonce = this.configService.get<number>(
       'blockchain.genesisBlock.nonce',
     );
-    const amount = this.configService.get<number>(
-      'blockchain.genesisBlock.amount',
-    );
 
-    const coinbaseWallet = this.walletsService.getCoinbaseWallet();
-    const recipientWallet = this.walletsService.getRandomWallet();
-
-    const transaction = this.createGenesisTransaction(
-      coinbaseWallet,
-      recipientWallet.publicKey,
-      amount,
-    );
+    const transaction = this.transactionsService.createGenesisTransaction();
     const genesisBlock: Block = {
       id: 0,
       transactions: [transaction],
@@ -51,42 +36,6 @@ export class BlocksService {
     };
 
     return genesisBlock;
-  }
-
-  private createGenesisTransaction(
-    coinbaseWallet: Wallet,
-    recipientWalletPublicKey: string,
-    amount: number,
-  ): Transaction {
-    const transaction = new Transaction();
-    transaction.senderPublicKey = coinbaseWallet.publicKey;
-    transaction.recipientPublicKey = recipientWalletPublicKey;
-    transaction.amount = amount;
-    transaction.inputs = [];
-    transaction.outputs = [
-      {
-        recipientPublicKey: recipientWalletPublicKey,
-        amount: amount,
-        parentTransactionId: '0',
-        id: '0',
-      },
-    ];
-    transaction.transactionFees = 0;
-    transaction.transactionId = '0';
-    transaction.signature = this.generateSignature(
-      transaction.toString(),
-      coinbaseWallet.privateKey,
-    );
-
-    return transaction;
-  }
-
-  private generateSignature(data: string, privateKey: string): string {
-    const hash = createHash('sha256').update(data).digest();
-    const ECPair = ECPairFactory(ecc);
-    const keyPair = ECPair.fromPrivateKey(Buffer.from(privateKey, 'hex'));
-    const signature = keyPair.sign(hash);
-    return Buffer.from(signature).toString('hex');
   }
 
   public createBlock(transactions: Transaction[], minerWallet: Wallet): Block {
@@ -113,13 +62,6 @@ export class BlocksService {
     newBlock.previousHash = previousHash;
     newBlock.nonce = 0;
     newBlock.timestamp = new Date();
-    // {
-    //   transactions: transactions,
-    //   hash: '',
-    //   previousHash: previousHash,
-    //   nonce: 0,
-    //   timestamp: new Date(),
-    // };
 
     console.log(
       `Blocks service: Created new block with ${transactions.length} transaction(s).`,

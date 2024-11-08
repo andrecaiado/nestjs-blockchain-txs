@@ -10,11 +10,12 @@ import { Wallet } from 'src/wallets/wallet';
 describe('TransactionsService', () => {
   let service: TransactionsService;
   let blockchainService: BlockchainService;
-  let walletsService: WalletsService;
+  let walletsServiceMock: Partial<WalletsService>;
   let poolsServiceMock: Partial<PoolsService>;
-  let configService: Partial<ConfigService>;
+  let configServiceMock: Partial<ConfigService>;
 
   const wallet1 = new Wallet('wallet-1');
+  const coinbaseWallet = new Wallet('coinbase');
 
   const transactionDto = {
     transactionId:
@@ -72,7 +73,14 @@ describe('TransactionsService', () => {
         { provide: PoolsService, useValue: poolsServiceMock },
         BlockchainService,
         ConfigService,
-        WalletsService,
+        {
+          provide: WalletsService,
+          useValue: {
+            getCoinbaseWallet: jest.fn().mockReturnValue(coinbaseWallet),
+            getRandomWallet: jest.fn().mockReturnValue(wallet1),
+            findWalletByPublicKey: jest.fn(),
+          },
+        },
         {
           provide: ConfigService,
           useValue: {
@@ -84,6 +92,12 @@ describe('TransactionsService', () => {
               if (key === 'rabbitmq.exchanges[0].name') {
                 return 'global-tx-pool-exchange';
               }
+              if (key === 'blockchain.genesisTransaction.amount') {
+                return 1000;
+              }
+              if (key === 'blockchain.minerReward') {
+                return 50;
+              }
               return null;
             }),
           },
@@ -93,21 +107,22 @@ describe('TransactionsService', () => {
 
     service = module.get<TransactionsService>(TransactionsService);
     blockchainService = module.get<BlockchainService>(BlockchainService);
-    walletsService = module.get<WalletsService>(WalletsService);
-    configService = module.get<ConfigService>(ConfigService);
+    walletsServiceMock = module.get<WalletsService>(WalletsService);
+    configServiceMock = module.get<ConfigService>(ConfigService);
+    poolsServiceMock = module.get<PoolsService>(PoolsService);
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
     expect(blockchainService).toBeDefined();
-    expect(walletsService).toBeDefined();
-    expect(configService).toBeDefined();
+    expect(walletsServiceMock).toBeDefined();
+    expect(configServiceMock).toBeDefined();
     expect(poolsServiceMock).toBeDefined();
   });
 
   it('should submit a transaction', async () => {
     jest
-      .spyOn(walletsService, 'findWalletByPublicKey')
+      .spyOn(walletsServiceMock, 'findWalletByPublicKey')
       .mockReturnValue(wallet1);
 
     jest
@@ -141,7 +156,9 @@ describe('TransactionsService', () => {
   });
 
   it('should throw an error when the sender wallet is not found', async () => {
-    jest.spyOn(walletsService, 'findWalletByPublicKey').mockReturnValue(null);
+    jest
+      .spyOn(walletsServiceMock, 'findWalletByPublicKey')
+      .mockReturnValue(null);
 
     await expect(() =>
       service.submitTransaction(transactionDto),
@@ -154,7 +171,7 @@ describe('TransactionsService', () => {
 
   it('should throw an error when the inputs UTXOs are not unspent', async () => {
     jest
-      .spyOn(walletsService, 'findWalletByPublicKey')
+      .spyOn(walletsServiceMock, 'findWalletByPublicKey')
       .mockReturnValue(wallet1);
 
     jest.spyOn(blockchainService, 'getWalletUTXOs').mockReturnValue([]);
@@ -170,14 +187,14 @@ describe('TransactionsService', () => {
 
   it('should throw an error when the inputs are not enough to cover the outputs', async () => {
     jest
-      .spyOn(walletsService, 'findWalletByPublicKey')
+      .spyOn(walletsServiceMock, 'findWalletByPublicKey')
       .mockReturnValue(wallet1);
 
     jest
       .spyOn(blockchainService, 'getWalletUTXOs')
       .mockReturnValue([transactionDto.inputs[0].UTXO]);
 
-    jest.spyOn(configService, 'get').mockImplementation((key: string) => {
+    jest.spyOn(configServiceMock, 'get').mockImplementation((key: string) => {
       if (key === 'blockchain.transactionFees') {
         return 1000;
       }
@@ -191,5 +208,44 @@ describe('TransactionsService', () => {
         `Transaction ${transactionDto.transactionId}: inputs are not enough to cover the outputs`,
       ),
     );
+  });
+
+  it('should create a genesis transaction', () => {
+    // jest
+    //   .spyOn(walletsServiceMock, 'getCoinbaseWallet')
+    //   .mockReturnValue(coinbaseWallet);
+    //jest.spyOn(walletsServiceMock, 'getRandomWallet').mockReturnValue(wallet1);
+
+    const genesisTransaction = service.createGenesisTransaction();
+    expect(genesisTransaction.senderPublicKey).toBe(coinbaseWallet.publicKey);
+    expect(genesisTransaction.recipientPublicKey).toBe(wallet1.publicKey);
+    expect(genesisTransaction.amount).toBe(1000);
+    expect(genesisTransaction.inputs.length).toBe(0);
+    expect(genesisTransaction.outputs.length).toBe(1);
+    expect(genesisTransaction.outputs[0]).toStrictEqual({
+      recipientPublicKey: wallet1.publicKey,
+      amount: 1000,
+      parentTransactionId: '0',
+      id: '0',
+    });
+    expect(genesisTransaction.transactionFees).toBe(0);
+    expect(genesisTransaction.transactionId).toBe('0');
+  });
+
+  it('should create a coinbase transaction', () => {
+    const coinbaseTransaction = service.createCoinbaseTransaction(wallet1, 5.5);
+    expect(coinbaseTransaction.transactionId).toBe('0');
+    expect(coinbaseTransaction.senderPublicKey).toBe('');
+    expect(coinbaseTransaction.recipientPublicKey).toBe(wallet1.publicKey);
+    expect(coinbaseTransaction.amount).toBe(55.5);
+    expect(coinbaseTransaction.inputs.length).toBe(0);
+    expect(coinbaseTransaction.outputs.length).toBe(1);
+    expect(coinbaseTransaction.outputs[0]).toStrictEqual({
+      recipientPublicKey: wallet1.publicKey,
+      amount: 55.5,
+      parentTransactionId: '0',
+      id: '0',
+    });
+    expect(coinbaseTransaction.transactionFees).toBe(0);
   });
 });

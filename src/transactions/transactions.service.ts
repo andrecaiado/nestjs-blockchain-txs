@@ -198,8 +198,45 @@ export class TransactionsService {
   }
 
   private getWalletUTXOs(publicKey: string): TransactionOutput[] {
-    // console.log(`Transaction validation ${publicKey}: fetching UTXOs...`);
     return this.blockchainService.getWalletUTXOs(publicKey);
+  }
+
+  public createGenesisTransaction(): Transaction {
+    const amount = this.configService.get<number>(
+      'blockchain.genesisTransaction.amount',
+    );
+    const coinbaseWallet = this.walletsService.getCoinbaseWallet();
+    const recipientWallet = this.walletsService.getRandomWallet();
+
+    const transaction = new Transaction();
+    transaction.senderPublicKey = coinbaseWallet.publicKey;
+    transaction.recipientPublicKey = recipientWallet.publicKey;
+    transaction.amount = amount;
+    transaction.inputs = [];
+    transaction.outputs = [
+      {
+        recipientPublicKey: recipientWallet.publicKey,
+        amount: amount,
+        parentTransactionId: '0',
+        id: '0',
+      },
+    ];
+    transaction.transactionFees = 0;
+    transaction.transactionId = '0';
+    transaction.signature = this.generateSignature(
+      transaction.toString(),
+      coinbaseWallet.privateKey,
+    );
+
+    return transaction;
+  }
+
+  private generateSignature(data: string, privateKey: string): string {
+    const hash = createHash('sha256').update(data).digest();
+    const ECPair = ECPairFactory(ecc);
+    const keyPair = ECPair.fromPrivateKey(Buffer.from(privateKey, 'hex'));
+    const signature = keyPair.sign(hash);
+    return Buffer.from(signature).toString('hex');
   }
 
   public createCoinbaseTransaction(

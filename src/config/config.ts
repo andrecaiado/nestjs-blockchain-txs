@@ -9,7 +9,9 @@ export const config = (): ConfigProps => ({
       hash: process.env.GENESIS_BLOCK_HASH || '0',
       nonce: parseInt(process.env.GENESIS_BLOCK_NONCE, 10) || 0,
       data: process.env.GENESIS_BLOCK_DATA || 'Genesis Block',
-      amount: parseFloat(process.env.GENESIS_BLOCK_AMOUNT) || 0,
+    },
+    genesisTransaction: {
+      amount: parseFloat(process.env.GENESIS_TX_AMOUNT) || 0,
     },
   },
   rabbitmq: {

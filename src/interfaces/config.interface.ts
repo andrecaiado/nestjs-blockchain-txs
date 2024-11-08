@@ -6,6 +6,8 @@ interface BlockchainConfigProps {
     hash: string;
     nonce: number;
     data: string;
+  };
+  genesisTransaction: {
     amount: number;
   };
 }
