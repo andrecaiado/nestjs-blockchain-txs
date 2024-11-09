@@ -7,6 +7,14 @@
       "routing_key": "",
       "source": "global-tx-pool-exchange",
       "vhost": "/"
+    },
+    {
+      "arguments": {},
+      "destination": "miner-pool-announced-blocks-queue",
+      "destination_type": "queue",
+      "routing_key": "",
+      "source": "blocks-announcement-pool-exchange",
+      "vhost": "/"
     }
   ],
   "permissions": [
@@ -28,6 +36,16 @@
       "name": "miner-mempool-queue",
       "type": "classic",
       "vhost": "/"
+    },
+    {
+      "arguments": {
+        "x-queue-type": "undefined"
+      },
+      "auto_delete": false,
+      "durable": true,
+      "name": "miner-pool-announced-blocks-queue",
+      "type": "classic",
+      "vhost": "/"
     }
   ],
   "parameters": [],
@@ -40,6 +58,14 @@
       "auto_delete": false,
       "durable": true,
       "name": "global-tx-pool-exchange",
+      "type": "fanout",
+      "vhost": "/"
+    },
+    {
+      "arguments": {},
+      "auto_delete": false,
+      "durable": true,
+      "name": "blocks-announcement-pool-exchange",
       "type": "fanout",
       "vhost": "/"
     }
