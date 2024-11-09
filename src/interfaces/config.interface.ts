@@ -9,6 +9,7 @@ interface BlockchainConfigProps {
   genesisTransaction: {
     amount: number;
   };
+  maxCoinSupply: number;
 }
 
 interface RabbitMQConfigProps {
@@ -18,8 +19,16 @@ interface RabbitMQConfigProps {
       type: string;
       options?: Record<string, any>;
     },
+    {
+      name: string;
+      type: string;
+      options?: Record<string, any>;
+    },
   ];
   queues: [
+    {
+      name: string;
+    },
     {
       name: string;
     },

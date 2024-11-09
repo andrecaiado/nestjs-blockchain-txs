@@ -12,21 +12,44 @@ export const config = (): ConfigProps => ({
     genesisTransaction: {
       amount: parseFloat(process.env.GENESIS_TX_AMOUNT) || 0,
     },
+    maxCoinSupply: parseFloat(process.env.MAX_COIN_SUPPLY) || 1000000,
   },
   rabbitmq: {
     exchanges: [
       {
-        name: process.env.RABBITMQ_EXCHANGE_NAME_GLOBAL_TX_POOL || 'blockchain',
+        name:
+          process.env.RABBITMQ_EXCHANGE_NAME_GLOBAL_TX_POOL ||
+          'global-tx-pool-exchange',
         type: process.env.RABBITMQ_EXCHANGE_TYPE_GLOBAL_TX_POOL || 'direct',
         options: {
           durable:
             process.env.RABBITMQ_EXCHANGE_DURABLE_GLOBAL_TX_POOL === 'true',
         },
       },
+      {
+        name:
+          process.env.RABBITMQ_EXCHANGE_NAME_BLOCKS_ANNOUNCEMENT_POOL ||
+          'blocks-announcement-pool-exchange',
+        type:
+          process.env.RABBITMQ_EXCHANGE_TYPE_BLOCKS_ANNOUNCEMENT_POOL ||
+          'direct',
+        options: {
+          durable:
+            process.env.RABBITMQ_EXCHANGE_DURABLE_BLOCKS_ANNOUNCEMENT_POOL ===
+            'true',
+        },
+      },
     ],
     queues: [
       {
-        name: 'miner-mempool-queue',
+        name:
+          process.env.RABBITMQ_QUEUE_NAME_MINER_MEMPOOL ||
+          'miner-mempool-queue',
+      },
+      {
+        name:
+          process.env.RABBITMQ_QUEUE_NAME_MINER_BLOCK_ANNOUNCE ||
+          'miner-pool-announced-blocks-queue',
       },
     ],
     uri: process.env.RABBITMQ_URI || 'amqp://localhost',
