@@ -25,6 +25,7 @@ describe('BlockchainService', () => {
       previousHash: '0',
       nonce: 0,
       timestamp: new Date(),
+      data: 'Genesis Block',
     };
     service.addGenesisBlock(genesisBlock);
 
@@ -39,6 +40,7 @@ describe('BlockchainService', () => {
       previousHash: '0',
       nonce: 0,
       timestamp: new Date(),
+      data: 'Genesis Block',
     };
     service.addBlock(genesisBlock);
 
@@ -49,6 +51,7 @@ describe('BlockchainService', () => {
       previousHash: '0',
       nonce: 1,
       timestamp: new Date(),
+      data: null,
     };
     service.addBlock(lastBlock);
 
