@@ -144,6 +144,7 @@ describe('BlocksService', () => {
       previousHash: '0',
       nonce: 0,
       timestamp: new Date(),
+      data: null,
     };
 
     jest.spyOn(blockchainService, 'getLastBlock').mockReturnValue(latestBlock);

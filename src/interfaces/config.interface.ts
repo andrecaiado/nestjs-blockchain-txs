@@ -4,7 +4,6 @@ interface BlockchainConfigProps {
   transactionFees: number;
   genesisBlock: {
     hash: string;
-    nonce: number;
     data: string;
   };
   genesisTransaction: {

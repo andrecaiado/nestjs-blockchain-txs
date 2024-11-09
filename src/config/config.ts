@@ -7,7 +7,6 @@ export const config = (): ConfigProps => ({
     transactionFees: parseFloat(process.env.TRANSACTION_FEES) || 0.001,
     genesisBlock: {
       hash: process.env.GENESIS_BLOCK_HASH || '0',
-      nonce: parseInt(process.env.GENESIS_BLOCK_NONCE, 10) || 0,
       data: process.env.GENESIS_BLOCK_DATA || 'Genesis Block',
     },
     genesisTransaction: {

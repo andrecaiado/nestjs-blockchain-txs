@@ -65,7 +65,8 @@ export class MiningService {
     return block;
   }
 
-  private mineBlock(block: Block): Block {
+  public mineBlock(block: Block): Block {
+    const startTime = process.hrtime();
     console.log(`Mining service: Mining block #${block.id}...`);
     const difficulty = this.configService.get<number>(
       'blockchain.miningDifficulty',
@@ -79,7 +80,11 @@ export class MiningService {
       nonce++;
     }
     block.hash = blockHash;
-    console.log(`Mining service: Block #${block.id} mined.`);
+    const endTime = process.hrtime(startTime);
+    const duration = endTime[0] + endTime[1] / Math.pow(10, 9);
+    console.log(
+      `Mining service: Block #${block.id} mined in ${duration} seconds`,
+    );
     return block;
   }
 

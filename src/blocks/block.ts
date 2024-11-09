@@ -7,6 +7,7 @@ export class Block {
   previousHash: string;
   nonce: number;
   timestamp: Date;
+  data: string;
 
   toString(): string {
     return (
@@ -16,7 +17,8 @@ export class Block {
         .toString() +
       this.previousHash +
       this.nonce.toString() +
-      this.timestamp.toString()
+      this.timestamp.toString() +
+      this.data
     );
   }
 }

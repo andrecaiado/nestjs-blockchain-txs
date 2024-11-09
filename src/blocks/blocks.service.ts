@@ -21,9 +21,7 @@ export class BlocksService {
 
   public createGenesisBlock() {
     const hash = this.configService.get<string>('blockchain.genesisBlock.hash');
-    const nonce = this.configService.get<number>(
-      'blockchain.genesisBlock.nonce',
-    );
+    const data = this.configService.get<string>('blockchain.genesisBlock.data');
 
     const transaction = this.transactionsService.createGenesisTransaction();
     const genesisBlock: Block = {
@@ -31,8 +29,9 @@ export class BlocksService {
       transactions: [transaction],
       hash: hash,
       previousHash: '0',
-      nonce: nonce,
+      nonce: 0,
       timestamp: new Date(),
+      data: data,
     };
 
     return genesisBlock;
