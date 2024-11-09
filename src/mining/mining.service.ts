@@ -10,6 +10,7 @@ import { Transaction } from 'src/transactions/transaction';
 import { TransactionsService } from 'src/transactions/transactions.service';
 import { createHash } from 'node:crypto';
 import { WalletsService } from 'src/wallets/wallets.service';
+import { PoolsService } from 'src/pools/pools.service';
 
 @Injectable()
 export class MiningService {
@@ -19,6 +20,7 @@ export class MiningService {
     @Inject() private blocksService: BlocksService,
     @Inject() private configService: ConfigService,
     @Inject() private walletsService: WalletsService,
+    @Inject() private poolsService: PoolsService,
   ) {}
 
   @RabbitSubscribe({
@@ -58,6 +60,10 @@ export class MiningService {
     block = this.mineBlock(block);
 
     // Broadcast mined block
+    this.poolsService.publish(
+      this.configService.get<string>('rabbitmq.exchanges[1].name'),
+      block,
+    );
 
     // Delete msgs from queue
     // I believe they are instantly deleted by default...
