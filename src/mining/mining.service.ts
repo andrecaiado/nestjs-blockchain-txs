@@ -62,9 +62,6 @@ export class MiningService {
     // Delete msgs from queue
     // I believe they are instantly deleted by default...
     // Remove this step from the process?
-
-    console.log(`Mining service: Block mined`);
-
     return block;
   }
 
@@ -79,12 +76,10 @@ export class MiningService {
     while (!blockHash.startsWith(blockHashPrefix)) {
       block.nonce = nonce;
       blockHash = createHash('sha256').update(block.toString()).digest('hex');
-      console.log(blockHash);
-      console.log(block.nonce);
       nonce++;
     }
     block.hash = blockHash;
-    console.log(`Mining service: Block #${block.id} mined...`);
+    console.log(`Mining service: Block #${block.id} mined.`);
     return block;
   }
 
