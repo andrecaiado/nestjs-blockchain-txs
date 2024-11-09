@@ -97,6 +97,10 @@ Before publishing the transaction to the `global-tx-pool-exchange`, it validates
 - Check if the inputs (UTXOs) are not already spent.
 - Check if inputs are enough to cover the outputs.
 
+This service is also responsible for creating:
+- The `genesis transaction` when the blockchain is initialized. The `genesis transaction` is the first transaction in the blockchain and is used to create the initial funds.
+- The `coinbase transaction` when a new block is mined. The `coinbase transaction` is the first transaction in a block and is used to reward the miner.
+
 # Pools
 
 All pools are implemented as RabbitMQ exchanges and queues. The pools are:
@@ -154,9 +158,33 @@ public async mempoolTxsHandler(msg: object): Promise<Block> {
 }
 ```
 
-# Block
+The `mempoolTxsHandler` function returns a `Promise<Block>` for unit test purposes, otherwise, it was supposed to return void (`Subscribe handlers should only return void`).
 
-The block is represented by the [Block](../src/blocks/block.ts) class.
+The `mineBlock` function is responsible for calculating the block hash. The dificulty is specified in the `.env` file and is loaded through the `ConfigService`. The function increases the `nonce` value in the block until the block hash starts with the `blockHashPrefix`.
+
+```typescript
+private mineBlock(block: Block): Block {
+    console.log(`Mining service: Mining block #${block.id}...`);
+    const difficulty = this.configService.get<number>(
+      'blockchain.miningDifficulty',
+    );
+    const blockHashPrefix = '0'.repeat(difficulty);
+    let blockHash: string = '';
+    let nonce: number = 0;
+    while (!blockHash.startsWith(blockHashPrefix)) {
+      block.nonce = nonce;
+      blockHash = createHash('sha256').update(block.toString()).digest('hex');
+      nonce++;
+    }
+    block.hash = blockHash;
+    console.log(`Mining service: Block #${block.id} mined.`);
+    return block;
+  }
+```
+
+# Blocks
+
+A block is represented by the [Block](../src/blocks/block.ts) class.
 
 ```typescript
 export class Block {
@@ -168,7 +196,15 @@ export class Block {
 }
 ```
 
-The block service is implemented in the [BlockService](../src/blocks/blocks.service.ts) class. The `createBlock` function is responsible for creating the `genesis block` when the service is initialized and for creating new `blocks`.
+The blocks service is implemented in the [BlockService](../src/blocks/blocks.service.ts) class. The `createBlock` function is responsible for creating the `genesis block` when the service is initialized and for creating new `blocks`.
+
+The `createBlock` function receives the transactions to include in the block and the miner wallet that is handling the block.
+
+```typescript
+public createBlock(transactions: Transaction[], minerWallet: Wallet): Block {
+  ...
+}
+```
 
 # Blockchain
 
