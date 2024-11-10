@@ -115,6 +115,10 @@ The `global-tx-pool-exchange` is a RabbitMQ exchange of type `fanout`. This mean
 
 In this project, the only queue bounded to the exchange is the `miner-mempool-queue`.
 
+When a transaction is submitted to the `/transactions` endpoint, the `transactions service` publishes the transaction to the `global-tx-pool-exchange` (after the transaction is validated).
+
+```typescript
+
 The `publish` function is implemented in the [PoolsService](../src/pools/pools.service.ts). This function is used to publish a message to any exchange.
 
 ```typescript
@@ -135,6 +139,25 @@ public async publish(exchange: string, message: any): Promise<void> {
 The `miner-mempool-queue` is a RabbitMQ queue bounded to the `global-tx-pool-exchange`. This queue is used by the miners (the `mining service`) to fetch transactions to be included in the block.
 
 In this project, the `miner-mempool-queue` is consumed by the [MiningService](../src/mining/mining.service.ts).
+
+## Blocks announcement pool exchange
+
+The `block-announcement-pool-exchange` is a RabbitMQ exchange of type `fanout`. This means that the messages published to the exchange will be routed to the all the queues bounded to the exchange.
+
+In this project, the only queue bounded to the exchange is the `miner-pool-announced-blocks-queue`.
+
+When a block is mined, the `mining service` publishes the mined block to the `block-announcement-pool-exchange`.
+
+As the `global-tx-pool-exchange`, the `publish` function is used to publish the mined block to the `block-announcement-pool-exchange`.
+
+## Global pool for announced blocks
+
+The `global-pool-announced-blocks-queue` is a RabbitMQ queue bounded to the `block-announcement-pool-exchange`. This queue is used by the miners to fetch the mined blocks.
+
+After fetching the mined block, the miner will validate the block and add it to the blockchain.
+
+TODO: Update this section
+In this project, the `miner-pool-announced-blocks-queue` is consumed by the [MinerService](../src/mining/miner.service.ts).
 
 # Mining Service
 
@@ -180,6 +203,12 @@ private mineBlock(block: Block): Block {
     console.log(`Mining service: Block #${block.id} mined.`);
     return block;
   }
+```
+
+After mining the block, the `mempoolTxsHandler` function broadcasts the mined block to the `block-announcement-pool-exchange`.
+
+```typescript
+this.poolsService.publish('block-announcement-pool-exchange', minedBlock);
 ```
 
 # Blocks
@@ -266,3 +295,9 @@ export class PoolsModule {}
 ```
 
 # Configuration Service
+
+The NestJS `ConfigModule` is configured in the [AppModule](/src/app.module.ts) to load the properties from the `config` constant that is declared in the [config](/src/config/config.ts) file. It is also configured to be available globally in all the application modules.
+
+This configuration allows the `ConfigService` to be injected in the other application services and thus access the data from the `config` constant. This constant contains data that is loaded from the [.env](../.env) file. 
+
+

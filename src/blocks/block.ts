@@ -1,4 +1,5 @@
 import { Transaction } from 'src/transactions/transaction';
+import { createHash } from 'node:crypto';
 
 export class Block {
   id: number;
@@ -6,11 +7,12 @@ export class Block {
   hash: string;
   previousHash: string;
   nonce: number;
-  timestamp: Date;
+  timestamp: string;
   data: string;
 
   toString(): string {
     return (
+      this.id +
       this.transactions
         .map((transaction) => transaction.toString())
         .join('')
@@ -20,5 +22,9 @@ export class Block {
       this.timestamp.toString() +
       this.data
     );
+  }
+
+  calculateHash(): string {
+    return createHash('sha256').update(this.toString()).digest('hex');
   }
 }

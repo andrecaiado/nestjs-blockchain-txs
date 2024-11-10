@@ -1,9 +1,10 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { BlockchainService } from './blockchain.service';
-import { BlocksModule } from 'src/blocks/blocks.module';
+import { BlockchainController } from './blockchain.controller';
 
 @Module({
   providers: [BlockchainService],
   exports: [BlockchainService],
+  controllers: [BlockchainController],
 })
 export class BlockchainModule {}

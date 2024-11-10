@@ -246,23 +246,45 @@ export class TransactionsService {
     const minerReward: number =
       this.configService.get<number>('blockchain.minerReward') +
       transactionFees;
-    const transaction: Transaction = {
-      transactionId: '0',
-      senderPublicKey: '',
-      recipientPublicKey: minerWallet.publicKey,
-      amount: minerReward,
-      inputs: [],
-      outputs: [
-        {
-          recipientPublicKey: minerWallet.publicKey,
-          amount: minerReward,
-          parentTransactionId: '0',
-          id: '0',
-        },
-      ],
-      transactionFees: 0,
-      signature: '',
-    };
+    const transaction = new Transaction();
+    transaction.transactionId = '0';
+    transaction.senderPublicKey = '';
+    transaction.recipientPublicKey = minerWallet.publicKey;
+    transaction.amount = minerReward;
+    transaction.inputs = [];
+    const txo = new TransactionOutput();
+    txo.recipientPublicKey = minerWallet.publicKey;
+    txo.amount = minerReward;
+    txo.parentTransactionId = '0';
+    txo.id = '0';
+    transaction.outputs = [txo];
+    //  = [
+    //   {
+    //     recipientPublicKey: minerWallet.publicKey,
+    //     amount: minerReward,
+    //     parentTransactionId: '0',
+    //     id: '0',
+    //   },
+    // ];
+    transaction.transactionFees = 0;
+    transaction.signature = '';
+    // : Transaction = {
+    //   transactionId: '0',
+    //   senderPublicKey: '',
+    //   recipientPublicKey: minerWallet.publicKey,
+    //   amount: minerReward,
+    //   inputs: [],
+    //   outputs: [
+    //     {
+    //       recipientPublicKey: minerWallet.publicKey,
+    //       amount: minerReward,
+    //       parentTransactionId: '0',
+    //       id: '0',
+    //     },
+    //   ],
+    //   transactionFees: 0,
+    //   signature: '',
+    // };
     return transaction;
   }
 }

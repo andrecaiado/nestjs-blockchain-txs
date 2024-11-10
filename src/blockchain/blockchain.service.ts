@@ -2,6 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { Blockchain } from './blockchain';
 import { TransactionOutput } from 'src/transactions/transaction';
 import { Block } from 'src/blocks/block';
+import { RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
+//import { createHash } from 'node:crypto';
+import { BlockDtoMapper } from 'src/blocks/dto/mappers/block.dto.mapper';
+import { BlockDto } from 'src/blocks/dto/block.dto';
 
 @Injectable()
 export class BlockchainService {
@@ -11,6 +15,10 @@ export class BlockchainService {
     console.log('Blockchain service: Creating blockchain...');
     this.blockchain = new Blockchain();
     console.log('Blockchain service: Blockchain created!');
+  }
+
+  public getBlockchain() {
+    return this.blockchain;
   }
 
   public getWalletUTXOs(walletPublicKey: string): TransactionOutput[] {
@@ -39,5 +47,62 @@ export class BlockchainService {
     console.log('Blockchain service: Adding block to the blockchain...');
     this.blockchain.chain.push(block);
     console.log('Blockchain service: Block added to the blockchain.');
+  }
+
+  @RabbitSubscribe({
+    queue: 'miner-pool-announced-blocks-queue',
+  })
+  public async poolAnnouncedBlocksHandler(msg: object): Promise<void> {
+    console.log(
+      `Blockchain service: Received new block ${JSON.stringify(msg)}`,
+    );
+
+    // Map msg to Block model
+    let block: Block = null;
+    try {
+      block = BlockDtoMapper.toBlock(msg as BlockDto);
+    } catch (error) {
+      console.error(
+        'Blockchain service: Error mapping message to block, block discarded.',
+      );
+      return;
+    }
+
+    // Validate block
+    if (this.validateBlock(block)) {
+      this.addBlock(block);
+    } else {
+      console.error(
+        `Blockchain service: Block #${block.id} is not valid, block discarded.`,
+      );
+    }
+  }
+
+  private validateBlock(block: Block): boolean {
+    if (!block) {
+      return false;
+    }
+
+    // Check if the block hash is correct
+    // const blockHash: string = createHash('sha256')
+    //   .update(block.toString())
+    //   .digest('hex');
+    if (block.hash !== block.calculateHash()) {
+      console.error(
+        `Blockchain service: Block #${block.id} hash is incorrect, block discarded.`,
+      );
+      return false;
+    }
+
+    // Check if the block previous hash is correct
+    const previousBlock = this.getLastBlock();
+    if (block.previousHash !== previousBlock.hash) {
+      console.error(
+        `Blockchain service: Block #${block.id} previous hash is incorrect, block discarded.`,
+      );
+      return false;
+    }
+
+    return true;
   }
 }

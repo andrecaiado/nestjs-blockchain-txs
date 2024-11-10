@@ -34,12 +34,18 @@ cd your-repository-name
 npm install
 ```
 
-4. Start RabbitMQ with Docker Compose
+4. Create and update the .env file
+```text
+Create a copy of the `.env.template` and change the name to `.env`
+Update the values (optional)
+````
+
+5. Start RabbitMQ with Docker Compose
 ```shell
 docker compose up -d
 ```
 
-5. Run the application
+6. Run the application
 ```shell 
 npm run start:dev
 ```

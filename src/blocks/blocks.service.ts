@@ -24,15 +24,23 @@ export class BlocksService {
     const data = this.configService.get<string>('blockchain.genesisBlock.data');
 
     const transaction = this.transactionsService.createGenesisTransaction();
-    const genesisBlock: Block = {
-      id: 0,
-      transactions: [transaction],
-      hash: hash,
-      previousHash: '0',
-      nonce: 0,
-      timestamp: new Date(),
-      data: data,
-    };
+    const genesisBlock = new Block();
+    genesisBlock.id = 0;
+    genesisBlock.transactions = [transaction];
+    genesisBlock.hash = hash;
+    genesisBlock.previousHash = '0';
+    genesisBlock.nonce = 0;
+    genesisBlock.timestamp = new Date().toUTCString();
+    genesisBlock.data = data;
+    // : Block = {
+    //   id: 0,
+    //   transactions: [transaction],
+    //   hash: hash,
+    //   previousHash: '0',
+    //   nonce: 0,
+    //   timestamp: new Date(),
+    //   data: data,
+    // };
 
     return genesisBlock;
   }
@@ -56,11 +64,12 @@ export class BlocksService {
 
     const newBlock: Block = new Block();
     newBlock.id = lastBlockId + 1;
-    newBlock.transactions = transactions;
+    newBlock.transactions = [...transactions];
     newBlock.hash = '';
     newBlock.previousHash = previousHash;
     newBlock.nonce = 0;
-    newBlock.timestamp = new Date();
+    newBlock.timestamp = new Date().toUTCString();
+    newBlock.data = '';
 
     console.log(
       `Blocks service: Created new block with ${transactions.length} transaction(s).`,

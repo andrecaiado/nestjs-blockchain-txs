@@ -8,7 +8,7 @@ import { TransactionDtoMapper } from 'src/transactions/dto/mappers/transaction.m
 import { TransactionDto } from 'src/transactions/dto/transaction.dto';
 import { Transaction } from 'src/transactions/transaction';
 import { TransactionsService } from 'src/transactions/transactions.service';
-import { createHash } from 'node:crypto';
+//import { createHash } from 'node:crypto';
 import { WalletsService } from 'src/wallets/wallets.service';
 import { PoolsService } from 'src/pools/pools.service';
 
@@ -82,7 +82,7 @@ export class MiningService {
     let nonce: number = 0;
     while (!blockHash.startsWith(blockHashPrefix)) {
       block.nonce = nonce;
-      blockHash = createHash('sha256').update(block.toString()).digest('hex');
+      blockHash = block.calculateHash(); //createHash('sha256').update(block.toString()).digest('hex');
       nonce++;
     }
     block.hash = blockHash;
