@@ -48,10 +48,9 @@
         <bpmn:flowNodeRef>Activity_0ywbav1</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Activity_17n2bva</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Activity_0ibwr4m</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Activity_1wq3nym</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Activity_0rn29j5</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Event_0ov4a8c</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Event_0n15o22</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_0ov4a8c</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="Lane_05y3v5m" name="Blockchain service">
         <bpmn:flowNodeRef>Event_0mg9p1j</bpmn:flowNodeRef>
@@ -73,9 +72,8 @@
     <bpmn:sequenceFlow id="Flow_1qy8mcl" sourceRef="Activity_0ibwr4m" targetRef="Activity_1g76o7q" />
     <bpmn:sequenceFlow id="Flow_03y4f5r" sourceRef="Activity_1g76o7q" targetRef="Activity_0ywbav1" />
     <bpmn:sequenceFlow id="Flow_0vam75x" sourceRef="Activity_0ywbav1" targetRef="Activity_17n2bva" />
-    <bpmn:sequenceFlow id="Flow_066rppi" sourceRef="Activity_17n2bva" targetRef="Activity_1wq3nym" />
+    <bpmn:sequenceFlow id="Flow_066rppi" sourceRef="Activity_17n2bva" targetRef="Event_0ov4a8c" />
     <bpmn:sequenceFlow id="Flow_0c6vk56" sourceRef="Activity_0rn29j5" targetRef="Activity_0ibwr4m" />
-    <bpmn:sequenceFlow id="Flow_16yor5x" sourceRef="Activity_1wq3nym" targetRef="Event_0ov4a8c" />
     <bpmn:sequenceFlow id="Flow_0fknxxe" sourceRef="Event_0n15o22" targetRef="Activity_0rn29j5" />
     <bpmn:sequenceFlow id="Flow_1cgx2k3" sourceRef="Event_0mg9p1j" targetRef="Activity_1h35kg7" />
     <bpmn:sequenceFlow id="Flow_19537ai" sourceRef="Activity_1h35kg7" targetRef="Activity_1blwjpz" />
@@ -129,17 +127,10 @@
       <bpmn:incoming>Flow_0c6vk56</bpmn:incoming>
       <bpmn:outgoing>Flow_1qy8mcl</bpmn:outgoing>
     </bpmn:task>
-    <bpmn:task id="Activity_1wq3nym" name="Remove processed txs from the mempool">
-      <bpmn:incoming>Flow_066rppi</bpmn:incoming>
-      <bpmn:outgoing>Flow_16yor5x</bpmn:outgoing>
-    </bpmn:task>
     <bpmn:task id="Activity_0rn29j5" name="Get transactions from mempool">
       <bpmn:incoming>Flow_0fknxxe</bpmn:incoming>
       <bpmn:outgoing>Flow_0c6vk56</bpmn:outgoing>
     </bpmn:task>
-    <bpmn:endEvent id="Event_0ov4a8c" name="Block mined">
-      <bpmn:incoming>Flow_16yor5x</bpmn:incoming>
-    </bpmn:endEvent>
     <bpmn:startEvent id="Event_0n15o22" name="New transactions in miner mempool">
       <bpmn:outgoing>Flow_0fknxxe</bpmn:outgoing>
       <bpmn:signalEventDefinition id="SignalEventDefinition_06x2lmt" />
@@ -170,6 +161,9 @@
     </bpmn:endEvent>
     <bpmn:endEvent id="Event_146quju" name="Block added to blockchain">
       <bpmn:incoming>Flow_1q9n35f</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="Event_0ov4a8c" name="Block mined">
+      <bpmn:incoming>Flow_066rppi</bpmn:incoming>
     </bpmn:endEvent>
   </bpmn:process>
   <bpmn:process id="Process_18z0jmq" isExecutable="false">
@@ -266,19 +260,9 @@
         <dc:Bounds x="862" y="523" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1wq3nym_di" bpmnElement="Activity_1wq3nym">
-        <dc:Bounds x="1482" y="523" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0rn29j5_di" bpmnElement="Activity_0rn29j5">
         <dc:Bounds x="707" y="523" width="100" height="80" />
         <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0ov4a8c_di" bpmnElement="Event_0ov4a8c">
-        <dc:Bounds x="1634" y="545" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="1622" y="588" width="60" height="14" />
-        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_11cgl82_di" bpmnElement="Event_0n15o22">
         <dc:Bounds x="614" y="545" width="36" height="36" />
@@ -320,6 +304,12 @@
         <dc:Bounds x="1638" y="695" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="1620" y="738" width="73" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0ov4a8c_di" bpmnElement="Event_0ov4a8c">
+        <dc:Bounds x="1472" y="545" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1460" y="588" width="60" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_0cyuzh1_di" bpmnElement="Flow_0cyuzh1">
@@ -370,15 +360,11 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_066rppi_di" bpmnElement="Flow_066rppi">
         <di:waypoint x="1427" y="563" />
-        <di:waypoint x="1482" y="563" />
+        <di:waypoint x="1472" y="563" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0c6vk56_di" bpmnElement="Flow_0c6vk56">
         <di:waypoint x="807" y="563" />
         <di:waypoint x="862" y="563" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_16yor5x_di" bpmnElement="Flow_16yor5x">
-        <di:waypoint x="1582" y="563" />
-        <di:waypoint x="1634" y="563" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0fknxxe_di" bpmnElement="Flow_0fknxxe">
         <di:waypoint x="650" y="563" />
