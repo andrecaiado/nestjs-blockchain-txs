@@ -3,9 +3,8 @@ import { Blockchain } from './blockchain';
 import { TransactionOutput } from 'src/transactions/transaction';
 import { Block } from 'src/blocks/block';
 import { RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
-//import { createHash } from 'node:crypto';
-import { BlockDtoMapper } from 'src/blocks/dto/mappers/block.dto.mapper';
 import { BlockDto } from 'src/blocks/dto/block.dto';
+import { BlockDtoMapper } from 'src/blocks/dto/mappers/block.dto.mapper';
 
 @Injectable()
 export class BlockchainService {
@@ -83,10 +82,6 @@ export class BlockchainService {
       return false;
     }
 
-    // Check if the block hash is correct
-    // const blockHash: string = createHash('sha256')
-    //   .update(block.toString())
-    //   .digest('hex');
     if (block.hash !== block.calculateHash()) {
       console.error(
         `Blockchain service: Block #${block.id} hash is incorrect, block discarded.`,
@@ -104,5 +99,9 @@ export class BlockchainService {
     }
 
     return true;
+  }
+
+  public getBlockchainDto() {
+    return null;
   }
 }

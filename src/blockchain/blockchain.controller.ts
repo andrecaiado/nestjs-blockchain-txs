@@ -1,6 +1,7 @@
 import { Controller, Get, HttpCode, HttpStatus, Inject } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BlockchainService } from './blockchain.service';
+import { BlockchainDto } from './dto/blockchain.dto';
 
 @ApiTags('Blockchain')
 @Controller('blockchain')
@@ -18,7 +19,7 @@ export class BlockchainController {
   })
   @HttpCode(HttpStatus.OK)
   @Get()
-  getBlockchain() {
-    return this.blockchainService.getBlockchain();
+  getBlockchain(): BlockchainDto {
+    return this.blockchainService.getBlockchainDto();
   }
 }

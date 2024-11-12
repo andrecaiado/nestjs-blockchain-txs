@@ -1,5 +1,13 @@
-import { BlockDto } from 'src/blocks/dto/block.dto';
+export class BlockPreview {
+  blockId: string;
+  timestamp: number;
+  totalTransactions: number;
+}
 
 export class BlockchainDto {
-  chain: BlockDto[];
+  totalTransactions: number = 0;
+  totalBlocks: number = 0;
+  totalCoins: number = 0;
+  totalAddresses: number = 0;
+  chainPreview: BlockPreview[] = [];
 }
