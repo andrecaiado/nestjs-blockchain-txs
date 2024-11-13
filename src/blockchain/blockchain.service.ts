@@ -5,6 +5,7 @@ import { Block } from 'src/blocks/block';
 import { RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
 import { BlockDto } from 'src/blocks/dto/block.dto';
 import { BlockDtoMapper } from 'src/blocks/dto/mappers/block.dto.mapper';
+import { BlockchainMapper } from './blockchain.mapper';
 
 @Injectable()
 export class BlockchainService {
@@ -16,18 +17,60 @@ export class BlockchainService {
     console.log('Blockchain service: Blockchain created!');
   }
 
-  public getBlockchain() {
-    return this.blockchain;
+  public getWalletUTXOs(walletPublicKey: string): TransactionOutput[] {
+    const utxos: TransactionOutput[] = [];
+    const spentOutputs = new Set();
+
+    this.blockchain.chain.forEach((block) => {
+      block.transactions.forEach((transaction) => {
+        transaction.inputs.forEach((input) => {
+          if (input.UTXO.recipientPublicKey === walletPublicKey) {
+            spentOutputs.add(`${input.transactionOutputId}`);
+          }
+        });
+      });
+    });
+
+    this.blockchain.chain.forEach((block) => {
+      block.transactions.forEach((transaction) => {
+        transaction.outputs.forEach((output) => {
+          if (output.recipientPublicKey === walletPublicKey) {
+            const utxoRef = `${output.id}`;
+            if (!spentOutputs.has(utxoRef)) {
+              utxos.push(output);
+            }
+          }
+        });
+      });
+    });
+
+    return utxos;
   }
 
-  public getWalletUTXOs(walletPublicKey: string): TransactionOutput[] {
-    // This is mocked data.
-    const txo = new TransactionOutput();
-    txo.amount = 100.54;
-    txo.id = '123';
-    txo.parentTransactionId = '123';
-    txo.recipientPublicKey = walletPublicKey;
-    return [txo];
+  public getUTXOs() {
+    const utxos: TransactionOutput[] = [];
+    const spentOutputs = new Set();
+
+    this.blockchain.chain.forEach((block) => {
+      block.transactions.forEach((transaction) => {
+        transaction.inputs.forEach((input) => {
+          spentOutputs.add(`${input.transactionOutputId}`);
+        });
+      });
+    });
+
+    this.blockchain.chain.forEach((block) => {
+      block.transactions.forEach((transaction) => {
+        transaction.outputs.forEach((output) => {
+          const utxoRef = `${output.id}`;
+          if (!spentOutputs.has(utxoRef)) {
+            utxos.push(output);
+          }
+        });
+      });
+    });
+
+    return utxos;
   }
 
   public addGenesisBlock(genesisBlock: Block) {
@@ -102,6 +145,15 @@ export class BlockchainService {
   }
 
   public getBlockchainDto() {
-    return null;
+    return BlockchainMapper.toBlockchainDto(
+      this.blockchain,
+      this.getTotalUTXOs(),
+    );
+  }
+
+  public getTotalUTXOs() {
+    return this.getUTXOs()
+      .map((utxo) => utxo.amount)
+      .reduce((a, b) => a + b, 0);
   }
 }
