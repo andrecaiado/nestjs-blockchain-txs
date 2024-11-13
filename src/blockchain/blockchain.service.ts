@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Blockchain } from './blockchain';
 import { TransactionOutput } from 'src/transactions/transaction';
 import { Block } from 'src/blocks/block';
@@ -6,6 +6,7 @@ import { RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
 import { BlockDto } from 'src/blocks/dto/block.dto';
 import { BlockDtoMapper } from 'src/blocks/dto/mappers/block.dto.mapper';
 import { BlockchainMapper } from './blockchain.mapper';
+import { BlockMapper } from 'src/blocks/block.mapper';
 
 @Injectable()
 export class BlockchainService {
@@ -155,5 +156,18 @@ export class BlockchainService {
     return this.getUTXOs()
       .map((utxo) => utxo.amount)
       .reduce((a, b) => a + b, 0);
+  }
+
+  private findBlockById(blockId: number): Block {
+    return this.blockchain.chain.find((block) => block.id === blockId);
+  }
+
+  public getBlock(blockId: string): BlockDto {
+    const block = this.findBlockById(+blockId);
+    if (block == null) {
+      throw new NotFoundException(`Block with blockId '${blockId}' not found!`);
+    }
+
+    return BlockMapper.toBlockDto(block);
   }
 }

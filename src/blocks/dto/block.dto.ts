@@ -1,8 +1,8 @@
-import { Transaction } from 'src/transactions/transaction';
+import { TransactionDto } from 'src/transactions/dto/transaction.dto';
 
 export class BlockDto {
   id: number;
-  transactions: Transaction[];
+  transactions: TransactionDto[];
   hash: string;
   previousHash: string;
   nonce: number;
