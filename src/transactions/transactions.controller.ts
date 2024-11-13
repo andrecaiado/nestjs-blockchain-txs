@@ -25,14 +25,6 @@ export class TransactionsController {
     status: HttpStatus.OK,
     description: 'The transaction was submitted successfully.',
   })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: `Transaction signature is invalid.\t\nThere are UTXOs in the inputs that do not belong to the sender.`,
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: `There are UTXOs that are not unspent.\t\nInputs are not enough to cover the outputs.`,
-  })
   @Post()
   @HttpCode(HttpStatus.OK)
   submitTransaction(@Body() transactionDto: TransactionDto): Promise<any> {
