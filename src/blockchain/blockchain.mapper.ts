@@ -4,6 +4,14 @@ import { BlockchainDto } from './dto/blockchain.dto';
 
 export class BlockchainMapper {
   static toBlockchainDto(blockchain: Blockchain, utxos: number): BlockchainDto {
+    const addresses = new Set();
+    blockchain.chain.forEach((block) => {
+      block.transactions.forEach((transaction) => {
+        transaction.outputs.forEach((output) => {
+          addresses.add(output.recipientPublicKey);
+        });
+      });
+    });
     const blockchainDto = {
       status: {
         totalTransactions: blockchain.chain.reduce(
@@ -12,7 +20,7 @@ export class BlockchainMapper {
         ),
         totalBlocks: blockchain.chain.length,
         totalCoins: utxos,
-        totalAddresses: 2, // TODO: Implement calculation
+        totalAddresses: addresses.size,
       },
       chainPreview: blockchain.chain.map((block) =>
         BlockMapper.toBlockPreview(block),
