@@ -43,15 +43,6 @@ export class TransactionsService {
       transactionDto,
     );
 
-    // if (!result) {
-    //   const errorMsg = `Transaction ${transactionDto.transactionId}: failed to submit`;
-    //   console.error(errorMsg);
-    //   throw new BadRequestException(errorMsg);
-    // }
-
-    // const successMsg = `Transaction ${transactionDto.transactionId}: submitted successfully.`;
-    // console.log(successMsg);
-
     const msg = `Transaction ${transactionDto.transactionId}: submitted.`;
     console.log(msg);
 
@@ -65,11 +56,12 @@ export class TransactionsService {
 
     // Verify signature
     if (
-      !this.verifySignature(
-        transaction.toString(),
-        transaction.signature,
-        transaction.senderPublicKey,
-      )
+      transaction.verifySignature(transaction.senderPublicKey) === false
+      // !this.verifySignature(
+      //   transaction.toString(),
+      //   transaction.signature,
+      //   transaction.senderPublicKey,
+      // )
     ) {
       errorMsg = `Transaction ${transaction.transactionId} validation: signature is invalid`;
       console.error(errorMsg);
@@ -213,31 +205,39 @@ export class TransactionsService {
     transaction.recipientPublicKey = recipientWallet.publicKey;
     transaction.amount = amount;
     transaction.inputs = [];
-    transaction.outputs = [
-      {
-        recipientPublicKey: recipientWallet.publicKey,
-        amount: amount,
-        parentTransactionId: '0',
-        id: '0',
-      },
-    ];
+
+    const txo = new TransactionOutput();
+    txo.recipientPublicKey = recipientWallet.publicKey;
+    txo.amount = amount;
+    txo.parentTransactionId = '0';
+    txo.id = '0';
+    transaction.outputs = [txo];
+    // [
+    //   {
+    //     recipientPublicKey: recipientWallet.publicKey,
+    //     amount: amount,
+    //     parentTransactionId: '0',
+    //     id: '0',
+    //   },
+    // ];
     transaction.transactionFees = 0;
     transaction.transactionId = '0';
-    transaction.signature = this.generateSignature(
-      transaction.toString(),
-      coinbaseWallet.privateKey,
-    );
+    transaction.signature = transaction.sign(coinbaseWallet.privateKey);
+    // transaction.signature = this.generateSignature(
+    //   transaction.toString(),
+    //   coinbaseWallet.privateKey,
+    // );
 
     return transaction;
   }
 
-  private generateSignature(data: string, privateKey: string): string {
-    const hash = createHash('sha256').update(data).digest();
-    const ECPair = ECPairFactory(ecc);
-    const keyPair = ECPair.fromPrivateKey(Buffer.from(privateKey, 'hex'));
-    const signature = keyPair.sign(hash);
-    return Buffer.from(signature).toString('hex');
-  }
+  // private generateSignature(data: string, privateKey: string): string {
+  //   const hash = createHash('sha256').update(data).digest();
+  //   const ECPair = ECPairFactory(ecc);
+  //   const keyPair = ECPair.fromPrivateKey(Buffer.from(privateKey, 'hex'));
+  //   const signature = keyPair.sign(hash);
+  //   return Buffer.from(signature).toString('hex');
+  // }
 
   public createCoinbaseTransaction(
     minerWallet: Wallet,
@@ -246,45 +246,36 @@ export class TransactionsService {
     const minerReward: number =
       this.configService.get<number>('blockchain.minerReward') +
       transactionFees;
+
+    const txo = new TransactionOutput();
+    txo.recipientPublicKey = minerWallet.publicKey;
+    txo.amount = minerReward;
+    txo.parentTransactionId = '0';
+    txo.id = this.createTransactionId('', minerWallet.publicKey, minerReward);
+
     const transaction = new Transaction();
     transaction.transactionId = '0';
     transaction.senderPublicKey = '';
     transaction.recipientPublicKey = minerWallet.publicKey;
     transaction.amount = minerReward;
     transaction.inputs = [];
-    const txo = new TransactionOutput();
-    txo.recipientPublicKey = minerWallet.publicKey;
-    txo.amount = minerReward;
-    txo.parentTransactionId = '0';
-    txo.id = '0';
     transaction.outputs = [txo];
-    //  = [
-    //   {
-    //     recipientPublicKey: minerWallet.publicKey,
-    //     amount: minerReward,
-    //     parentTransactionId: '0',
-    //     id: '0',
-    //   },
-    // ];
     transaction.transactionFees = 0;
     transaction.signature = '';
-    // : Transaction = {
-    //   transactionId: '0',
-    //   senderPublicKey: '',
-    //   recipientPublicKey: minerWallet.publicKey,
-    //   amount: minerReward,
-    //   inputs: [],
-    //   outputs: [
-    //     {
-    //       recipientPublicKey: minerWallet.publicKey,
-    //       amount: minerReward,
-    //       parentTransactionId: '0',
-    //       id: '0',
-    //     },
-    //   ],
-    //   transactionFees: 0,
-    //   signature: '',
-    // };
+
     return transaction;
+  }
+
+  private createTransactionId(
+    publicKey: string,
+    recipientAddress: string,
+    amount: number,
+  ): string {
+    return createHash('sha256')
+      .update(publicKey)
+      .update(recipientAddress)
+      .update(amount.toString())
+      .update(new Date().toISOString())
+      .digest('hex');
   }
 }

@@ -145,14 +145,15 @@ export class WalletsService {
       createTransactionDto.amount,
       transaction.transactionId,
       transactionChange,
+      senderPublicKey,
     );
     transaction.amount = createTransactionDto.amount;
     transaction.transactionFees = transactionFees;
-
-    transaction.signature = this.generateSignature(
-      transaction.toString(),
-      senderWallet.privateKey,
-    );
+    transaction.signature = transaction.sign(senderWallet.privateKey);
+    // transaction.signature = this.generateSignature(
+    //   transaction.toString(),
+    //   senderWallet.privateKey,
+    // );
 
     console.log(
       `Wallet service: Wallet ${senderPublicKey}: transaction ID is '${transaction.transactionId}'`,
@@ -249,6 +250,7 @@ export class WalletsService {
     amount: number,
     parentTransactionId: string,
     transactionChange: number,
+    senderPublicKey: string,
   ): TransactionOutput[] {
     // Create transaction output for recipient
     const outputs: TransactionOutput[] = [];
@@ -272,7 +274,7 @@ export class WalletsService {
         parentTransactionId,
       );
       changeOutput.parentTransactionId = parentTransactionId;
-      changeOutput.recipientPublicKey = recipientPublicKey;
+      changeOutput.recipientPublicKey = senderPublicKey;
       outputs.push(changeOutput);
     }
     return outputs;

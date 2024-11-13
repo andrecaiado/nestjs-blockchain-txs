@@ -32,15 +32,6 @@ export class BlocksService {
     genesisBlock.nonce = 0;
     genesisBlock.timestamp = new Date().toUTCString();
     genesisBlock.data = data;
-    // : Block = {
-    //   id: 0,
-    //   transactions: [transaction],
-    //   hash: hash,
-    //   previousHash: '0',
-    //   nonce: 0,
-    //   timestamp: new Date(),
-    //   data: data,
-    // };
 
     return genesisBlock;
   }
