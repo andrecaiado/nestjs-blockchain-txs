@@ -30,7 +30,7 @@ export class BlocksService {
     genesisBlock.hash = hash;
     genesisBlock.previousHash = '0';
     genesisBlock.nonce = 0;
-    genesisBlock.timestamp = new Date().toUTCString();
+    genesisBlock.timestamp = new Date().getTime();
     genesisBlock.data = data;
 
     return genesisBlock;
@@ -59,7 +59,7 @@ export class BlocksService {
     newBlock.hash = '';
     newBlock.previousHash = previousHash;
     newBlock.nonce = 0;
-    newBlock.timestamp = new Date().toUTCString();
+    newBlock.timestamp = new Date().getTime();
     newBlock.data = '';
 
     console.log(

@@ -1,6 +1,6 @@
 export class BlockPreview {
   blockId: number;
-  timestamp: number;
+  timestamp: string;
   totalTransactions: number;
 }
 

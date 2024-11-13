@@ -171,7 +171,7 @@ export class WalletsService {
       .update(publicKey)
       .update(recipientAddress)
       .update(amount.toString())
-      .update(new Date().toISOString())
+      .update(new Date().getTime().toString())
       .digest('hex');
   }
 

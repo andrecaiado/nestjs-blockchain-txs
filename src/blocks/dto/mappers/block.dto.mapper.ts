@@ -12,7 +12,7 @@ export class BlockDtoMapper {
     block.previousHash = blockDto.previousHash;
     block.hash = blockDto.hash;
     block.nonce = blockDto.nonce;
-    block.timestamp = blockDto.timestamp;
+    block.timestamp = new Date(blockDto.timestamp).getTime();
     block.data = blockDto.data;
     return block;
   }

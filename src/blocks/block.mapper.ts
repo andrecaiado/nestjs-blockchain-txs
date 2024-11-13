@@ -7,7 +7,7 @@ export class BlockMapper {
   static toBlockPreview(block: Block): BlockPreview {
     const blockPreview = new BlockPreview();
     blockPreview.blockId = block.id;
-    blockPreview.timestamp = new Date(block.timestamp).getTime();
+    blockPreview.timestamp = new Date(block.timestamp).toISOString();
     blockPreview.totalTransactions = block.transactions.length;
     return blockPreview;
   }
@@ -21,7 +21,7 @@ export class BlockMapper {
       hash: block.hash,
       previousHash: block.previousHash,
       nonce: block.nonce,
-      timestamp: block.timestamp,
+      timestamp: new Date(block.timestamp).toISOString(),
       data: block.data,
     };
   }

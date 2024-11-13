@@ -7,7 +7,7 @@ export class Block {
   hash: string;
   previousHash: string;
   nonce: number;
-  timestamp: string;
+  timestamp: number;
   data: string;
 
   toString(): string {
