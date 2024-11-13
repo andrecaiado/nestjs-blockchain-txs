@@ -16,6 +16,7 @@ export class BlockchainController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'The blockchain was successfully retrieved.',
+    type: BlockchainDto,
   })
   @HttpCode(HttpStatus.OK)
   @Get()
