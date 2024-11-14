@@ -14,8 +14,8 @@ import {
   TransactionOutput,
 } from 'src/transactions/transaction';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
-import ECPairFactory from 'ecpair';
-import * as ecc from 'tiny-secp256k1';
+// import ECPairFactory from 'ecpair';
+// import * as ecc from 'tiny-secp256k1';
 import { createHash } from 'node:crypto';
 import { WalletDto } from './dto/wallet.dto';
 import { ConfigService } from '@nestjs/config';
@@ -132,13 +132,16 @@ export class WalletsService {
     transactionChange = Number(transactionChange.toFixed(3));
 
     const transaction = new Transaction();
-    transaction.transactionId = this.createTransactionId(
-      senderPublicKey,
-      recipientPublicKey,
-      createTransactionDto.amount,
-    );
+    // transaction.transactionId = this.createTransactionId(
+    //   senderPublicKey,
+    //   recipientPublicKey,
+    //   createTransactionDto.amount,
+    // );
     transaction.senderPublicKey = senderPublicKey;
     transaction.recipientPublicKey = recipientPublicKey;
+    transaction.amount = createTransactionDto.amount;
+    transaction.transactionFees = transactionFees;
+    transaction.transactionId = transaction.generateTransactionId();
     transaction.inputs = this.createTransactionInputs(UTXOs);
     transaction.outputs = this.createTransactionOutputs(
       recipientPublicKey,
@@ -147,8 +150,6 @@ export class WalletsService {
       transactionChange,
       senderPublicKey,
     );
-    transaction.amount = createTransactionDto.amount;
-    transaction.transactionFees = transactionFees;
     transaction.signature = transaction.sign(senderWallet.privateKey);
     // transaction.signature = this.generateSignature(
     //   transaction.toString(),
@@ -162,26 +163,26 @@ export class WalletsService {
     return WalletMapper.toTransactionDto(transaction);
   }
 
-  private createTransactionId(
-    publicKey: string,
-    recipientAddress: string,
-    amount: number,
-  ): string {
-    return createHash('sha256')
-      .update(publicKey)
-      .update(recipientAddress)
-      .update(amount.toString())
-      .update(new Date().getTime().toString())
-      .digest('hex');
-  }
+  // private createTransactionId(
+  //   publicKey: string,
+  //   recipientAddress: string,
+  //   amount: number,
+  // ): string {
+  //   return createHash('sha256')
+  //     .update(publicKey)
+  //     .update(recipientAddress)
+  //     .update(amount.toString())
+  //     .update(new Date().getTime().toString())
+  //     .digest('hex');
+  // }
 
-  private generateSignature(data: string, privateKey: string): string {
-    const hash = createHash('sha256').update(data).digest();
-    const ECPair = ECPairFactory(ecc);
-    const keyPair = ECPair.fromPrivateKey(Buffer.from(privateKey, 'hex'));
-    const signature = keyPair.sign(hash);
-    return Buffer.from(signature).toString('hex');
-  }
+  // private generateSignature(data: string, privateKey: string): string {
+  //   const hash = createHash('sha256').update(data).digest();
+  //   const ECPair = ECPairFactory(ecc);
+  //   const keyPair = ECPair.fromPrivateKey(Buffer.from(privateKey, 'hex'));
+  //   const signature = keyPair.sign(hash);
+  //   return Buffer.from(signature).toString('hex');
+  // }
 
   private validateCreateTransactionRequest(
     senderPublicKey: string,
@@ -256,25 +257,28 @@ export class WalletsService {
     const outputs: TransactionOutput[] = [];
     const output = new TransactionOutput();
     output.amount = amount;
-    output.id = this.createTransactionOutputId(
-      recipientPublicKey,
-      amount,
-      parentTransactionId,
-    );
+    // output.id = this.createTransactionOutputId(
+    //   recipientPublicKey,
+    //   amount,
+    //   parentTransactionId,
+    // );
     output.parentTransactionId = parentTransactionId;
     output.recipientPublicKey = recipientPublicKey;
+    output.id = output.generateTransactionOutputId();
     outputs.push(output);
+
     // Add change output (if any) to sender
     if (transactionChange > 0) {
       const changeOutput = new TransactionOutput();
       changeOutput.amount = transactionChange;
-      changeOutput.id = this.createTransactionOutputId(
-        recipientPublicKey,
-        transactionChange,
-        parentTransactionId,
-      );
+      // changeOutput.id = this.createTransactionOutputId(
+      //   recipientPublicKey,
+      //   transactionChange,
+      //   parentTransactionId,
+      // );
       changeOutput.parentTransactionId = parentTransactionId;
       changeOutput.recipientPublicKey = senderPublicKey;
+      output.id = output.generateTransactionOutputId();
       outputs.push(changeOutput);
     }
     return outputs;

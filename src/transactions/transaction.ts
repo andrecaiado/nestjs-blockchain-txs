@@ -44,6 +44,15 @@ export class Transaction {
     const signature = keyPair.sign(hash);
     return Buffer.from(signature).toString('hex');
   }
+
+  generateTransactionId(): string {
+    return createHash('sha256')
+      .update(this.senderPublicKey)
+      .update(this.recipientPublicKey)
+      .update(this.amount.toString())
+      .update(new Date().getTime().toString())
+      .digest('hex');
+  }
 }
 
 export class TransactionOutput {
@@ -59,6 +68,15 @@ export class TransactionOutput {
       this.parentTransactionId +
       this.id
     );
+  }
+
+  generateTransactionOutputId(): string {
+    return createHash('sha256')
+      .update(this.recipientPublicKey)
+      .update(this.amount.toString())
+      .update(this.parentTransactionId)
+      .update(new Date().getTime().toString())
+      .digest('hex');
   }
 }
 

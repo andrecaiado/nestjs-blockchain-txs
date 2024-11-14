@@ -9,9 +9,9 @@ import {
   TransactionInput,
   TransactionOutput,
 } from './transaction';
-import ECPairFactory from 'ecpair';
-import * as ecc from 'tiny-secp256k1';
-import { createHash } from 'node:crypto';
+// import ECPairFactory from 'ecpair';
+// import * as ecc from 'tiny-secp256k1';
+// import { createHash } from 'node:crypto';
 import { TransactionDto } from './dto/transaction.dto';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { WalletsService } from 'src/wallets/wallets.service';
@@ -169,16 +169,16 @@ export class TransactionsService {
     return UTXOs.every((UTXO) => UTXO.recipientPublicKey === publicKey);
   }
 
-  private verifySignature(
-    data: string,
-    signature: string,
-    publicKey: string,
-  ): boolean {
-    const hash = createHash('sha256').update(data).digest();
-    const ECPair = ECPairFactory(ecc);
-    const keyPair = ECPair.fromPublicKey(Buffer.from(publicKey, 'hex'));
-    return keyPair.verify(hash, Buffer.from(signature, 'hex'));
-  }
+  // private verifySignature(
+  //   data: string,
+  //   signature: string,
+  //   publicKey: string,
+  // ): boolean {
+  //   const hash = createHash('sha256').update(data).digest();
+  //   const ECPair = ECPairFactory(ecc);
+  //   const keyPair = ECPair.fromPublicKey(Buffer.from(publicKey, 'hex'));
+  //   return keyPair.verify(hash, Buffer.from(signature, 'hex'));
+  // }
 
   public verifyUTXOsAreUnspent(
     txUTXOs: TransactionOutput[],
@@ -251,7 +251,8 @@ export class TransactionsService {
     txo.recipientPublicKey = minerWallet.publicKey;
     txo.amount = minerReward;
     txo.parentTransactionId = '0';
-    txo.id = this.createTransactionId('', minerWallet.publicKey, minerReward);
+    txo.id = txo.generateTransactionOutputId();
+    //txo.id = this.createTransactionId('', minerWallet.publicKey, minerReward);
 
     const transaction = new Transaction();
     transaction.transactionId = '0';
@@ -266,16 +267,16 @@ export class TransactionsService {
     return transaction;
   }
 
-  private createTransactionId(
-    publicKey: string,
-    recipientAddress: string,
-    amount: number,
-  ): string {
-    return createHash('sha256')
-      .update(publicKey)
-      .update(recipientAddress)
-      .update(amount.toString())
-      .update(new Date().getTime().toString())
-      .digest('hex');
-  }
+  // private createTransactionId(
+  //   publicKey: string,
+  //   recipientAddress: string,
+  //   amount: number,
+  // ): string {
+  //   return createHash('sha256')
+  //     .update(publicKey)
+  //     .update(recipientAddress)
+  //     .update(amount.toString())
+  //     .update(new Date().getTime().toString())
+  //     .digest('hex');
+  // }
 }
