@@ -409,9 +409,10 @@ export class TransactionsService {
     minerWallet: Wallet,
     transactionFees: number,
   ): Transaction {
-    const minerReward: number =
-      this.configService.get<number>('blockchain.minerReward') +
-      transactionFees;
+    // const minerReward: number =
+    //   this.configService.get<number>('blockchain.minerReward') +
+    //   transactionFees;
+    const minerReward: number = this.calculateMinerReward(transactionFees);
 
     const txo = new TransactionOutput();
     txo.recipientPublicKey = minerWallet.publicKey;
@@ -431,6 +432,28 @@ export class TransactionsService {
     transaction.signature = '';
 
     return transaction;
+  }
+
+  private calculateMinerReward(transactionFees: number): number {
+    let minerReward: number = this.configService.get<number>(
+      'blockchain.minerReward',
+    );
+    const maxCoinSupply: number = this.configService.get<number>(
+      'blockchain.maxCoinSupply',
+    );
+    const currentCoinSupply: number = this.blockchainService.getTotalUTXOs();
+
+    if (currentCoinSupply + minerReward > maxCoinSupply) {
+      minerReward =
+        maxCoinSupply - currentCoinSupply < 0
+          ? 0
+          : maxCoinSupply - currentCoinSupply;
+      console.log(
+        `Transaction service: Miner reward adjusted to ${minerReward} coins.`,
+      );
+    }
+
+    return minerReward + transactionFees;
   }
 
   // private createTransactionId(
