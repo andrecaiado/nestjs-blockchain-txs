@@ -20,7 +20,6 @@ import { PoolsService } from 'src/pools/pools.service';
 import { TransactionDtoMapper } from './dto/mappers/transaction.dto.mapper';
 import { Wallet } from 'src/wallets/wallet';
 import { CreateTransactionDto } from 'src/transactions/dto/create-transaction.dto';
-import { WalletMapper } from 'src/wallets/mappers/wallet.mapper';
 import { TransactionMapper } from './transaction.mapper';
 
 @Injectable()
@@ -162,6 +161,7 @@ export class TransactionsService {
   ): TransactionOutput[] {
     // Create transaction output for recipient
     const outputs: TransactionOutput[] = [];
+
     const output = new TransactionOutput();
     output.amount = amount;
     // output.id = this.createTransactionOutputId(
@@ -185,7 +185,7 @@ export class TransactionsService {
       // );
       changeOutput.parentTransactionId = parentTransactionId;
       changeOutput.recipientPublicKey = senderPublicKey;
-      output.id = output.generateTransactionOutputId();
+      changeOutput.id = changeOutput.generateTransactionOutputId();
       outputs.push(changeOutput);
     }
     return outputs;
