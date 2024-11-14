@@ -27,7 +27,7 @@ export class MiningService {
   })
   public async mempoolTxsHandler(msg: object): Promise<Block> {
     // Get a random wallet to use as the miner's wallet
-    const minerWallet = this.walletsService.getRandomWallet();
+    const minerWallet = this.walletsService.getRandomWallet(true);
 
     console.log(
       `Mining service: Received new transaction ${JSON.stringify(msg)}`,

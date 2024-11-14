@@ -7,4 +7,8 @@ export class CreateWalletDto {
   @IsNotEmpty()
   @Transform(({ value }: TransformFnParams) => value?.trim())
   readonly name: string;
+
+  @ApiProperty({ description: 'Whether or not it is a miner wallet' })
+  @IsNotEmpty()
+  readonly isMiner: boolean;
 }

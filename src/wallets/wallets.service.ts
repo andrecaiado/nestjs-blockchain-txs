@@ -26,20 +26,30 @@ export class WalletsService {
   ) {
     this.createCoinbaseWallet();
     this.createDefaultWallets();
+    this.createDefaultMinerWallets();
   }
 
   private createDefaultWallets(): void {
     console.log('Wallet service: Creating first wallets...');
-    this.createWallet({ name: 'Wallet-1' });
-    this.createWallet({ name: 'Wallet-2' });
+    this.createWallet({ name: 'Wallet-1', isMiner: false });
+    this.createWallet({ name: 'Wallet-2', isMiner: false });
     console.log(
-      `Wallet service: Done. Created ${this.wallets.length} wallets!`,
+      `Wallet service: Done. Created ${this.wallets.filter((w) => !w.isMiner).length} wallets!`,
+    );
+  }
+
+  private createDefaultMinerWallets(): void {
+    console.log('Wallet service: Creating first miner wallets...');
+    this.createWallet({ name: 'WalletMiner-1', isMiner: true });
+    this.createWallet({ name: 'WalletMiner-2', isMiner: true });
+    console.log(
+      `Wallet service: Done. Created ${this.wallets.filter((w) => w.isMiner).length} miner wallets!`,
     );
   }
 
   private createCoinbaseWallet() {
     console.log('Wallet service: Creating Coinbase wallet...');
-    this.coinbaseWallet = new Wallet('CoinbaseWallet');
+    this.coinbaseWallet = new Wallet('CoinbaseWallet', false);
     console.log('Wallet service: Done. The Coinbase wallet was created!');
   }
 
@@ -49,7 +59,7 @@ export class WalletsService {
 
   public createWallet(createWalletDto: CreateWalletDto): WalletDto {
     this.validateWalletCreation(createWalletDto);
-    const wallet = new Wallet(createWalletDto.name);
+    const wallet = new Wallet(createWalletDto.name, createWalletDto.isMiner);
     this.wallets.push(wallet);
 
     const walletDto = WalletMapper.toWalletDto(wallet);
@@ -58,17 +68,19 @@ export class WalletsService {
     return walletDto;
   }
 
-  public getWallets(): WalletDto[] {
-    return this.wallets.map((wallet) => {
-      const walletDto = WalletMapper.toWalletDto(wallet);
-      walletDto.balance = this.getWalletBalance(wallet.publicKey);
-
-      return walletDto;
-    });
+  public getWallets(isMiner: boolean): WalletDto[] {
+    return this.wallets
+      .filter((w) => w.isMiner === isMiner)
+      .map((wallet) => {
+        const walletDto = WalletMapper.toWalletDto(wallet);
+        walletDto.balance = this.getWalletBalance(wallet.publicKey);
+        return walletDto;
+      });
   }
 
-  public getRandomWallet(): Wallet {
-    return this.wallets[Math.floor(Math.random() * Array.length)];
+  public getRandomWallet(isMiner: boolean): Wallet {
+    const wallets = this.wallets.filter((w) => w.isMiner === isMiner);
+    return wallets[Math.floor(Math.random() * wallets.length)];
   }
 
   public getWallet(publicKey: string): WalletDto {

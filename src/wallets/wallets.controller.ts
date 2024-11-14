@@ -7,6 +7,7 @@ import {
   Inject,
   Param,
   Post,
+  Query,
 } from '@nestjs/common';
 import { WalletsService } from './wallets.service';
 import { CreateWalletDto } from './dto/create-wallet.dto';
@@ -53,8 +54,8 @@ export class WalletsController {
   })
   @HttpCode(HttpStatus.OK)
   @Get()
-  getWallets(): WalletDto[] {
-    return this.walletsService.getWallets();
+  getWallets(@Query('isMiner') isMiner: string): WalletDto[] {
+    return this.walletsService.getWallets(isMiner === 'true');
   }
 
   @ApiOperation({
