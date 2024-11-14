@@ -9,9 +9,6 @@ import {
   TransactionInput,
   TransactionOutput,
 } from './transaction';
-// import ECPairFactory from 'ecpair';
-// import * as ecc from 'tiny-secp256k1';
-// import { createHash } from 'node:crypto';
 import { TransactionDto } from './dto/transaction.dto';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { WalletsService } from 'src/wallets/wallets.service';
@@ -57,11 +54,6 @@ export class TransactionsService {
     transactionChange = Number(transactionChange.toFixed(3));
 
     const transaction = new Transaction();
-    // transaction.transactionId = this.createTransactionId(
-    //   senderPublicKey,
-    //   recipientPublicKey,
-    //   createTransactionDto.amount,
-    // );
     transaction.senderPublicKey = senderPublicKey;
     transaction.recipientPublicKey = recipientPublicKey;
     transaction.amount = createTransactionDto.amount;
@@ -76,10 +68,6 @@ export class TransactionsService {
       senderPublicKey,
     );
     transaction.signature = transaction.sign(senderWallet.privateKey);
-    // transaction.signature = this.generateSignature(
-    //   transaction.toString(),
-    //   senderWallet.privateKey,
-    // );
 
     console.log(
       `Wallet service: Wallet ${senderPublicKey}: transaction ID is '${transaction.transactionId}'`,
@@ -164,11 +152,6 @@ export class TransactionsService {
 
     const output = new TransactionOutput();
     output.amount = amount;
-    // output.id = this.createTransactionOutputId(
-    //   recipientPublicKey,
-    //   amount,
-    //   parentTransactionId,
-    // );
     output.parentTransactionId = parentTransactionId;
     output.recipientPublicKey = recipientPublicKey;
     output.id = output.generateTransactionOutputId();
@@ -178,16 +161,12 @@ export class TransactionsService {
     if (transactionChange > 0) {
       const changeOutput = new TransactionOutput();
       changeOutput.amount = transactionChange;
-      // changeOutput.id = this.createTransactionOutputId(
-      //   recipientPublicKey,
-      //   transactionChange,
-      //   parentTransactionId,
-      // );
       changeOutput.parentTransactionId = parentTransactionId;
       changeOutput.recipientPublicKey = senderPublicKey;
       changeOutput.id = changeOutput.generateTransactionOutputId();
       outputs.push(changeOutput);
     }
+
     return outputs;
   }
 
@@ -221,14 +200,7 @@ export class TransactionsService {
     let errorMsg: string;
 
     // Verify signature
-    if (
-      transaction.verifySignature(transaction.senderPublicKey) === false
-      // !this.verifySignature(
-      //   transaction.toString(),
-      //   transaction.signature,
-      //   transaction.senderPublicKey,
-      // )
-    ) {
+    if (transaction.verifySignature(transaction.senderPublicKey) === false) {
       errorMsg = `Transaction ${transaction.transactionId} validation: signature is invalid`;
       console.error(errorMsg);
       throw new BadRequestException(errorMsg);
@@ -335,17 +307,6 @@ export class TransactionsService {
     return UTXOs.every((UTXO) => UTXO.recipientPublicKey === publicKey);
   }
 
-  // private verifySignature(
-  //   data: string,
-  //   signature: string,
-  //   publicKey: string,
-  // ): boolean {
-  //   const hash = createHash('sha256').update(data).digest();
-  //   const ECPair = ECPairFactory(ecc);
-  //   const keyPair = ECPair.fromPublicKey(Buffer.from(publicKey, 'hex'));
-  //   return keyPair.verify(hash, Buffer.from(signature, 'hex'));
-  // }
-
   public verifyUTXOsAreUnspent(
     txUTXOs: TransactionOutput[],
     walletUTXOs: TransactionOutput[],
@@ -378,14 +339,6 @@ export class TransactionsService {
     txo.parentTransactionId = '0';
     txo.id = '0';
     transaction.outputs = [txo];
-    // [
-    //   {
-    //     recipientPublicKey: recipientWallet.publicKey,
-    //     amount: amount,
-    //     parentTransactionId: '0',
-    //     id: '0',
-    //   },
-    // ];
     transaction.transactionFees = 0;
     transaction.transactionId = '0';
     transaction.signature = transaction.sign(coinbaseWallet.privateKey);
@@ -397,21 +350,10 @@ export class TransactionsService {
     return transaction;
   }
 
-  // private generateSignature(data: string, privateKey: string): string {
-  //   const hash = createHash('sha256').update(data).digest();
-  //   const ECPair = ECPairFactory(ecc);
-  //   const keyPair = ECPair.fromPrivateKey(Buffer.from(privateKey, 'hex'));
-  //   const signature = keyPair.sign(hash);
-  //   return Buffer.from(signature).toString('hex');
-  // }
-
   public createCoinbaseTransaction(
     minerWallet: Wallet,
     transactionFees: number,
   ): Transaction {
-    // const minerReward: number =
-    //   this.configService.get<number>('blockchain.minerReward') +
-    //   transactionFees;
     const minerReward: number = this.calculateMinerReward(transactionFees);
 
     const txo = new TransactionOutput();
@@ -419,7 +361,6 @@ export class TransactionsService {
     txo.amount = minerReward;
     txo.parentTransactionId = '0';
     txo.id = txo.generateTransactionOutputId();
-    //txo.id = this.createTransactionId('', minerWallet.publicKey, minerReward);
 
     const transaction = new Transaction();
     transaction.transactionId = '0';
@@ -455,17 +396,4 @@ export class TransactionsService {
 
     return minerReward + transactionFees;
   }
-
-  // private createTransactionId(
-  //   publicKey: string,
-  //   recipientAddress: string,
-  //   amount: number,
-  // ): string {
-  //   return createHash('sha256')
-  //     .update(publicKey)
-  //     .update(recipientAddress)
-  //     .update(amount.toString())
-  //     .update(new Date().getTime().toString())
-  //     .digest('hex');
-  // }
 }

@@ -26,7 +26,7 @@ export class MiningService {
     queue: 'miner-mempool-queue',
   })
   public async mempoolTxsHandler(msg: object): Promise<Block> {
-    // Get a random wallet to use as the miner's wallet
+    // Get a random miner wallet to be the block's miner
     const minerWallet = this.walletsService.getRandomWallet(true);
 
     console.log(
@@ -64,9 +64,6 @@ export class MiningService {
       block,
     );
 
-    // Delete msgs from queue
-    // I believe they are instantly deleted by default...
-    // Remove this step from the process?
     return block;
   }
 
