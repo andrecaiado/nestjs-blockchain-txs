@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TransactionsController } from './transactions.controller';
 import { TransactionsService } from './transactions.service';
 import { BlockchainModule } from 'src/blockchain/blockchain.module';
@@ -9,6 +9,6 @@ import { PoolsModule } from 'src/pools/pools.module';
   controllers: [TransactionsController],
   providers: [TransactionsService],
   exports: [TransactionsService],
-  imports: [BlockchainModule, WalletsModule, PoolsModule],
+  imports: [BlockchainModule, forwardRef(() => WalletsModule), PoolsModule],
 })
 export class TransactionsModule {}

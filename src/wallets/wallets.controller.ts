@@ -4,20 +4,25 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Inject,
   Param,
   Post,
 } from '@nestjs/common';
 import { WalletsService } from './wallets.service';
 import { CreateWalletDto } from './dto/create-wallet.dto';
-import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { CreateTransactionDto } from '../transactions/dto/create-transaction.dto';
 import { WalletDto } from './dto/wallet.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { TransactionDto } from 'src/transactions/dto/transaction.dto';
+import { TransactionsService } from 'src/transactions/transactions.service';
 
 @ApiTags('Wallets')
 @Controller('wallets')
 export class WalletsController {
-  constructor(private readonly walletsService: WalletsService) {}
+  constructor(
+    @Inject() private readonly walletsService: WalletsService,
+    @Inject() private readonly transactionsService: TransactionsService,
+  ) {}
 
   @ApiOperation({
     summary: 'Create wallet',
@@ -92,7 +97,7 @@ export class WalletsController {
     @Param('publicKey') publicKey: string,
     @Body() createTransactionDto: CreateTransactionDto,
   ): TransactionDto {
-    return this.walletsService.createTransaction(
+    return this.transactionsService.createTransaction(
       publicKey,
       createTransactionDto,
     );

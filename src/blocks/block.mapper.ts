@@ -1,7 +1,7 @@
 import { BlockPreview } from 'src/blockchain/dto/blockchain.dto';
 import { Block } from './block';
 import { BlockDto } from './dto/block.dto';
-import { WalletMapper } from 'src/wallets/mappers/wallet.mapper';
+import { TransactionMapper } from 'src/transactions/transaction.mapper';
 
 export class BlockMapper {
   static toBlockPreview(block: Block): BlockPreview {
@@ -16,7 +16,7 @@ export class BlockMapper {
     return {
       id: block.id,
       transactions: block.transactions.map((tx) =>
-        WalletMapper.toTransactionDto(tx),
+        TransactionMapper.toTransactionDto(tx),
       ),
       hash: block.hash,
       previousHash: block.previousHash,

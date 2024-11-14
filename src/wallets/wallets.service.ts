@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   ConflictException,
   Inject,
   Injectable,
@@ -7,19 +6,13 @@ import {
 } from '@nestjs/common';
 import { Wallet } from './wallet';
 import { CreateWalletDto } from './dto/create-wallet.dto';
-import { CreateTransactionDto } from './dto/create-transaction.dto';
-import {
-  Transaction,
-  TransactionInput,
-  TransactionOutput,
-} from 'src/transactions/transaction';
+import { TransactionOutput } from 'src/transactions/transaction';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 // import ECPairFactory from 'ecpair';
 // import * as ecc from 'tiny-secp256k1';
-import { createHash } from 'node:crypto';
+// import { createHash } from 'node:crypto';
 import { WalletDto } from './dto/wallet.dto';
 import { ConfigService } from '@nestjs/config';
-import { TransactionDto } from 'src/transactions/dto/transaction.dto';
 import { WalletMapper } from './mappers/wallet.mapper';
 
 @Injectable()
@@ -106,62 +99,62 @@ export class WalletsService {
     }
   }
 
-  public createTransaction(
-    senderPublicKey: string,
-    createTransactionDto: CreateTransactionDto,
-  ): TransactionDto {
-    console.log(`Wallet ${senderPublicKey}: creating a transaction...`);
+  // public createTransaction(
+  //   senderPublicKey: string,
+  //   createTransactionDto: CreateTransactionDto,
+  // ): TransactionDto {
+  //   console.log(`Wallet ${senderPublicKey}: creating a transaction...`);
 
-    const UTXOs = this.getWalletUTXOs(senderPublicKey);
-    const transactionFees = this.configService.get<number>(
-      'blockchain.transactionFees',
-    );
+  //   const UTXOs = this.getWalletUTXOs(senderPublicKey);
+  //   const transactionFees = this.configService.get<number>(
+  //     'blockchain.transactionFees',
+  //   );
 
-    const { senderWallet, senderWalletBalance } =
-      this.validateCreateTransactionRequest(
-        senderPublicKey,
-        createTransactionDto.recipientPublicKey,
-        createTransactionDto.amount,
-        UTXOs,
-        transactionFees,
-      );
+  //   const { senderWallet, senderWalletBalance } =
+  //     this.validateCreateTransactionRequest(
+  //       senderPublicKey,
+  //       createTransactionDto.recipientPublicKey,
+  //       createTransactionDto.amount,
+  //       UTXOs,
+  //       transactionFees,
+  //     );
 
-    const recipientPublicKey = createTransactionDto.recipientPublicKey;
-    let transactionChange =
-      senderWalletBalance - (createTransactionDto.amount + transactionFees);
-    transactionChange = Number(transactionChange.toFixed(3));
+  //   const recipientPublicKey = createTransactionDto.recipientPublicKey;
+  //   let transactionChange =
+  //     senderWalletBalance - (createTransactionDto.amount + transactionFees);
+  //   transactionChange = Number(transactionChange.toFixed(3));
 
-    const transaction = new Transaction();
-    // transaction.transactionId = this.createTransactionId(
-    //   senderPublicKey,
-    //   recipientPublicKey,
-    //   createTransactionDto.amount,
-    // );
-    transaction.senderPublicKey = senderPublicKey;
-    transaction.recipientPublicKey = recipientPublicKey;
-    transaction.amount = createTransactionDto.amount;
-    transaction.transactionFees = transactionFees;
-    transaction.transactionId = transaction.generateTransactionId();
-    transaction.inputs = this.createTransactionInputs(UTXOs);
-    transaction.outputs = this.createTransactionOutputs(
-      recipientPublicKey,
-      createTransactionDto.amount,
-      transaction.transactionId,
-      transactionChange,
-      senderPublicKey,
-    );
-    transaction.signature = transaction.sign(senderWallet.privateKey);
-    // transaction.signature = this.generateSignature(
-    //   transaction.toString(),
-    //   senderWallet.privateKey,
-    // );
+  //   const transaction = new Transaction();
+  //   // transaction.transactionId = this.createTransactionId(
+  //   //   senderPublicKey,
+  //   //   recipientPublicKey,
+  //   //   createTransactionDto.amount,
+  //   // );
+  //   transaction.senderPublicKey = senderPublicKey;
+  //   transaction.recipientPublicKey = recipientPublicKey;
+  //   transaction.amount = createTransactionDto.amount;
+  //   transaction.transactionFees = transactionFees;
+  //   transaction.transactionId = transaction.generateTransactionId();
+  //   transaction.inputs = this.createTransactionInputs(UTXOs);
+  //   transaction.outputs = this.createTransactionOutputs(
+  //     recipientPublicKey,
+  //     createTransactionDto.amount,
+  //     transaction.transactionId,
+  //     transactionChange,
+  //     senderPublicKey,
+  //   );
+  //   transaction.signature = transaction.sign(senderWallet.privateKey);
+  //   // transaction.signature = this.generateSignature(
+  //   //   transaction.toString(),
+  //   //   senderWallet.privateKey,
+  //   // );
 
-    console.log(
-      `Wallet service: Wallet ${senderPublicKey}: transaction ID is '${transaction.transactionId}'`,
-    );
+  //   console.log(
+  //     `Wallet service: Wallet ${senderPublicKey}: transaction ID is '${transaction.transactionId}'`,
+  //   );
 
-    return WalletMapper.toTransactionDto(transaction);
-  }
+  //   return WalletMapper.toTransactionDto(transaction);
+  // }
 
   // private createTransactionId(
   //   publicKey: string,
@@ -184,117 +177,117 @@ export class WalletsService {
   //   return Buffer.from(signature).toString('hex');
   // }
 
-  private validateCreateTransactionRequest(
-    senderPublicKey: string,
-    recipientPublicKey: string,
-    amount: number,
-    UTXOs: TransactionOutput[],
-    transactionFees: number,
-  ): {
-    senderWallet: Wallet;
-    senderWalletBalance: number;
-  } {
-    console.log(`Wallet ${senderPublicKey}: transaction is being validated...`);
+  // private validateCreateTransactionRequest(
+  //   senderPublicKey: string,
+  //   recipientPublicKey: string,
+  //   amount: number,
+  //   UTXOs: TransactionOutput[],
+  //   transactionFees: number,
+  // ): {
+  //   senderWallet: Wallet;
+  //   senderWalletBalance: number;
+  // } {
+  //   console.log(`Wallet ${senderPublicKey}: transaction is being validated...`);
 
-    let errorMsg: string;
+  //   let errorMsg: string;
 
-    // Verify that the sender wallet exists
-    const senderWallet = this.findWalletByPublicKey(senderPublicKey);
-    if (senderWallet === null || senderWallet === undefined) {
-      errorMsg = `Sender Wallet with public key '${senderPublicKey}' not found!`;
-      console.error(errorMsg);
-      throw new NotFoundException(errorMsg);
-    }
+  //   // Verify that the sender wallet exists
+  //   const senderWallet = this.findWalletByPublicKey(senderPublicKey);
+  //   if (senderWallet === null || senderWallet === undefined) {
+  //     errorMsg = `Sender Wallet with public key '${senderPublicKey}' not found!`;
+  //     console.error(errorMsg);
+  //     throw new NotFoundException(errorMsg);
+  //   }
 
-    // Verify that the recipient wallet exists
-    const recipientWallet = this.findWalletByPublicKey(recipientPublicKey);
-    if (recipientWallet === null || recipientWallet === undefined) {
-      errorMsg = `Recipient Wallet with public key '${recipientPublicKey}' not found!`;
-      console.error(errorMsg);
-      throw new NotFoundException(errorMsg);
-    }
+  //   // Verify that the recipient wallet exists
+  //   const recipientWallet = this.findWalletByPublicKey(recipientPublicKey);
+  //   if (recipientWallet === null || recipientWallet === undefined) {
+  //     errorMsg = `Recipient Wallet with public key '${recipientPublicKey}' not found!`;
+  //     console.error(errorMsg);
+  //     throw new NotFoundException(errorMsg);
+  //   }
 
-    // Verify that the sender and recipient are not the same
-    if (senderPublicKey === recipientPublicKey) {
-      errorMsg = `Sender and Recipient wallets cannot be the same!`;
-      console.error(errorMsg);
-      throw new BadRequestException(errorMsg);
-    }
+  //   // Verify that the sender and recipient are not the same
+  //   if (senderPublicKey === recipientPublicKey) {
+  //     errorMsg = `Sender and Recipient wallets cannot be the same!`;
+  //     console.error(errorMsg);
+  //     throw new BadRequestException(errorMsg);
+  //   }
 
-    // Validate that the sender has enough balance to cover the transaction (amount + transaction fees)
-    // Calculate the balance from the UTXOs
-    const senderWalletBalance = this.calculateBalanceFromUTXOS(UTXOs);
-    if (senderWalletBalance < amount + transactionFees) {
-      errorMsg = `Insufficient balance for wallet '${senderPublicKey}'!\n Balance is: ${senderWalletBalance}. Required: ${amount + transactionFees} (amount + transaction fees)`;
-      console.error(errorMsg);
-      throw new BadRequestException(errorMsg);
-    }
+  //   // Validate that the sender has enough balance to cover the transaction (amount + transaction fees)
+  //   // Calculate the balance from the UTXOs
+  //   const senderWalletBalance = this.calculateBalanceFromUTXOS(UTXOs);
+  //   if (senderWalletBalance < amount + transactionFees) {
+  //     errorMsg = `Insufficient balance for wallet '${senderPublicKey}'!\n Balance is: ${senderWalletBalance}. Required: ${amount + transactionFees} (amount + transaction fees)`;
+  //     console.error(errorMsg);
+  //     throw new BadRequestException(errorMsg);
+  //   }
 
-    console.log(`Wallet ${senderPublicKey}: transaction is valid.`);
+  //   console.log(`Wallet ${senderPublicKey}: transaction is valid.`);
 
-    return { senderWallet, senderWalletBalance };
-  }
+  //   return { senderWallet, senderWalletBalance };
+  // }
 
-  private createTransactionInputs(
-    UTXOs: TransactionOutput[],
-  ): TransactionInput[] {
-    return UTXOs.map((UTXO) => {
-      const transaction = new TransactionInput();
-      transaction.transactionOutputId = UTXO.id;
-      transaction.UTXO = UTXO;
-      return transaction;
-    });
-  }
+  // private createTransactionInputs(
+  //   UTXOs: TransactionOutput[],
+  // ): TransactionInput[] {
+  //   return UTXOs.map((UTXO) => {
+  //     const transaction = new TransactionInput();
+  //     transaction.transactionOutputId = UTXO.id;
+  //     transaction.UTXO = UTXO;
+  //     return transaction;
+  //   });
+  // }
 
-  private createTransactionOutputs(
-    recipientPublicKey: string,
-    amount: number,
-    parentTransactionId: string,
-    transactionChange: number,
-    senderPublicKey: string,
-  ): TransactionOutput[] {
-    // Create transaction output for recipient
-    const outputs: TransactionOutput[] = [];
-    const output = new TransactionOutput();
-    output.amount = amount;
-    // output.id = this.createTransactionOutputId(
-    //   recipientPublicKey,
-    //   amount,
-    //   parentTransactionId,
-    // );
-    output.parentTransactionId = parentTransactionId;
-    output.recipientPublicKey = recipientPublicKey;
-    output.id = output.generateTransactionOutputId();
-    outputs.push(output);
+  // private createTransactionOutputs(
+  //   recipientPublicKey: string,
+  //   amount: number,
+  //   parentTransactionId: string,
+  //   transactionChange: number,
+  //   senderPublicKey: string,
+  // ): TransactionOutput[] {
+  //   // Create transaction output for recipient
+  //   const outputs: TransactionOutput[] = [];
+  //   const output = new TransactionOutput();
+  //   output.amount = amount;
+  //   // output.id = this.createTransactionOutputId(
+  //   //   recipientPublicKey,
+  //   //   amount,
+  //   //   parentTransactionId,
+  //   // );
+  //   output.parentTransactionId = parentTransactionId;
+  //   output.recipientPublicKey = recipientPublicKey;
+  //   output.id = output.generateTransactionOutputId();
+  //   outputs.push(output);
 
-    // Add change output (if any) to sender
-    if (transactionChange > 0) {
-      const changeOutput = new TransactionOutput();
-      changeOutput.amount = transactionChange;
-      // changeOutput.id = this.createTransactionOutputId(
-      //   recipientPublicKey,
-      //   transactionChange,
-      //   parentTransactionId,
-      // );
-      changeOutput.parentTransactionId = parentTransactionId;
-      changeOutput.recipientPublicKey = senderPublicKey;
-      output.id = output.generateTransactionOutputId();
-      outputs.push(changeOutput);
-    }
-    return outputs;
-  }
+  //   // Add change output (if any) to sender
+  //   if (transactionChange > 0) {
+  //     const changeOutput = new TransactionOutput();
+  //     changeOutput.amount = transactionChange;
+  //     // changeOutput.id = this.createTransactionOutputId(
+  //     //   recipientPublicKey,
+  //     //   transactionChange,
+  //     //   parentTransactionId,
+  //     // );
+  //     changeOutput.parentTransactionId = parentTransactionId;
+  //     changeOutput.recipientPublicKey = senderPublicKey;
+  //     output.id = output.generateTransactionOutputId();
+  //     outputs.push(changeOutput);
+  //   }
+  //   return outputs;
+  // }
 
-  private createTransactionOutputId(
-    recipientPublicKey: string,
-    amount: number,
-    parentTransactionId: string,
-  ): string {
-    return createHash('sha256')
-      .update(recipientPublicKey)
-      .update(parentTransactionId)
-      .update(amount.toString())
-      .digest('hex');
-  }
+  // private createTransactionOutputId(
+  //   recipientPublicKey: string,
+  //   amount: number,
+  //   parentTransactionId: string,
+  // ): string {
+  //   return createHash('sha256')
+  //     .update(recipientPublicKey)
+  //     .update(parentTransactionId)
+  //     .update(amount.toString())
+  //     .digest('hex');
+  // }
 
   private calculateBalanceFromUTXOS(UTXOs: TransactionOutput[]): number {
     return UTXOs.reduce((acc, UTXO) => acc + UTXO.amount, 0);

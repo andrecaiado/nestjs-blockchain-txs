@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { MiningService } from './mining.service';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { TransactionsService } from 'src/transactions/transactions.service';
-import { TransactionDtoMapper } from 'src/transactions/dto/mappers/transaction.mapper';
+import { TransactionDtoMapper } from 'src/transactions/dto/mappers/transaction.dto.mapper';
 import { BlocksService } from 'src/blocks/blocks.service';
 import { Block } from 'src/blocks/block';
 import { WalletsService } from 'src/wallets/wallets.service';

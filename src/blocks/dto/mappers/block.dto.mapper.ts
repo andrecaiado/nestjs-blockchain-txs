@@ -1,6 +1,6 @@
 import { Block } from 'src/blocks/block';
 import { BlockDto } from '../block.dto';
-import { TransactionDtoMapper } from 'src/transactions/dto/mappers/transaction.mapper';
+import { TransactionDtoMapper } from 'src/transactions/dto/mappers/transaction.dto.mapper';
 
 export class BlockDtoMapper {
   static toBlock(blockDto: BlockDto): Block {

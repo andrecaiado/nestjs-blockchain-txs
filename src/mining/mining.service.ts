@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { Block } from 'src/blocks/block';
 import { BlocksService } from 'src/blocks/blocks.service';
-import { TransactionDtoMapper } from 'src/transactions/dto/mappers/transaction.mapper';
+import { TransactionDtoMapper } from 'src/transactions/dto/mappers/transaction.dto.mapper';
 import { TransactionDto } from 'src/transactions/dto/transaction.dto';
 import { Transaction } from 'src/transactions/transaction';
 import { TransactionsService } from 'src/transactions/transactions.service';
