@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Blockchain } from './blockchain';
 import { TransactionOutput } from 'src/transactions/transaction';
 import { Block } from 'src/blocks/block';
@@ -7,12 +7,13 @@ import { BlockDto } from 'src/blocks/dto/block.dto';
 import { BlockDtoMapper } from 'src/blocks/dto/mappers/block.dto.mapper';
 import { BlockchainMapper } from './blockchain.mapper';
 import { BlockMapper } from 'src/blocks/block.mapper';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class BlockchainService {
   private blockchain: Blockchain;
 
-  constructor() {
+  constructor(@Inject() private readonly configService: ConfigService) {
     console.log('Blockchain service: Creating blockchain...');
     this.blockchain = new Blockchain();
     console.log('Blockchain service: Blockchain created!');
@@ -146,9 +147,13 @@ export class BlockchainService {
   }
 
   public getBlockchainDto() {
+    const maxCoinSupply = this.configService.get<number>(
+      'blockchain.maxCoinSupply',
+    );
     return BlockchainMapper.toBlockchainDto(
       this.blockchain,
       this.getTotalUTXOs(),
+      maxCoinSupply,
     );
   }
 

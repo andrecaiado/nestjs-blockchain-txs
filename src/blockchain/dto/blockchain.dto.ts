@@ -7,8 +7,9 @@ export class BlockPreview {
 export class BlockchainStatus {
   totalTransactions: number = 0;
   totalBlocks: number = 0;
-  totalCoins: number = 0;
+  totalCoinsMined: number = 0;
   totalAddresses: number = 0;
+  totalCoinsLeftToMine: number = 0;
 }
 
 export class BlockchainDto {
