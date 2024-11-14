@@ -32,7 +32,9 @@ export class TransactionsService {
     senderPublicKey: string,
     createTransactionDto: CreateTransactionDto,
   ): TransactionDto {
-    console.log(`Wallet ${senderPublicKey}: creating a transaction...`);
+    console.log(
+      `Transactions service: Creating transaction for wallet ${senderPublicKey}...`,
+    );
 
     const UTXOs = this.getWalletUTXOs(senderPublicKey);
     const transactionFees = this.configService.get<number>(
@@ -70,7 +72,7 @@ export class TransactionsService {
     transaction.signature = transaction.sign(senderWallet.privateKey);
 
     console.log(
-      `Wallet service: Wallet ${senderPublicKey}: transaction ID is '${transaction.transactionId}'`,
+      `Transactions service: Created transaction for wallet ${senderPublicKey}. Transaction ID is '${transaction.transactionId}'`,
     );
 
     return TransactionMapper.toTransactionDto(transaction);
@@ -86,7 +88,7 @@ export class TransactionsService {
     senderWallet: Wallet;
     senderWalletBalance: number;
   } {
-    console.log(`Wallet ${senderPublicKey}: transaction is being validated...`);
+    console.log(`Transactions service: Transaction is being validated...`);
 
     let errorMsg: string;
 
@@ -95,7 +97,7 @@ export class TransactionsService {
       this.walletsService.findWalletByPublicKey(senderPublicKey);
     if (senderWallet === null || senderWallet === undefined) {
       errorMsg = `Sender Wallet with public key '${senderPublicKey}' not found!`;
-      console.error(errorMsg);
+      console.error(`Transactions service: ${errorMsg}`);
       throw new NotFoundException(errorMsg);
     }
 
@@ -104,14 +106,14 @@ export class TransactionsService {
       this.walletsService.findWalletByPublicKey(recipientPublicKey);
     if (recipientWallet === null || recipientWallet === undefined) {
       errorMsg = `Recipient Wallet with public key '${recipientPublicKey}' not found!`;
-      console.error(errorMsg);
+      console.error(`Transactions service: ${errorMsg}`);
       throw new NotFoundException(errorMsg);
     }
 
     // Verify that the sender and recipient are not the same
     if (senderPublicKey === recipientPublicKey) {
       errorMsg = `Sender and Recipient wallets cannot be the same!`;
-      console.error(errorMsg);
+      console.error(`Transactions service: ${errorMsg}`);
       throw new BadRequestException(errorMsg);
     }
 
@@ -120,11 +122,11 @@ export class TransactionsService {
     const senderWalletBalance = this.calculateBalanceFromUTXOS(UTXOs);
     if (senderWalletBalance < amount + transactionFees) {
       errorMsg = `Insufficient balance for wallet '${senderPublicKey}'!\n Balance is: ${senderWalletBalance}. Required: ${amount + transactionFees} (amount + transaction fees)`;
-      console.error(errorMsg);
+      console.error(`Transactions service: ${errorMsg}`);
       throw new BadRequestException(errorMsg);
     }
 
-    console.log(`Wallet ${senderPublicKey}: transaction is valid.`);
+    console.log(`Transactions service: Transaction is valid.`);
 
     return { senderWallet, senderWalletBalance };
   }
@@ -176,7 +178,7 @@ export class TransactionsService {
 
   public async submitTransaction(transactionDto: TransactionDto): Promise<any> {
     console.log(
-      `Transactions service: Transaction ${transactionDto.transactionId}: submitting...`,
+      `Transactions service: Transaction ${transactionDto.transactionId} submitting...`,
     );
 
     this.validateTransaction(
@@ -188,8 +190,8 @@ export class TransactionsService {
       transactionDto,
     );
 
-    const msg = `Transaction ${transactionDto.transactionId}: submitted.`;
-    console.log(msg);
+    const msg = `Transaction ${transactionDto.transactionId} submitted.`;
+    console.log(`Transactions service: ${msg}`);
 
     return {
       message: msg,
@@ -201,12 +203,12 @@ export class TransactionsService {
 
     // Verify signature
     if (transaction.verifySignature(transaction.senderPublicKey) === false) {
-      errorMsg = `Transaction ${transaction.transactionId} validation: signature is invalid`;
-      console.error(errorMsg);
+      errorMsg = `Transactions service: Transaction ${transaction.transactionId} validation: signature is invalid`;
+      console.error(`Transactions service: ${errorMsg}`);
       throw new BadRequestException(errorMsg);
     }
     console.log(
-      `Transaction ${transaction.transactionId} validation: signature is valid`,
+      `Transactions service: Transaction ${transaction.transactionId} validation: signature is valid`,
     );
 
     // Validate the wallets
@@ -215,7 +217,7 @@ export class TransactionsService {
     );
     if (senderWallet === null || senderWallet === undefined) {
       errorMsg = `Transaction ${transaction.transactionId} validation: sender wallet not found`;
-      console.error(errorMsg);
+      console.error(`Transactions service: ${errorMsg}`);
       throw new NotFoundException(errorMsg);
     }
     const recipientWallet = this.walletsService.findWalletByPublicKey(
@@ -223,7 +225,7 @@ export class TransactionsService {
     );
     if (recipientWallet === null || recipientWallet === undefined) {
       errorMsg = `Transaction ${transaction.transactionId} validation: recipient wallet not found`;
-      console.error(errorMsg);
+      console.error(`Transactions service: ${errorMsg}`);
       throw new NotFoundException(errorMsg);
     }
 
@@ -238,11 +240,11 @@ export class TransactionsService {
       )
     ) {
       errorMsg = `Transaction ${transaction.transactionId} validation: there are UTXOs in the inputs that do not belong to the sender`;
-      console.error(errorMsg);
+      console.error(`Transactions service: ${errorMsg}`);
       throw new BadRequestException(errorMsg);
     }
     console.log(
-      `Transaction ${transaction.transactionId} validation: inputs UTXOs belong to the sender`,
+      `Transactions service: Transaction ${transaction.transactionId} validation: inputs UTXOs belong to the sender`,
     );
 
     // Get UTXOs from the sender's wallet for subsequent validations
@@ -251,11 +253,11 @@ export class TransactionsService {
     // Verify if UTXOs are unspent
     if (!this.verifyUTXOsAreUnspent(txUTXOs, walletUTXOs)) {
       errorMsg = `Transaction ${transaction.transactionId}: there are UTXOs that are not unspent`;
-      console.error(errorMsg);
+      console.error(`Transactions service: ${errorMsg}`);
       throw new BadRequestException(errorMsg);
     }
     console.log(
-      `Transaction ${transaction.transactionId} validation: UTXOs are unspent`,
+      `Transactions service: Transaction ${transaction.transactionId} validation: UTXOs are unspent`,
     );
 
     // Get the transaction fees
@@ -268,11 +270,11 @@ export class TransactionsService {
       !this.validateTransactionOutputsCoverage(transaction, transactionFees)
     ) {
       errorMsg = `Transaction ${transaction.transactionId}: inputs are not enough to cover the outputs`;
-      console.error(errorMsg);
+      console.error(`Transactions service: ${errorMsg}`);
       throw new BadRequestException(errorMsg);
     }
     console.log(
-      `Transaction ${transaction.transactionId} validation: inputs are enough to cover the outputs`,
+      `Transactions service: Transaction ${transaction.transactionId} validation: inputs are enough to cover the outputs`,
     );
 
     return;
@@ -342,10 +344,6 @@ export class TransactionsService {
     transaction.transactionFees = 0;
     transaction.transactionId = '0';
     transaction.signature = transaction.sign(coinbaseWallet.privateKey);
-    // transaction.signature = this.generateSignature(
-    //   transaction.toString(),
-    //   coinbaseWallet.privateKey,
-    // );
 
     return transaction;
   }
@@ -390,7 +388,7 @@ export class TransactionsService {
           ? 0
           : maxCoinSupply - currentCoinSupply;
       console.log(
-        `Transaction service: Miner reward adjusted to ${minerReward} coins.`,
+        `Transactions service: Miner reward adjusted to ${minerReward} coins.`,
       );
     }
 
