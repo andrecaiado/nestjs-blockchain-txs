@@ -9,7 +9,6 @@ import { CreateWalletDto } from './dto/create-wallet.dto';
 import { TransactionOutput } from 'src/transactions/transaction';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { WalletDto } from './dto/wallet.dto';
-import { ConfigService } from '@nestjs/config';
 import { WalletMapper } from './mappers/wallet.mapper';
 
 @Injectable()
@@ -17,10 +16,7 @@ export class WalletsService {
   private wallets: Wallet[] = [];
   private coinbaseWallet: Wallet;
 
-  constructor(
-    @Inject() private readonly blockchainService: BlockchainService,
-    @Inject() private readonly configService: ConfigService,
-  ) {
+  constructor(@Inject() private readonly blockchainService: BlockchainService) {
     this.createCoinbaseWallet();
     this.createDefaultWallets();
     this.createDefaultMinerWallets();
