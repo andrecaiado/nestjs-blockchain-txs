@@ -293,13 +293,13 @@ export class WalletsService {
     return UTXOs.reduce((acc, UTXO) => acc + UTXO.amount, 0);
   }
 
-  private getWalletUTXOs(publicKey: string): TransactionOutput[] {
-    console.log(`Wallet service: Wallet ${publicKey}: fetching UTXOs...`);
-    return this.blockchainService.getWalletUTXOs(publicKey);
-  }
+  // private getWalletUTXOs(publicKey: string): TransactionOutput[] {
+  //   console.log(`Wallet service: Wallet ${publicKey}: fetching UTXOs...`);
+  //   return this.blockchainService.getWalletUTXOs(publicKey);
+  // }
 
   private getWalletBalance(publicKey: string): number {
-    const UTXOs = this.getWalletUTXOs(publicKey);
+    const UTXOs = this.blockchainService.getWalletUTXOs(publicKey);
     return this.calculateBalanceFromUTXOS(UTXOs);
   }
 }
