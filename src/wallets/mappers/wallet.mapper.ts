@@ -6,6 +6,7 @@ export class WalletMapper {
     const walletDto = new WalletDto();
     walletDto.name = wallet.name;
     walletDto.publicKey = wallet.publicKey;
+    walletDto.isMiner = wallet.isMiner;
 
     return walletDto;
   }

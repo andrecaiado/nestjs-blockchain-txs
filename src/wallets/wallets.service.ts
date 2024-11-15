@@ -46,7 +46,7 @@ export class WalletsService {
     console.log('Wallet service: Done. The Coinbase wallet was created!');
   }
 
-  public getCoinbaseWallet() {
+  public getCoinbaseWallet(): Wallet {
     return this.coinbaseWallet;
   }
 

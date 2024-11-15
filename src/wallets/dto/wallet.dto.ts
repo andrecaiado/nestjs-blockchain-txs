@@ -9,4 +9,7 @@ export class WalletDto {
 
   @ApiProperty({ description: 'The wallet balance' })
   balance: number;
+
+  @ApiProperty({ description: 'The wallet belongs to a miner' })
+  isMiner: boolean;
 }
