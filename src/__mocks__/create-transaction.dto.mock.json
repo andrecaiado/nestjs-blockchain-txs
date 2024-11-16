@@ -1,0 +1,33 @@
+{
+  "transactionId": "ece5ebdec6341c1d06fe134f9f546e9455d5fe1a813b4f68d5eb42cd3eb0b706",
+  "senderPublicKey": "020f37c48b932cc049651c61f5256a505179eceac96c29edef15216c0cd6904776",
+  "recipientPublicKey": "0336e019ca786cad806c7542e8d5a652e6209beb933450f24587593728f43a92fd",
+  "inputs": [
+    {
+      "transactionOutputId": "123",
+      "UTXO": {
+        "amount": 100.54,
+        "id": "123",
+        "parentTransactionId": "123",
+        "recipientPublicKey": "020f37c48b932cc049651c61f5256a505179eceac96c29edef15216c0cd6904776"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "amount": 50,
+      "id": "c77eab78f1e25ec1c983bbdaa8b455bb2f270222e176c4a2525f366ad2067236",
+      "parentTransactionId": "ece5ebdec6341c1d06fe134f9f546e9455d5fe1a813b4f68d5eb42cd3eb0b706",
+      "recipientPublicKey": "0336e019ca786cad806c7542e8d5a652e6209beb933450f24587593728f43a92fd"
+    },
+    {
+      "amount": 50.539,
+      "id": "4b8bfd54f3e560cd64b46fb7bdc8a8d55a47fce016b79186dbd86f6c5d0fb776",
+      "parentTransactionId": "ece5ebdec6341c1d06fe134f9f546e9455d5fe1a813b4f68d5eb42cd3eb0b706",
+      "recipientPublicKey": "0336e019ca786cad806c7542e8d5a652e6209beb933450f24587593728f43a92fd"
+    }
+  ],
+  "amount": 50,
+  "transactionFees": 0.001,
+  "signature": "1e0a9d077d1ae5a908be5981e0b94781083d3faf41a209332fa4d7fc0887183b068e198a0df731d8f4572aa0a161f031fa0041b654ab685f6919acfe2f415088"
+}
