@@ -2,12 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TransactionsService } from './transactions.service';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { ConfigService } from '@nestjs/config';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { WalletsService } from 'src/wallets/wallets.service';
 import { PoolsService } from 'src/pools/pools.service';
 import { Wallet } from 'src/wallets/wallet';
 import { TransactionOutput } from './transaction';
 import * as createTransactionDtoMock from 'src/__mocks__/create-transaction.dto.mock.json';
+import { TransactionDtoMapper } from './dto/mappers/transaction.dto.mapper';
 
 describe('TransactionsService', () => {
   const senderWallet = new Wallet('SenderWallet', false);
@@ -17,6 +18,7 @@ describe('TransactionsService', () => {
   let service: TransactionsService;
   let blockchainServiceMock: Partial<BlockchainService> = {
     getWalletUTXOs: jest.fn(),
+    getTotalUTXOs: jest.fn(),
   };
   let configServiceMock: Partial<ConfigService> = {
     get: jest.fn((key: string) => {
@@ -32,6 +34,9 @@ describe('TransactionsService', () => {
       if (key === 'blockchain.minerReward') {
         return 50;
       }
+      if (key === 'blockchain.maxCoinSupply') {
+        return 1000000;
+      }
       return null;
     }),
   };
@@ -45,49 +50,6 @@ describe('TransactionsService', () => {
   };
 
   const transactionDto = createTransactionDtoMock;
-
-  // const transactionDto = {
-  //   transactionId:
-  //     'ece5ebdec6341c1d06fe134f9f546e9455d5fe1a813b4f68d5eb42cd3eb0b706',
-  //   senderPublicKey:
-  //     '020f37c48b932cc049651c61f5256a505179eceac96c29edef15216c0cd6904776',
-  //   recipientPublicKey:
-  //     '0336e019ca786cad806c7542e8d5a652e6209beb933450f24587593728f43a92fd',
-  //   inputs: [
-  //     {
-  //       transactionOutputId: '123',
-  //       UTXO: {
-  //         amount: 100.54,
-  //         id: '123',
-  //         parentTransactionId: '123',
-  //         recipientPublicKey:
-  //           '020f37c48b932cc049651c61f5256a505179eceac96c29edef15216c0cd6904776',
-  //       },
-  //     },
-  //   ],
-  //   outputs: [
-  //     {
-  //       amount: 50,
-  //       id: 'c77eab78f1e25ec1c983bbdaa8b455bb2f270222e176c4a2525f366ad2067236',
-  //       parentTransactionId:
-  //         'ece5ebdec6341c1d06fe134f9f546e9455d5fe1a813b4f68d5eb42cd3eb0b706',
-  //       recipientPublicKey:
-  //         '0336e019ca786cad806c7542e8d5a652e6209beb933450f24587593728f43a92fd',
-  //     },
-  //     {
-  //       amount: 50.539,
-  //       id: '4b8bfd54f3e560cd64b46fb7bdc8a8d55a47fce016b79186dbd86f6c5d0fb776',
-  //       parentTransactionId:
-  //         'ece5ebdec6341c1d06fe134f9f546e9455d5fe1a813b4f68d5eb42cd3eb0b706',
-  //       recipientPublicKey:
-  //         '0336e019ca786cad806c7542e8d5a652e6209beb933450f24587593728f43a92fd',
-  //     },
-  //   ],
-  //   amount: 50,
-  //   transactionFees: 0.001,
-  //   signature:
-  //     '1e0a9d077d1ae5a908be5981e0b94781083d3faf41a209332fa4d7fc0887183b068e198a0df731d8f4572aa0a161f031fa0041b654ab685f6919acfe2f415088',
-  // };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -124,7 +86,9 @@ describe('TransactionsService', () => {
     txo.parentTransactionId = '123';
     txo.id = '1';
 
-    jest.spyOn(blockchainServiceMock, 'getWalletUTXOs').mockReturnValue([txo]);
+    jest
+      .spyOn(blockchainServiceMock, 'getWalletUTXOs')
+      .mockReturnValueOnce([txo]);
 
     jest
       .spyOn(walletsServiceMock, 'findWalletByPublicKey')
@@ -154,6 +118,36 @@ describe('TransactionsService', () => {
     expect(transaction.outputs[1].amount).toBe(90 - transactionFees);
   });
 
+  it('should throw an error when sender wallet is not found', () => {
+    expect(() =>
+      service.createTransaction('invalid-public-key', {
+        recipientPublicKey: 'recipient-public-key',
+        amount: 10,
+      }),
+    ).toThrow(
+      new NotFoundException(
+        `Sender Wallet with public key 'invalid-public-key' not found!`,
+      ),
+    );
+  });
+
+  it('should throw as error when the sender and recipients as ther same', () => {
+    jest
+      .spyOn(walletsServiceMock, 'findWalletByPublicKey')
+      .mockReturnValue(senderWallet);
+
+    expect(() =>
+      service.createTransaction(senderWallet.publicKey, {
+        recipientPublicKey: senderWallet.publicKey,
+        amount: 10,
+      }),
+    ).toThrow(
+      new BadRequestException(
+        `Sender and Recipient wallets cannot be the same!`,
+      ),
+    );
+  });
+
   it('should fail to create a transaction due to insufficient balance', () => {
     const txo = new TransactionOutput();
     txo.recipientPublicKey = senderWallet.publicKey;
@@ -161,7 +155,9 @@ describe('TransactionsService', () => {
     txo.parentTransactionId = '123';
     txo.id = '1';
 
-    jest.spyOn(blockchainServiceMock, 'getWalletUTXOs').mockReturnValue([txo]);
+    jest
+      .spyOn(blockchainServiceMock, 'getWalletUTXOs')
+      .mockReturnValueOnce([txo]);
 
     jest
       .spyOn(walletsServiceMock, 'findWalletByPublicKey')
@@ -189,13 +185,11 @@ describe('TransactionsService', () => {
 
   it('should submit a transaction', () => {
     const utxo = new TransactionOutput();
-    // utxo.recipientPublicKey =
-    //   '020f37c48b932cc049651c61f5256a505179eceac96c29edef15216c0cd6904776';
-    // utxo.amount = 10.54;
-    // utxo.parentTransactionId = '123';
     utxo.id = '123';
 
-    jest.spyOn(blockchainServiceMock, 'getWalletUTXOs').mockReturnValue([utxo]);
+    jest
+      .spyOn(blockchainServiceMock, 'getWalletUTXOs')
+      .mockReturnValueOnce([utxo]);
 
     jest
       .spyOn(walletsServiceMock, 'findWalletByPublicKey')
@@ -207,7 +201,7 @@ describe('TransactionsService', () => {
 
     jest
       .spyOn(poolsServiceMock, 'publish')
-      .mockImplementation(async () => new Promise((resolve) => resolve()));
+      .mockImplementationOnce(async () => new Promise((resolve) => resolve()));
 
     const result = service.submitTransaction(transactionDto);
 
@@ -221,132 +215,187 @@ describe('TransactionsService', () => {
     });
   });
 
-  //   it('should submit a transaction', async () => {
-  //     jest
-  //       .spyOn(walletsServiceMock, 'findWalletByPublicKey')
-  //       .mockReturnValue(wallet1);
+  it('should throw an error when the signature is invalid', () => {
+    const invalidTransactionDto = { ...transactionDto };
+    invalidTransactionDto.signature =
+      '5e17063610388d2bc9b8866a15f331ad4119adc3bc703476729fa867e7c9c9b52432f991d76577092d20f16335839343522e8be0c7f8fd7ac553333b04d7b672';
 
-  //     jest
-  //       .spyOn(poolsServiceMock, 'publish')
-  //       .mockImplementation(async () => new Promise((resolve) => resolve()));
+    expect(() => service.submitTransaction(invalidTransactionDto)).toThrow(
+      new BadRequestException(
+        `Transaction ${invalidTransactionDto.transactionId} validation: signature is invalid`,
+      ),
+    );
+  });
 
-  //     const result = await service.submitTransaction(transactionDto);
+  it('should throw an error when the sender wallet is not found', async () => {
+    jest
+      .spyOn(walletsServiceMock, 'findWalletByPublicKey')
+      .mockReturnValueOnce(null);
 
-  //     expect(poolsServiceMock.publish).toHaveBeenCalledWith(
-  //       'global-tx-pool-exchange',
-  //       transactionDto,
-  //     );
+    expect(() => service.submitTransaction(transactionDto)).toThrow(
+      new BadRequestException(
+        `Transaction ${transactionDto.transactionId} validation: sender wallet not found`,
+      ),
+    );
+  });
 
-  //     expect(result).toEqual({
-  //       message: `Transaction ${transactionDto.transactionId}: submitted.`,
-  //     });
-  //   });
+  it('should throw an error when the inputs UTXOs are not unspent', async () => {
+    jest.spyOn(blockchainServiceMock, 'getWalletUTXOs').mockReturnValueOnce([]);
 
-  //   it('should throw an error when the signature is invalid', async () => {
-  //     const invalidTransactionDto = { ...transactionDto };
-  //     invalidTransactionDto.signature =
-  //       '5e17063610388d2bc9b8866a15f331ad4119adc3bc703476729fa867e7c9c9b52432f991d76577092d20f16335839343522e8be0c7f8fd7ac553333b04d7b672';
+    jest
+      .spyOn(walletsServiceMock, 'findWalletByPublicKey')
+      .mockReturnValueOnce(senderWallet);
 
-  //     await expect(
-  //       service.submitTransaction(invalidTransactionDto),
-  //     ).rejects.toThrow(
-  //       new BadRequestException(
-  //         `Transaction ${invalidTransactionDto.transactionId} validation: signature is invalid`,
-  //       ),
-  //     );
-  //   });
+    jest
+      .spyOn(walletsServiceMock, 'findWalletByPublicKey')
+      .mockReturnValueOnce(recipientWallet);
 
-  //   it('should throw an error when the sender wallet is not found', async () => {
-  //     jest
-  //       .spyOn(walletsServiceMock, 'findWalletByPublicKey')
-  //       .mockReturnValue(null);
+    expect(() => service.submitTransaction(transactionDto)).toThrow(
+      new BadRequestException(
+        `Transaction ${transactionDto.transactionId}: there are UTXOs that are not unspent`,
+      ),
+    );
+  });
 
-  //     await expect(() =>
-  //       service.submitTransaction(transactionDto),
-  //     ).rejects.toThrow(
-  //       new BadRequestException(
-  //         `Transaction ${transactionDto.transactionId} validation: sender wallet not found`,
-  //       ),
-  //     );
-  //   });
+  it('should throw an error when the inputs are not enough to cover the outputs', async () => {
+    const utxo = new TransactionOutput();
+    utxo.recipientPublicKey =
+      '020f37c48b932cc049651c61f5256a505179eceac96c29edef15216c0cd6904776';
+    utxo.amount = 10.54;
+    utxo.parentTransactionId = '123';
+    utxo.id = '123';
 
-  //   it('should throw an error when the inputs UTXOs are not unspent', async () => {
-  //     jest
-  //       .spyOn(walletsServiceMock, 'findWalletByPublicKey')
-  //       .mockReturnValue(wallet1);
+    jest
+      .spyOn(blockchainServiceMock, 'getWalletUTXOs')
+      .mockReturnValueOnce([utxo]);
 
-  //     jest.spyOn(blockchainService, 'getWalletUTXOs').mockReturnValue([]);
+    jest
+      .spyOn(walletsServiceMock, 'findWalletByPublicKey')
+      .mockReturnValueOnce(senderWallet);
 
-  //     await expect(() =>
-  //       service.submitTransaction(transactionDto),
-  //     ).rejects.toThrow(
-  //       new BadRequestException(
-  //         `Transaction ${transactionDto.transactionId}: there are UTXOs that are not unspent`,
-  //       ),
-  //     );
-  //   });
+    jest
+      .spyOn(walletsServiceMock, 'findWalletByPublicKey')
+      .mockReturnValueOnce(recipientWallet);
 
-  //   it('should throw an error when the inputs are not enough to cover the outputs', async () => {
-  //     jest
-  //       .spyOn(walletsServiceMock, 'findWalletByPublicKey')
-  //       .mockReturnValue(wallet1);
+    jest
+      .spyOn(configServiceMock, 'get')
+      .mockImplementationOnce((key: string) => {
+        if (key === 'blockchain.transactionFees') {
+          return 1000;
+        }
+        return null;
+      });
 
-  //     jest
-  //       .spyOn(blockchainService, 'getWalletUTXOs')
-  //       .mockReturnValue([transactionDto.inputs[0].UTXO]);
+    expect(() => service.submitTransaction(transactionDto)).toThrow(
+      new BadRequestException(
+        `Transaction ${transactionDto.transactionId}: inputs are not enough to cover the outputs`,
+      ),
+    );
+  });
 
-  //     jest.spyOn(configServiceMock, 'get').mockImplementation((key: string) => {
-  //       if (key === 'blockchain.transactionFees') {
-  //         return 1000;
-  //       }
-  //       return null;
-  //     });
+  it('should verify that UTXOs are unspent', () => {
+    const txUTXOs = TransactionDtoMapper.toTransaction(transactionDto).outputs;
+    const walletUTXOs =
+      TransactionDtoMapper.toTransaction(transactionDto).outputs;
 
-  //     await expect(() =>
-  //       service.submitTransaction(transactionDto),
-  //     ).rejects.toThrow(
-  //       new BadRequestException(
-  //         `Transaction ${transactionDto.transactionId}: inputs are not enough to cover the outputs`,
-  //       ),
-  //     );
-  //   });
+    expect(service.verifyUTXOsAreUnspent(txUTXOs, walletUTXOs)).toEqual(true);
+  });
 
-  //   it('should create a genesis transaction', () => {
-  //     // jest
-  //     //   .spyOn(walletsServiceMock, 'getCoinbaseWallet')
-  //     //   .mockReturnValue(coinbaseWallet);
-  //     //jest.spyOn(walletsServiceMock, 'getRandomWallet').mockReturnValue(wallet1);
+  it('should verify that UTXOs are not unspent', () => {
+    const txUTXOs = TransactionDtoMapper.toTransaction(transactionDto).outputs;
+    const walletUTXOs = [];
 
-  //     const genesisTransaction = service.createGenesisTransaction();
-  //     expect(genesisTransaction.senderPublicKey).toBe(coinbaseWallet.publicKey);
-  //     expect(genesisTransaction.recipientPublicKey).toBe(wallet1.publicKey);
-  //     expect(genesisTransaction.amount).toBe(1000);
-  //     expect(genesisTransaction.inputs.length).toBe(0);
-  //     expect(genesisTransaction.outputs.length).toBe(1);
-  //     expect(genesisTransaction.outputs[0]).toStrictEqual({
-  //       recipientPublicKey: wallet1.publicKey,
-  //       amount: 1000,
-  //       parentTransactionId: '0',
-  //       id: '0',
-  //     });
-  //     expect(genesisTransaction.transactionFees).toBe(0);
-  //     expect(genesisTransaction.transactionId).toBe('0');
-  //   });
+    expect(service.verifyUTXOsAreUnspent(txUTXOs, walletUTXOs)).toEqual(false);
+  });
 
-  //   it('should create a coinbase transaction', () => {
-  //     const coinbaseTransaction = service.createCoinbaseTransaction(wallet1, 5.5);
-  //     expect(coinbaseTransaction.transactionId).toBe('0');
-  //     expect(coinbaseTransaction.senderPublicKey).toBe('');
-  //     expect(coinbaseTransaction.recipientPublicKey).toBe(wallet1.publicKey);
-  //     expect(coinbaseTransaction.amount).toBe(55.5);
-  //     expect(coinbaseTransaction.inputs.length).toBe(0);
-  //     expect(coinbaseTransaction.outputs.length).toBe(1);
-  //     expect(coinbaseTransaction.outputs[0]).toStrictEqual({
-  //       recipientPublicKey: wallet1.publicKey,
-  //       amount: 55.5,
-  //       parentTransactionId: '0',
-  //       id: '0',
-  //     });
-  //     expect(coinbaseTransaction.transactionFees).toBe(0);
-  //   });
+  it('should create the genesis transaction', () => {
+    const amount = configServiceMock.get<number>(
+      'blockchain.genesisTransaction.amount',
+    );
+
+    jest
+      .spyOn(walletsServiceMock, 'getCoinbaseWallet')
+      .mockReturnValueOnce(coinbaseWallet);
+
+    jest
+      .spyOn(walletsServiceMock, 'getRandomWallet')
+      .mockReturnValueOnce(recipientWallet);
+
+    const genesisTransaction = service.createGenesisTransaction();
+    expect(genesisTransaction.senderPublicKey).toBe(coinbaseWallet.publicKey);
+    expect(genesisTransaction.recipientPublicKey).toBe(
+      recipientWallet.publicKey,
+    );
+    expect(genesisTransaction.amount).toBe(amount);
+    expect(genesisTransaction.inputs.length).toBe(0);
+    expect(genesisTransaction.outputs.length).toBe(1);
+    expect(genesisTransaction.outputs[0].recipientPublicKey).toBe(
+      recipientWallet.publicKey,
+    );
+    expect(genesisTransaction.outputs[0].amount).toBe(amount);
+    expect(genesisTransaction.outputs[0].parentTransactionId).toBe('0');
+    expect(genesisTransaction.transactionFees).toBe(0);
+    expect(genesisTransaction.transactionId).toBe('0');
+  });
+
+  it('should create a coinbase transaction', () => {
+    const transactionFees = configServiceMock.get<number>(
+      'blockchain.transactionFees',
+    );
+    const minerReward = configServiceMock.get<number>('blockchain.minerReward');
+    const amount = transactionFees + minerReward;
+
+    jest.spyOn(blockchainServiceMock, 'getTotalUTXOs').mockReturnValueOnce(100);
+
+    const coinbaseTransaction = service.createCoinbaseTransaction(
+      recipientWallet,
+      transactionFees,
+    );
+
+    expect(coinbaseTransaction.transactionId).toBe('0');
+    expect(coinbaseTransaction.senderPublicKey).toBe('');
+    expect(coinbaseTransaction.recipientPublicKey).toBe(
+      recipientWallet.publicKey,
+    );
+    expect(coinbaseTransaction.amount).toBe(amount);
+    expect(coinbaseTransaction.inputs.length).toBe(0);
+    expect(coinbaseTransaction.outputs.length).toBe(1);
+    expect(coinbaseTransaction.outputs[0].recipientPublicKey).toBe(
+      recipientWallet.publicKey,
+    );
+    expect(coinbaseTransaction.outputs[0].amount).toBe(amount);
+    expect(coinbaseTransaction.outputs[0].parentTransactionId).toBe('0');
+    expect(coinbaseTransaction.transactionFees).toBe(0);
+  });
+
+  it('should create a coinbase transaction, but adjust the miner reward', () => {
+    const transactionFees = configServiceMock.get<number>(
+      'blockchain.transactionFees',
+    );
+    const amount = transactionFees + 1;
+
+    jest
+      .spyOn(blockchainServiceMock, 'getTotalUTXOs')
+      .mockReturnValueOnce(999999);
+
+    const coinbaseTransaction = service.createCoinbaseTransaction(
+      recipientWallet,
+      transactionFees,
+    );
+
+    expect(coinbaseTransaction.transactionId).toBe('0');
+    expect(coinbaseTransaction.senderPublicKey).toBe('');
+    expect(coinbaseTransaction.recipientPublicKey).toBe(
+      recipientWallet.publicKey,
+    );
+    expect(coinbaseTransaction.amount).toBe(amount);
+    expect(coinbaseTransaction.inputs.length).toBe(0);
+    expect(coinbaseTransaction.outputs.length).toBe(1);
+    expect(coinbaseTransaction.outputs[0].recipientPublicKey).toBe(
+      recipientWallet.publicKey,
+    );
+    expect(coinbaseTransaction.outputs[0].amount).toBe(amount);
+    expect(coinbaseTransaction.outputs[0].parentTransactionId).toBe('0');
+    expect(coinbaseTransaction.transactionFees).toBe(0);
+  });
 });

@@ -204,7 +204,7 @@ export class TransactionsService {
 
     // Verify signature
     if (transaction.verifySignature(transaction.senderPublicKey) === false) {
-      errorMsg = `Transactions service: Transaction ${transaction.transactionId} validation: signature is invalid`;
+      errorMsg = `Transaction ${transaction.transactionId} validation: signature is invalid`;
       console.error(`Transactions service: ${errorMsg}`);
       throw new BadRequestException(errorMsg);
     }
@@ -389,7 +389,7 @@ export class TransactionsService {
           ? 0
           : maxCoinSupply - currentCoinSupply;
       console.log(
-        `Transactions service: Miner reward adjusted to ${minerReward} coins.`,
+        `Transactions service: Miner reward adjusted to ${minerReward} coin(s).`,
       );
     }
 

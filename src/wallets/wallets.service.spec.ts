@@ -2,16 +2,33 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { WalletsService } from './wallets.service';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Wallet } from './wallet';
+import { BlockchainService } from 'src/blockchain/blockchain.service';
 
 describe('WalletsService', () => {
   let service: WalletsService;
+  let blockchainServiceMock: Partial<BlockchainService> = {
+    getWalletUTXOs: jest.fn().mockReturnValue([
+      {
+        amount: 50,
+        id: 'c77eab78f1e25ec1c983bbdaa8b455bb2f270222e176c4a2525f366ad2067236',
+        parentTransactionId:
+          'ece5ebdec6341c1d06fe134f9f546e9455d5fe1a813b4f68d5eb42cd3eb0b706',
+        recipientPublicKey:
+          '0336e019ca786cad806c7542e8d5a652e6209beb933450f24587593728f43a92fd',
+      },
+    ]),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [WalletsService],
+      providers: [
+        WalletsService,
+        { provide: BlockchainService, useValue: blockchainServiceMock },
+      ],
     }).compile();
 
     service = module.get<WalletsService>(WalletsService);
+    blockchainServiceMock = module.get<BlockchainService>(BlockchainService);
 
     // Clear wallets
     service['wallets'] = [];
@@ -19,6 +36,7 @@ describe('WalletsService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+    expect(blockchainServiceMock).toBeDefined();
   });
 
   it('should create coinbase wallet', () => {
@@ -76,31 +94,4 @@ describe('WalletsService', () => {
       ),
     );
   });
-
-  // it('should throw an error when sender wallet is not found', () => {
-  //   expect(() =>
-  //     service.createTransaction('invalid-public-key', {
-  //       recipientPublicKey: 'recipient-public-key',
-  //       amount: 10,
-  //     }),
-  //   ).toThrow(
-  //     new NotFoundException(
-  //       `Sender Wallet with public key 'invalid-public-key' not found!`,
-  //     ),
-  //   );
-  // });
-
-  // it('should throw as error when the sender and recipients as ther same', () => {
-  //   const wallet1 = service.createWallet({ name: 'Wallet-1' });
-  //   expect(() =>
-  //     service.createTransaction(wallet1.publicKey, {
-  //       recipientPublicKey: wallet1.publicKey,
-  //       amount: 10,
-  //     }),
-  //   ).toThrow(
-  //     new BadRequestException(
-  //       `Sender and Recipient wallets cannot be the same!`,
-  //     ),
-  //   );
-  // });
 });
