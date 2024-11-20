@@ -24,17 +24,13 @@ describe('TransactionsService', () => {
     get: jest.fn((key: string) => {
       if (key === 'blockchain.transactionFees') {
         return 0.001;
-      }
-      if (key === 'rabbitmq.exchanges[0].name') {
+      } else if (key === 'rabbitmq.exchanges[0].name') {
         return 'global-tx-pool-exchange';
-      }
-      if (key === 'blockchain.genesisTransaction.amount') {
+      } else if (key === 'blockchain.genesisTransaction.amount') {
         return 1000;
-      }
-      if (key === 'blockchain.minerReward') {
+      } else if (key === 'blockchain.minerReward') {
         return 50;
-      }
-      if (key === 'blockchain.maxCoinSupply') {
+      } else if (key === 'blockchain.maxCoinSupply') {
         return 1000000;
       }
       return null;
