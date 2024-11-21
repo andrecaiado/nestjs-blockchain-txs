@@ -4,7 +4,11 @@ import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 
 describe('PoolsService', () => {
   let service: PoolsService;
-  let amqpConnection: Partial<AmqpConnection>;
+  let amqpConnection: Partial<AmqpConnection> = {
+    channel: {
+      publish: jest.fn(),
+    },
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -12,17 +16,7 @@ describe('PoolsService', () => {
         PoolsService,
         {
           provide: AmqpConnection,
-          useValue: {
-            init: jest.fn(),
-            channel: jest.fn(),
-            connection: jest.fn(),
-            managedChannel: jest.fn(),
-            managedConnection: jest.fn(),
-            configuration: jest.fn(),
-            channels: jest.fn(),
-            managedChannels: jest.fn(),
-            connected: jest.fn(),
-          },
+          useValue: amqpConnection,
         },
       ],
     }).compile();
@@ -34,5 +28,19 @@ describe('PoolsService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
     expect(amqpConnection).toBeDefined();
+  });
+
+  it('should publish msg', async () => {
+    const exchange = 'exchange';
+    const message = { key: 'value' };
+
+    await service.publish(exchange, message);
+
+    expect(amqpConnection.channel.publish).toHaveBeenCalledWith(
+      exchange,
+      '',
+      Buffer.from(JSON.stringify(message)),
+      {},
+    );
   });
 });
