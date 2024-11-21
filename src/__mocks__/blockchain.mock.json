@@ -1,0 +1,218 @@
+[
+  {
+    "id": 0,
+    "transactions": [
+      {
+        "transactionId": "0",
+        "amount": 1000,
+        "recipientPublicKey": "020ce717ba67dd192b85480e5c2808e92bb0e8dd22c1adc0f4d6395e3be7be7679",
+        "senderPublicKey": "03d22f4252509843cd474472b13051dd0174e52dd2a656389fc956ed5d269d0a5b",
+        "signature": "61355209a9ebdb9a2f5c6e3163a1af602da4215be52a6d54096a7e9bf703310f2097eaa5e0a25aab32d79f71fee63ad1446ca0fed71d22995299825220cfb38e",
+        "transactionFees": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "amount": 1000,
+            "id": "0",
+            "parentTransactionId": "0",
+            "recipientPublicKey": "020ce717ba67dd192b85480e5c2808e92bb0e8dd22c1adc0f4d6395e3be7be7679"
+          }
+        ]
+      }
+    ],
+    "hash": "89eb0ac031a63d2421cd05a2fbe41f3ea35f5c3712ca839cbf6b85c4ee07b7a3",
+    "previousHash": "0",
+    "nonce": 0,
+    "timestamp": "2024-11-20T22:50:11.407Z",
+    "data": "Genesis Block"
+  },
+  {
+    "id": 1,
+    "transactions": [
+      {
+        "transactionId": "0",
+        "amount": 50.001,
+        "recipientPublicKey": "03c9762476023390d99b4675bfda24abcdbf82b0bbf9a6099292f95f98a049da5d",
+        "senderPublicKey": "",
+        "signature": "",
+        "transactionFees": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "amount": 50.001,
+            "id": "378acf30754513e6160bb3cab1a4a76667de6c16ffaa4dbe9db44ff416901702",
+            "parentTransactionId": "0",
+            "recipientPublicKey": "03c9762476023390d99b4675bfda24abcdbf82b0bbf9a6099292f95f98a049da5d"
+          }
+        ]
+      },
+      {
+        "transactionId": "cfae136f3a1a61634a081088821129ee0a60f75adc4745baa014b3167147f36f",
+        "amount": 100,
+        "recipientPublicKey": "03e893009f79daea4ee140ba1bdc7dfd6766b22b54a660739395e099afbcfe29db",
+        "senderPublicKey": "020ce717ba67dd192b85480e5c2808e92bb0e8dd22c1adc0f4d6395e3be7be7679",
+        "signature": "773d76436ed2d5557c163c66d66fbcb63e750fbc2a6dc76ccfd94139c4841fc830444c9ed5b408350a4e547ffc71b659bde51f8a744df2daa7e2c3fd478c9de4",
+        "transactionFees": 0.001,
+        "inputs": [
+          {
+            "transactionOutputId": "0",
+            "UTXO": {
+              "amount": 1000,
+              "id": "0",
+              "parentTransactionId": "0",
+              "recipientPublicKey": "020ce717ba67dd192b85480e5c2808e92bb0e8dd22c1adc0f4d6395e3be7be7679"
+            }
+          }
+        ],
+        "outputs": [
+          {
+            "amount": 100,
+            "id": "0c9eb7634a677bc1e4e141f6631c1a4f140c87d1bad72daf9a8ff896d4485f08",
+            "parentTransactionId": "cfae136f3a1a61634a081088821129ee0a60f75adc4745baa014b3167147f36f",
+            "recipientPublicKey": "03e893009f79daea4ee140ba1bdc7dfd6766b22b54a660739395e099afbcfe29db"
+          },
+          {
+            "amount": 899.999,
+            "id": "983064598782b0d10971eccac9bf899f38ef2b9036179e800c51cacff8229fac",
+            "parentTransactionId": "cfae136f3a1a61634a081088821129ee0a60f75adc4745baa014b3167147f36f",
+            "recipientPublicKey": "020ce717ba67dd192b85480e5c2808e92bb0e8dd22c1adc0f4d6395e3be7be7679"
+          }
+        ]
+      }
+    ],
+    "hash": "0000e278bc6b70cef9448228e93296820a9d706b88a567dc1973a7b6f1145447",
+    "previousHash": "89eb0ac031a63d2421cd05a2fbe41f3ea35f5c3712ca839cbf6b85c4ee07b7a3",
+    "nonce": 273031,
+    "timestamp": "2024-11-20T22:50:47.362Z",
+    "data": ""
+  },
+  {
+    "id": 2,
+    "transactions": [
+      {
+        "transactionId": "0",
+        "amount": 50.001,
+        "recipientPublicKey": "03c9762476023390d99b4675bfda24abcdbf82b0bbf9a6099292f95f98a049da5d",
+        "senderPublicKey": "",
+        "signature": "",
+        "transactionFees": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "amount": 50.001,
+            "id": "01b76489b5a7040976daf3031db928decff873d87ffe4a206eaf075358af1a03",
+            "parentTransactionId": "0",
+            "recipientPublicKey": "03c9762476023390d99b4675bfda24abcdbf82b0bbf9a6099292f95f98a049da5d"
+          }
+        ]
+      },
+      {
+        "transactionId": "8cec5123342bff55113b6310fa939af015ad383a3054366c1f3cca2143992f0a",
+        "amount": 100,
+        "recipientPublicKey": "03e893009f79daea4ee140ba1bdc7dfd6766b22b54a660739395e099afbcfe29db",
+        "senderPublicKey": "020ce717ba67dd192b85480e5c2808e92bb0e8dd22c1adc0f4d6395e3be7be7679",
+        "signature": "b7b1d7f0acb617769209b6b85892d59bbac947ab45422ead4eb8ceb6a3b2df1c1bc01ddf572c1bc9329d4683cc8916c8a7e9327510df5a800597a6f5f96b7f08",
+        "transactionFees": 0.001,
+        "inputs": [
+          {
+            "transactionOutputId": "983064598782b0d10971eccac9bf899f38ef2b9036179e800c51cacff8229fac",
+            "UTXO": {
+              "amount": 899.999,
+              "id": "983064598782b0d10971eccac9bf899f38ef2b9036179e800c51cacff8229fac",
+              "parentTransactionId": "cfae136f3a1a61634a081088821129ee0a60f75adc4745baa014b3167147f36f",
+              "recipientPublicKey": "020ce717ba67dd192b85480e5c2808e92bb0e8dd22c1adc0f4d6395e3be7be7679"
+            }
+          }
+        ],
+        "outputs": [
+          {
+            "amount": 100,
+            "id": "ef8852d0e74a2666d6a2752832465485f3279c8822c0f335da23cb372a77d8b0",
+            "parentTransactionId": "8cec5123342bff55113b6310fa939af015ad383a3054366c1f3cca2143992f0a",
+            "recipientPublicKey": "03e893009f79daea4ee140ba1bdc7dfd6766b22b54a660739395e099afbcfe29db"
+          },
+          {
+            "amount": 799.998,
+            "id": "851bdd7372c77ea8c5d4c6ca09fdd5159fd78e3061de57e133ec2bfc9f1c1ae5",
+            "parentTransactionId": "8cec5123342bff55113b6310fa939af015ad383a3054366c1f3cca2143992f0a",
+            "recipientPublicKey": "020ce717ba67dd192b85480e5c2808e92bb0e8dd22c1adc0f4d6395e3be7be7679"
+          }
+        ]
+      }
+    ],
+    "hash": "0000665ce0725ad41a8559db26403064738a4853b5b95a22f557694adf4589e6",
+    "previousHash": "0000e278bc6b70cef9448228e93296820a9d706b88a567dc1973a7b6f1145447",
+    "nonce": 8011,
+    "timestamp": "2024-11-20T22:54:59.792Z",
+    "data": ""
+  },
+  {
+    "id": 3,
+    "transactions": [
+      {
+        "transactionId": "0",
+        "amount": 50.001,
+        "recipientPublicKey": "024d4df1cdd4a872aa60bb1072f4f1a920df591be4afc89ed6f4cf215b660d5517",
+        "senderPublicKey": "",
+        "signature": "",
+        "transactionFees": 0,
+        "inputs": [],
+        "outputs": [
+          {
+            "amount": 50.001,
+            "id": "04faf481cfa5e60e3dc16c7908e37d97e301a00e79eb4b0c01b3d357007bc239",
+            "parentTransactionId": "0",
+            "recipientPublicKey": "024d4df1cdd4a872aa60bb1072f4f1a920df591be4afc89ed6f4cf215b660d5517"
+          }
+        ]
+      },
+      {
+        "transactionId": "9ef105ffd6da93b99404a518c331a11c36ca9897acfd25b9673b16c3d058a524",
+        "amount": 50,
+        "recipientPublicKey": "020ce717ba67dd192b85480e5c2808e92bb0e8dd22c1adc0f4d6395e3be7be7679",
+        "senderPublicKey": "03e893009f79daea4ee140ba1bdc7dfd6766b22b54a660739395e099afbcfe29db",
+        "signature": "1d4ed7f76dddb25c50b013a0f6f9af437567aa84c2c3c06dc22d9d8fb44597fe07a768098e47766fd97a82f1d10e990124de76016cde823cb6a22b1faea49b74",
+        "transactionFees": 0.001,
+        "inputs": [
+          {
+            "transactionOutputId": "0c9eb7634a677bc1e4e141f6631c1a4f140c87d1bad72daf9a8ff896d4485f08",
+            "UTXO": {
+              "amount": 100,
+              "id": "0c9eb7634a677bc1e4e141f6631c1a4f140c87d1bad72daf9a8ff896d4485f08",
+              "parentTransactionId": "cfae136f3a1a61634a081088821129ee0a60f75adc4745baa014b3167147f36f",
+              "recipientPublicKey": "03e893009f79daea4ee140ba1bdc7dfd6766b22b54a660739395e099afbcfe29db"
+            }
+          },
+          {
+            "transactionOutputId": "ef8852d0e74a2666d6a2752832465485f3279c8822c0f335da23cb372a77d8b0",
+            "UTXO": {
+              "amount": 100,
+              "id": "ef8852d0e74a2666d6a2752832465485f3279c8822c0f335da23cb372a77d8b0",
+              "parentTransactionId": "8cec5123342bff55113b6310fa939af015ad383a3054366c1f3cca2143992f0a",
+              "recipientPublicKey": "03e893009f79daea4ee140ba1bdc7dfd6766b22b54a660739395e099afbcfe29db"
+            }
+          }
+        ],
+        "outputs": [
+          {
+            "amount": 50,
+            "id": "a562451272f8e6bdbf74edd2d7d6bd045e0594b238a8dd3293dc6bbf9c80efc4",
+            "parentTransactionId": "9ef105ffd6da93b99404a518c331a11c36ca9897acfd25b9673b16c3d058a524",
+            "recipientPublicKey": "020ce717ba67dd192b85480e5c2808e92bb0e8dd22c1adc0f4d6395e3be7be7679"
+          },
+          {
+            "amount": 149.999,
+            "id": "10ffd9e4810dd0fec2b30f6f4a000c19fcb7c14e232acc409ed739e0b1931c46",
+            "parentTransactionId": "9ef105ffd6da93b99404a518c331a11c36ca9897acfd25b9673b16c3d058a524",
+            "recipientPublicKey": "03e893009f79daea4ee140ba1bdc7dfd6766b22b54a660739395e099afbcfe29db"
+          }
+        ]
+      }
+    ],
+    "hash": "000068cc92b5bd2b973561ee496b288b6eeec543f3a2b3464ead41dc58b435a5",
+    "previousHash": "0000665ce0725ad41a8559db26403064738a4853b5b95a22f557694adf4589e6",
+    "nonce": 39501,
+    "timestamp": "2024-11-20T22:55:52.307Z",
+    "data": ""
+  }
+]

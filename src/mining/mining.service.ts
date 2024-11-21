@@ -38,7 +38,7 @@ export class MiningService {
     try {
       transaction = TransactionDtoMapper.toTransaction(msg as TransactionDto);
     } catch (error) {
-      console.log(
+      console.error(
         'Mining service: Error mapping message to transaction, transaction discarded.',
       );
       return;

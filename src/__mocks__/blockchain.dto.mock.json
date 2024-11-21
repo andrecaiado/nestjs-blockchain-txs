@@ -1,0 +1,31 @@
+{
+  "status": {
+    "totalTransactions": 7,
+    "totalBlocks": 4,
+    "totalCoinsMined": 1150,
+    "totalAddresses": 4,
+    "totalCoinsLeftToMine": 998850
+  },
+  "chainPreview": [
+    {
+      "blockId": 0,
+      "timestamp": "2024-11-20T22:50:11.407Z",
+      "totalTransactions": 1
+    },
+    {
+      "blockId": 1,
+      "timestamp": "2024-11-20T22:50:47.362Z",
+      "totalTransactions": 2
+    },
+    {
+      "blockId": 2,
+      "timestamp": "2024-11-20T22:54:59.792Z",
+      "totalTransactions": 2
+    },
+    {
+      "blockId": 3,
+      "timestamp": "2024-11-20T22:55:52.307Z",
+      "totalTransactions": 2
+    }
+  ]
+}

@@ -103,7 +103,7 @@ describe('MiningService', () => {
   });
 
   it('should log an error if mapping fails', async () => {
-    const consoleSpy = jest.spyOn(console, 'log');
+    const consoleSpy = jest.spyOn(console, 'error');
     jest
       .spyOn(TransactionDtoMapper, 'toTransaction')
       .mockImplementationOnce(() => {
