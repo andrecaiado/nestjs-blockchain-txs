@@ -6,6 +6,8 @@ import * as blockchainMock from 'src/__mocks__/blockchain.mock.json';
 import * as blockchainDtoMock from 'src/__mocks__/blockchain.dto.mock.json';
 import { BlockMapper } from 'src/blocks/block.mapper';
 import { BlockDtoMapper } from 'src/blocks/dto/mappers/block.dto.mapper';
+import { Blockchain } from './blockchain';
+import { BlockDto } from 'src/blocks/dto/block.dto';
 
 describe('BlockchainService', () => {
   let service: BlockchainService;
@@ -29,7 +31,7 @@ describe('BlockchainService', () => {
     service = module.get<BlockchainService>(BlockchainService);
     configServiceMock = module.get<ConfigService>(ConfigService);
 
-    service['blockchain'].chain = JSON.parse(JSON.stringify(blockchainMock));
+    service['blockchain'] = createBlockchainFromBlockchainDtoMock();
   });
 
   afterEach(async () => {
@@ -266,4 +268,45 @@ describe('BlockchainService', () => {
     const chain: Block[] = service['blockchain'].chain;
     expect(chain[chain.length - 1]).toStrictEqual(newBlock);
   });
+
+  it('should return the blockchain is valid', async () => {
+    const isValid = service.isBlockchainValid();
+
+    expect(isValid).toBeTruthy();
+  });
+
+  it('should return the blockchain is invalid due to invalid hash', async () => {
+    const consoleSpy = jest.spyOn(console, 'error');
+
+    service['blockchain'].chain[0].hash = 'invalid-hash';
+    const isValid = service.isBlockchainValid();
+
+    expect(isValid).toBeFalsy();
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Blockchain service: Blockchain is invalid.',
+    );
+  });
+
+  it('should return the blockchain is invalid due to invalid previous', async () => {
+    const consoleSpy = jest.spyOn(console, 'error');
+
+    service['blockchain'].chain[1].previousHash = 'invalid-previous-hash';
+    const isValid = service.isBlockchainValid();
+
+    expect(isValid).toBeFalsy();
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Blockchain service: Blockchain is invalid.',
+    );
+  });
+
+  it('should not add block to the blockchain if it is not valid', async () => {});
 });
+
+function createBlockchainFromBlockchainDtoMock(): Blockchain {
+  const obj: BlockDto[] = JSON.parse(JSON.stringify(blockchainMock));
+  const blockchain = new Blockchain();
+  obj.forEach((block) => {
+    blockchain.chain.push(BlockDtoMapper.toBlock(block));
+  });
+  return blockchain;
+}

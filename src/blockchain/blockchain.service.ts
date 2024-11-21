@@ -175,4 +175,12 @@ export class BlockchainService {
 
     return BlockMapper.toBlockDto(block);
   }
+
+  public isBlockchainValid(): boolean {
+    if (!this.blockchain.isValidChain()) {
+      console.error(`Blockchain service: Blockchain is invalid.`);
+      return false;
+    }
+    return true;
+  }
 }
