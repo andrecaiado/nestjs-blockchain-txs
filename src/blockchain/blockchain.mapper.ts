@@ -26,6 +26,7 @@ export class BlockchainMapper {
         totalCoinsMined: totalUtxos,
         totalAddresses: addresses.size,
         totalCoinsLeftToMine: maxCoinSupply - totalUtxos,
+        isChainValid: blockchain.isChainValid(),
       },
       chainPreview: blockchain.chain.map((block) =>
         BlockMapper.toBlockPreview(block),

@@ -10,6 +10,7 @@ export class BlockchainStatus {
   totalCoinsMined: number = 0;
   totalAddresses: number = 0;
   totalCoinsLeftToMine: number = 0;
+  isChainValid: boolean = true;
 }
 
 export class BlockchainDto {

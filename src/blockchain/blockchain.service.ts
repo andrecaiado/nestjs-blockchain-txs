@@ -101,6 +101,13 @@ export class BlockchainService {
       `Blockchain service: Received new block ${JSON.stringify(msg)}`,
     );
 
+    if (!this.isBlockchainValid()) {
+      console.error(
+        'Blockchain service: Blockchain is invalid, block discarded.',
+      );
+      return;
+    }
+
     // Map msg to Block model
     let block: Block = null;
     try {
@@ -177,7 +184,7 @@ export class BlockchainService {
   }
 
   public isBlockchainValid(): boolean {
-    if (!this.blockchain.isValidChain()) {
+    if (!this.blockchain.isChainValid()) {
       console.error(`Blockchain service: Blockchain is invalid.`);
       return false;
     }

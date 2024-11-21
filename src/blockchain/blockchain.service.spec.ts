@@ -299,7 +299,17 @@ describe('BlockchainService', () => {
     );
   });
 
-  it('should not add block to the blockchain if it is not valid', async () => {});
+  it('should not add block if blockchain is invalid', async () => {
+    const consoleSpy = jest.spyOn(console, 'error');
+
+    service['blockchain'].chain[1].previousHash = 'invalid-previous-hash';
+
+    await service.poolAnnouncedBlocksHandler(new Block());
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Blockchain service: Blockchain is invalid, block discarded.',
+    );
+  });
 });
 
 function createBlockchainFromBlockchainDtoMock(): Blockchain {

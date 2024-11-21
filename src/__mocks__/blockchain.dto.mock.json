@@ -4,7 +4,8 @@
     "totalBlocks": 4,
     "totalCoinsMined": 1150,
     "totalAddresses": 4,
-    "totalCoinsLeftToMine": 998850
+    "totalCoinsLeftToMine": 998850,
+    "isValid": true
   },
   "chainPreview": [
     {

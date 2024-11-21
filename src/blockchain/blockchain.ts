@@ -3,7 +3,7 @@ import { Block } from 'src/blocks/block';
 export class Blockchain {
   chain: Block[] = [];
 
-  isValidChain(): boolean {
+  isChainValid(): boolean {
     for (let i = 1; i < this.chain.length; i++) {
       const currentBlock = this.chain[i];
       const previousBlock = this.chain[i - 1];
