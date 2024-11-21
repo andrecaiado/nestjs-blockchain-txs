@@ -5,7 +5,7 @@
     "totalCoinsMined": 1150,
     "totalAddresses": 4,
     "totalCoinsLeftToMine": 998850,
-    "isValid": true
+    "isChainValid": true
   },
   "chainPreview": [
     {
