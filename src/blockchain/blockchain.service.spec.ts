@@ -265,21 +265,21 @@ describe('BlockchainService', () => {
   });
 
   it('should return the blockchain is valid', async () => {
-    const isValid = service['blockchain'].isChainValid(); // service.isBlockchainValid();
+    const isValid = service['blockchain'].isChainValid();
 
     expect(isValid).toBeTruthy();
   });
 
   it('should return the blockchain is invalid (invalid hash)', async () => {
     service['blockchain'].chain[0].hash = 'invalid-hash';
-    const isValid = service['blockchain'].isChainValid(); //service.isBlockchainValid();
+    const isValid = service['blockchain'].isChainValid();
 
     expect(isValid).toBeFalsy();
   });
 
   it('should return the blockchain is invalid (invalid previous has)', async () => {
     service['blockchain'].chain[1].previousHash = 'invalid-previous-hash';
-    const isValid = service['blockchain'].isChainValid(); //service.isBlockchainValid();
+    const isValid = service['blockchain'].isChainValid();
 
     expect(isValid).toBeFalsy();
   });

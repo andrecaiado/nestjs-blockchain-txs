@@ -176,7 +176,6 @@ export class TransactionsService {
     return UTXOs.reduce((acc, UTXO) => acc + UTXO.amount, 0);
   }
 
-  // VALIDATE THE REMOVAL OF async Promise<void>
   public submitTransaction(transactionDto: TransactionDto) {
     console.log(
       `Transactions service: Transaction ${transactionDto.transactionId} submitting...`,
