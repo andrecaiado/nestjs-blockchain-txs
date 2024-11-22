@@ -19,7 +19,7 @@ export class BlockchainController {
   ) {}
 
   @ApiOperation({
-    summary: 'Get blockchain',
+    summary: 'Get blockchain status and blocks preview',
   })
   @ApiResponse({
     status: HttpStatus.OK,
