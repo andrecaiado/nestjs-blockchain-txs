@@ -27,4 +27,13 @@ export class Block {
   calculateHash(): string {
     return createHash('sha256').update(this.toString()).digest('hex');
   }
+
+  isValid(previousBlock: Block): boolean {
+    if (this.hash !== this.calculateHash()) {
+      return false;
+    } else if (this.previousHash !== previousBlock.hash) {
+      return false;
+    }
+    return true;
+  }
 }

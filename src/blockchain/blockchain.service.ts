@@ -101,7 +101,7 @@ export class BlockchainService {
       `Blockchain service: Received new block ${JSON.stringify(msg)}`,
     );
 
-    if (!this.isBlockchainValid()) {
+    if (!this.blockchain.isChainValid()) {
       console.error(
         'Blockchain service: Blockchain is invalid, block discarded.',
       );
@@ -120,37 +120,13 @@ export class BlockchainService {
     }
 
     // Validate block
-    if (this.validateBlock(block)) {
+    if (block.isValid(this.getLastBlock())) {
       this.addBlock(block);
     } else {
       console.error(
         `Blockchain service: Block #${block.id} is not valid, block discarded.`,
       );
     }
-  }
-
-  private validateBlock(block: Block): boolean {
-    if (!block) {
-      return false;
-    }
-
-    if (block.hash !== block.calculateHash()) {
-      console.error(
-        `Blockchain service: Block #${block.id} hash is incorrect, block discarded.`,
-      );
-      return false;
-    }
-
-    // Check if the block previous hash is correct
-    const previousBlock = this.getLastBlock();
-    if (block.previousHash !== previousBlock.hash) {
-      console.error(
-        `Blockchain service: Block #${block.id} previous hash is incorrect, block discarded.`,
-      );
-      return false;
-    }
-
-    return true;
   }
 
   public getBlockchainDto() {
@@ -181,13 +157,5 @@ export class BlockchainService {
     }
 
     return BlockMapper.toBlockDto(block);
-  }
-
-  public isBlockchainValid(): boolean {
-    if (!this.blockchain.isChainValid()) {
-      console.error(`Blockchain service: Blockchain is invalid.`);
-      return false;
-    }
-    return true;
   }
 }

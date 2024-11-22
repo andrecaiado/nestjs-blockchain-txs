@@ -205,7 +205,7 @@ describe('BlockchainService', () => {
     );
   });
 
-  it('should discard block if validation fails due to incorrect hash', async () => {
+  it('should discard block if validation fails (incorrect hash)', async () => {
     const consoleSpy = jest.spyOn(console, 'error');
 
     const newBlock: Block = new Block();
@@ -220,11 +220,11 @@ describe('BlockchainService', () => {
 
     await service.poolAnnouncedBlocksHandler(newBlock);
     expect(consoleSpy).toHaveBeenCalledWith(
-      `Blockchain service: Block #${newBlock.id} hash is incorrect, block discarded.`,
+      `Blockchain service: Block #${newBlock.id} is not valid, block discarded.`,
     );
   });
 
-  it('should discard block if validation fails due to incorrect previous hash', async () => {
+  it('should discard block if validation fails (incorrect previous hash)', async () => {
     const consoleSpy = jest.spyOn(console, 'error');
 
     const newBlock: Block = new Block();
@@ -237,12 +237,7 @@ describe('BlockchainService', () => {
     newBlock.hash = newBlock.calculateHash();
 
     await service.poolAnnouncedBlocksHandler(newBlock);
-    expect(consoleSpy).toHaveBeenNthCalledWith(
-      1,
-      `Blockchain service: Block #${newBlock.id} previous hash is incorrect, block discarded.`,
-    );
-    expect(consoleSpy).toHaveBeenNthCalledWith(
-      2,
+    expect(consoleSpy).toHaveBeenCalledWith(
       `Blockchain service: Block #${newBlock.id} is not valid, block discarded.`,
     );
   });
@@ -270,33 +265,23 @@ describe('BlockchainService', () => {
   });
 
   it('should return the blockchain is valid', async () => {
-    const isValid = service.isBlockchainValid();
+    const isValid = service['blockchain'].isChainValid(); // service.isBlockchainValid();
 
     expect(isValid).toBeTruthy();
   });
 
-  it('should return the blockchain is invalid due to invalid hash', async () => {
-    const consoleSpy = jest.spyOn(console, 'error');
-
+  it('should return the blockchain is invalid (invalid hash)', async () => {
     service['blockchain'].chain[0].hash = 'invalid-hash';
-    const isValid = service.isBlockchainValid();
+    const isValid = service['blockchain'].isChainValid(); //service.isBlockchainValid();
 
     expect(isValid).toBeFalsy();
-    expect(consoleSpy).toHaveBeenCalledWith(
-      'Blockchain service: Blockchain is invalid.',
-    );
   });
 
-  it('should return the blockchain is invalid due to invalid previous', async () => {
-    const consoleSpy = jest.spyOn(console, 'error');
-
+  it('should return the blockchain is invalid (invalid previous has)', async () => {
     service['blockchain'].chain[1].previousHash = 'invalid-previous-hash';
-    const isValid = service.isBlockchainValid();
+    const isValid = service['blockchain'].isChainValid(); //service.isBlockchainValid();
 
     expect(isValid).toBeFalsy();
-    expect(consoleSpy).toHaveBeenCalledWith(
-      'Blockchain service: Blockchain is invalid.',
-    );
   });
 
   it('should not add block if blockchain is invalid', async () => {
