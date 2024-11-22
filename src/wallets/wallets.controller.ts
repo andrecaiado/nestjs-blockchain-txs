@@ -76,7 +76,7 @@ export class WalletsController {
   }
 
   @ApiOperation({
-    summary: 'New transaction',
+    summary: 'Create new transaction',
   })
   @ApiResponse({
     status: HttpStatus.OK,
