@@ -1,4 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsEnum } from 'class-validator';
+import { WalletType } from 'src/enums/wallet-type.enum';
 
 export class WalletDto {
   @ApiProperty({ description: 'The wallet public key' })
@@ -10,6 +12,7 @@ export class WalletDto {
   @ApiProperty({ description: 'The wallet balance' })
   balance: number;
 
-  @ApiProperty({ description: 'The wallet belongs to a miner' })
-  isMiner: boolean;
+  @ApiProperty({ description: 'The wallet type' })
+  @IsEnum(WalletType)
+  type: WalletType;
 }

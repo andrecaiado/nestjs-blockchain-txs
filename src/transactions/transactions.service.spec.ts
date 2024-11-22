@@ -9,11 +9,12 @@ import { Wallet } from 'src/wallets/wallet';
 import { TransactionOutput } from './transaction';
 import * as createTransactionDtoMock from 'src/__mocks__/create-transaction.dto.mock.json';
 import { TransactionDtoMapper } from './dto/mappers/transaction.dto.mapper';
+import { WalletType } from 'src/enums/wallet-type.enum';
 
 describe('TransactionsService', () => {
-  const senderWallet = new Wallet('SenderWallet', false);
-  const recipientWallet = new Wallet('RecipientWallet', false);
-  const coinbaseWallet = new Wallet('CoinbaseWallet', false);
+  const senderWallet = new Wallet('SenderWallet', WalletType.REGULAR);
+  const recipientWallet = new Wallet('RecipientWallet', WalletType.REGULAR);
+  const coinbaseWallet = new Wallet('CoinbaseWallet', WalletType.COINBASE);
 
   let service: TransactionsService;
   let blockchainServiceMock: Partial<BlockchainService> = {

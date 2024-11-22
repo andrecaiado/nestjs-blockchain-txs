@@ -10,18 +10,43 @@ import { ConfigService } from '@nestjs/config';
 import { Wallet } from 'src/wallets/wallet';
 import { PoolsService } from 'src/pools/pools.service';
 import * as createTransactionDtoMock from 'src/__mocks__/create-transaction.dto.mock.json';
+import { WalletType } from 'src/enums/wallet-type.enum';
 
 describe('MiningService', () => {
-  const minerWallet = new Wallet('SenderWallet', true);
-  const recipientWallet = new Wallet('RecipientWallet', false);
+  const minerWallet = new Wallet('MinerWallet', WalletType.MINER);
+  const regularWallet = new Wallet('RecipientWallet', WalletType.REGULAR);
 
   let service: MiningService;
-  let blockchainServiceMock: Partial<BlockchainService>;
-  let transactionsServiceMock: Partial<TransactionsService>;
-  let blocksServiceMock: Partial<BlocksService>;
-  let configServiceMock: Partial<ConfigService>;
-  let walletsServiceMock: Partial<WalletsService>;
-  let poolsServiceMock: Partial<PoolsService>;
+  let blockchainServiceMock: Partial<BlockchainService> = {
+    getWalletUTXOs: jest.fn(),
+  };
+  let transactionsServiceMock: Partial<TransactionsService> = {
+    verifyUTXOsAreUnspent: jest.fn(),
+  };
+  let blocksServiceMock: Partial<BlocksService> = {
+    createBlock: jest.fn(),
+  };
+  let configServiceMock: Partial<ConfigService> = {
+    get: jest.fn((key: string) => {
+      if (key === 'blockchain.miningDifficulty') {
+        return 1;
+      } else if (key === 'rabbitmq.exchanges[1].name') {
+        return 'blocks-announcement-pool-exchange';
+      }
+      return null;
+    }),
+  };
+  let walletsServiceMock: Partial<WalletsService> = {
+    getRandomWallet: jest.fn(() => {
+      return regularWallet;
+    }),
+    getMinerWallet: jest.fn(() => {
+      return minerWallet;
+    }),
+  };
+  let poolsServiceMock: Partial<PoolsService> = {
+    publish: jest.fn(),
+  };
 
   const msg = createTransactionDtoMock;
 
@@ -31,55 +56,12 @@ describe('MiningService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MiningService,
-        {
-          provide: BlockchainService,
-          useValue: {
-            getWalletUTXOs: jest.fn(),
-          },
-        },
-        {
-          provide: TransactionsService,
-          useValue: {
-            verifyUTXOsAreUnspent: jest.fn(),
-          },
-        },
-        {
-          provide: BlocksService,
-          useValue: {
-            createBlock: jest.fn(),
-          },
-        },
-        {
-          provide: ConfigService,
-          useValue: {
-            get: jest.fn((key: string) => {
-              if (key === 'blockchain.miningDifficulty') {
-                return 1;
-              } else if (key === 'rabbitmq.exchanges[1].name') {
-                return 'blocks-announcement-pool-exchange';
-              }
-              return null;
-            }),
-          },
-        },
-        {
-          provide: WalletsService,
-          useValue: {
-            getRandomWallet: jest.fn((value: boolean) => {
-              if (value) {
-                return minerWallet;
-              } else {
-                return recipientWallet;
-              }
-            }),
-          },
-        },
-        {
-          provide: PoolsService,
-          useValue: {
-            publish: jest.fn(),
-          },
-        },
+        { provide: BlockchainService, useValue: blockchainServiceMock },
+        { provide: TransactionsService, useValue: transactionsServiceMock },
+        { provide: BlocksService, useValue: blocksServiceMock },
+        { provide: ConfigService, useValue: configServiceMock },
+        { provide: WalletsService, useValue: walletsServiceMock },
+        { provide: PoolsService, useValue: poolsServiceMock },
       ],
     }).compile();
 

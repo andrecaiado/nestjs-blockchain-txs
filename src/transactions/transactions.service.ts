@@ -328,7 +328,7 @@ export class TransactionsService {
       'blockchain.genesisTransaction.amount',
     );
     const coinbaseWallet = this.walletsService.getCoinbaseWallet();
-    const recipientWallet = this.walletsService.getRandomWallet(false);
+    const recipientWallet = this.walletsService.getRandomWallet();
 
     const transaction = new Transaction();
     transaction.senderPublicKey = coinbaseWallet.publicKey;

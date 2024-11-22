@@ -6,6 +6,7 @@ import { TransactionsService } from 'src/transactions/transactions.service';
 import { Wallet } from 'src/wallets/wallet';
 import { Transaction, TransactionOutput } from 'src/transactions/transaction';
 import { Block } from './block';
+import { WalletType } from 'src/enums/wallet-type.enum';
 
 describe('BlocksService', () => {
   let service: BlocksService;
@@ -34,10 +35,10 @@ describe('BlocksService', () => {
     }),
   };
 
-  const coinbaseWallet = new Wallet('CoinbaseWallet', false);
-  const minerWallet = new Wallet('SenderWallet', true);
-  const senderWallet = new Wallet('SenderWallet', false);
-  const recipientWallet = new Wallet('RecipientWallet', false);
+  const coinbaseWallet = new Wallet('CoinbaseWallet', WalletType.COINBASE);
+  const minerWallet = new Wallet('SenderWallet', WalletType.MINER);
+  const senderWallet = new Wallet('SenderWallet', WalletType.REGULAR);
+  const recipientWallet = new Wallet('RecipientWallet', WalletType.REGULAR);
 
   beforeEach(async () => {
     jest.clearAllMocks();

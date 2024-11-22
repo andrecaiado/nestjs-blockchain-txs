@@ -3,6 +3,7 @@ import { WalletsService } from './wallets.service';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Wallet } from './wallet';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
+import { WalletType } from 'src/enums/wallet-type.enum';
 
 describe('WalletsService', () => {
   let service: WalletsService;
@@ -41,47 +42,49 @@ describe('WalletsService', () => {
 
   it('should create coinbase wallet', () => {
     service['createCoinbaseWallet']();
-    expect(service.getCoinbaseWallet()).toBeInstanceOf(Wallet);
-    expect(service.getCoinbaseWallet().name).toBe('CoinbaseWallet');
+    const wallet = service.getCoinbaseWallet();
+    expect(wallet).toBeInstanceOf(Wallet);
+    expect(wallet.name).toBe('CoinbaseWallet');
   });
 
   it('should create default wallets', () => {
     service['createDefaultWallets']();
-    const wallets = service.getWallets(false);
+    const wallets = service.getWallets(WalletType.REGULAR);
     expect(wallets.length).toBe(2);
   });
 
   it('should create miner wallets', () => {
-    service['createDefaultMinerWallets']();
-    const wallets = service.getWallets(true);
-    expect(wallets.length).toBe(2);
+    service['createMinerWallet']();
+    const wallet = service.getMinerWallet();
+    expect(wallet).toBeInstanceOf(Wallet);
+    expect(wallet.name).toBe('WalletMiner');
   });
 
-  it('should create a non-miner wallet', () => {
-    const wallet = service.createWallet({ name: 'Wallet-1', isMiner: false });
+  it('should create a regular wallet', () => {
+    const wallet = service.createWallet({ name: 'Wallet-1' });
     expect(wallet).toBeDefined();
     expect(wallet.name).toBe('Wallet-1');
-    expect(wallet.isMiner).toBe(false);
+    expect(wallet.type).toBe(WalletType.REGULAR);
   });
 
   it('should throw an error if wallet with same name already exists', () => {
-    service.createWallet({ name: 'Wallet-1', isMiner: false });
-    expect(() =>
-      service.createWallet({ name: 'Wallet-1', isMiner: false }),
-    ).toThrow(
+    service.createWallet({ name: 'Wallet-1' });
+    expect(() => service.createWallet({ name: 'Wallet-1' })).toThrow(
       new ConflictException(`Wallet with name 'Wallet-1' already exists!`),
     );
   });
 
-  it('should get wallets', () => {
-    service.createWallet({ name: 'Wallet-1', isMiner: false });
-    const wallets = service.getWallets(false);
+  it('should get regular wallets', () => {
+    service.createWallet({ name: 'Wallet-1' });
+    const wallets = service.getWallets(WalletType.REGULAR);
     expect(wallets).toBeDefined();
     expect(wallets.length).toBe(1);
+    expect(wallets[0].name).toBe('Wallet-1');
+    expect(wallets[0].type).toBe(WalletType.REGULAR);
   });
 
   it('should get a wallet', () => {
-    const wallet = service.createWallet({ name: 'Wallet-1', isMiner: false });
+    const wallet = service.createWallet({ name: 'Wallet-1' });
     const walletDto = service.getWallet(wallet.publicKey);
     expect(walletDto).toBeDefined();
     expect(walletDto.publicKey).toBe(wallet.publicKey);
