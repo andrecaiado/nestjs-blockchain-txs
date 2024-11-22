@@ -1,14 +1,12 @@
 import {
   Body,
   Controller,
-  DefaultValuePipe,
   Get,
   HttpCode,
   HttpStatus,
   Inject,
   Param,
   Post,
-  Query,
 } from '@nestjs/common';
 import { WalletsService } from './wallets.service';
 import { CreateWalletDto } from './dto/create-wallet.dto';
@@ -17,8 +15,6 @@ import { WalletDto } from './dto/wallet.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { TransactionDto } from 'src/transactions/dto/transaction.dto';
 import { TransactionsService } from 'src/transactions/transactions.service';
-import { WalletType } from 'src/enums/wallet-type.enum';
-import { WalletMinerDto } from './dto/wallet-miner.dto';
 
 @ApiTags('Wallets')
 @Controller('wallets')
@@ -57,10 +53,8 @@ export class WalletsController {
   })
   @HttpCode(HttpStatus.OK)
   @Get()
-  getWallets(
-    @Query('type', new DefaultValuePipe(WalletType.REGULAR)) type: WalletType,
-  ): WalletDto[] | WalletMinerDto[] {
-    return this.walletsService.getWallets(type);
+  getWallets(): WalletDto[] {
+    return this.walletsService.getWallets();
   }
 
   @ApiOperation({

@@ -11,7 +11,6 @@ import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { WalletDto } from './dto/wallet.dto';
 import { WalletMapper } from './mappers/wallet.mapper';
 import { WalletType } from 'src/enums/wallet-type.enum';
-import { WalletMinerDto } from './dto/wallet-miner.dto';
 
 @Injectable()
 export class WalletsService {
@@ -75,26 +74,20 @@ export class WalletsService {
     );
   }
 
-  public getWallets(type: WalletType): WalletDto[] | WalletMinerDto[] {
-    const wallets: any[] = new Array<any>();
+  public getWallets(): WalletDto[] {
+    const wallets: WalletDto[] = new Array<WalletDto>();
 
-    if (type === WalletType.REGULAR) {
-      this.wallets.map((wallet) => {
-        const walletDto = WalletMapper.toWalletDto(wallet);
-        walletDto.balance = this.getWalletBalance(wallet.publicKey);
-        wallets.push(walletDto);
-      });
-    }
+    this.wallets.map((wallet) => {
+      const walletDto = WalletMapper.toWalletDto(wallet);
+      walletDto.balance = this.getWalletBalance(wallet.publicKey);
+      wallets.push(walletDto);
+    });
 
-    if (type === WalletType.MINER) {
-      const minerWalletDto = WalletMapper.toWalletMinerDto(
-        this.getMinerWallet(),
-      );
-      minerWalletDto.balance = this.getWalletBalance(
-        this.getMinerWallet().publicKey,
-      );
-      wallets.push(minerWalletDto);
-    }
+    const minerWalletDto = WalletMapper.toWalletDto(this.getMinerWallet());
+    minerWalletDto.balance = this.getWalletBalance(
+      this.getMinerWallet().publicKey,
+    );
+    wallets.push(minerWalletDto);
 
     return wallets;
   }
