@@ -13,10 +13,11 @@ In this section, there will be a brief explanation of how this conceptualization
   - [Block](#block)
     - [Block mining and Proof of Work (PoW)](#block-mining-and-proof-of-work-pow)
     - [Transaction fees and block mining reward](#transaction-fees-and-block-mining-reward)
+    - [Block validation](#block-validation)
   - [Blockchain](#blockchain)
     - [The genesis block](#the-genesis-block)
     - [Blockchain validation](#blockchain-validation)
-  - [Transaction pools](#rabbitmq-for-the-transaction-pools)
+  - [Pools for transactions and blocks](#pools-for-transactions-and-blocks)
     - [Global transaction pool](#global-transaction-pool)
     - [Miner mempool](#miner-mempool)
     - [Block anouncement pool](#block-anouncement-pool)
@@ -27,9 +28,8 @@ In this section, there will be a brief explanation of how this conceptualization
 The following are the main characteristics of this conceptualization that differs this project from a real-world blockchain network:
 
 - There is no peer-to-peer network.
-- There are no multiple miners competing to mine the block.
+- There is only one miner to mine blocks.
 - There is only one ledger (blockchain).
-- All the actors and services are running in the same process.
 
 # Process flow
 
@@ -47,19 +47,17 @@ The wallet is basically an object containing a public key and a private key that
 - The public key is used to identify the wallet and verify signatures.
 - The private key is used to sign transactions.
 
-For more information on how the keys are generated, please refer to the [Dependencies](implementation.md#dependencies) section.
+For more information on how the keys are generated, please refer to the [Dependencies](dependencies.md) section.
 
-The application creates 2 wallets when it starts, but the user can create more wallets.
+There are 3 typoes of wallets in this project:
+- Regular wallet: A wallet that can send and receive funds.
+- Miner wallet: The miner wallet (can also send and receive funds).
+- Coinbase wallet: The wallet that sends the funds in the transaction of the first block (genesis block).
 
-The application has a wallet service that is responsible for:
-- Create wallets.
-- Get all wallets.
-- Get a wallet by public key (it will also return the wallet balance).
-- Create transactions:
-  - Check if the sender has enough funds (and other validations).
-  - Add the inputs (UTXOs) to the transaction.
-  - Add the outputs to the transaction.
-  - Sign the transaction.
+When the applications, the following wallets are created:
+- Two regular wallets
+- One miner wallet
+- One coinbase wallet
 
 ## Transaction
 
@@ -75,18 +73,9 @@ The information is the following:
 - `outputs`: The outputs are the funds that are being received. The outputs are the funds that are being transferred to another wallet.
 - `signature`: The signature is the proof that the transaction was signed by the wallet that owns the funds.
 
-The application has a transaction service is responsible for:
-- Validate a transaction before adding it to the global transaction pool. The validation includes:
-  - Check if the transaction signature is valid (using the sender public key).
-  - Validate the sender and recipients wallets exist.
-  - Validate if the inputs belong to the sender.
-  - Check if the inputs (UTXOs) are not already spent.
-  - Check if inputs are enough to cover the outputs.
-- Submit a transaction to the global transaction pool.
-
 ### Inputs and outputs
 
-The inputs are funds that belongs to the sender and that will be used to fullfill the transaction. They refer to transactions that the sender has previsously received (`"where the money comes from"`) and that where never spent (that's why they are also known as `UTXOs - Unspent Transaction Outputs`).
+The inputs are funds that belongs to the sender and that will be used to finance the transaction. They refer to transactions that the sender has previsously received (`"where the money comes from"`) and that where never spent (that's why they are also known as `UTXOs - Unspent Transaction Outputs`).
 
 Basically, an input have the following attributes:
 - A reference to the output
@@ -94,7 +83,7 @@ Basically, an input have the following attributes:
 
 For simplicity, we will add all the senders UTXOs as inputs in each transaction so we don't have filter UTXOs based on the amount of funds the sender is sending.
 
-The outputs are the destination of the funds to be transfered (`"where the money os going"`). 
+The outputs are the destination of the funds to be transfered (`"where the money is going"`). 
 
 Basically, an output have the following attributes:
 - Recipient public key
@@ -102,14 +91,15 @@ Basically, an output have the following attributes:
 
 ### Transaction validation
 
-The transaction validation is the process of validating if the transaction is valid. A transaction is valid if:
-- The sum of the inputs is greater than the sum of the outputs (including fees).
-- The signature is valid.
-- The inputs (UTXOs) are not already spent.
+Before a transaction is submitted to the global transaction pool, the following validations are performed:
+- Check if the transaction signature is valid (using the sender public key).
+- Validate the sender and recipients wallets exist.
+- Validate if the inputs belong to the sender.
+- Check if the inputs (UTXOs) are unspent.
+- Check if inputs are enough to cover the outputs.
 
-There will be two validations for the transaction:
-- A validation before the miner adds the transaction to its mempool (local transaction pool).
-- A validation before the miner mines the block. This second validation is done to check is the inputs (UTXOs) remains unspent.
+When the miner gets a transaction from his mempool, the following validations are performed:
+- Check if the inputs (UTXOs) are unspent.
 
 ## Block
 
@@ -121,6 +111,7 @@ A block will hold the following information:
 - The previous block hash
 - The nonce
 - The creation timestamp
+- Data (text)
 
 ### Block mining and Proof of Work (PoW)
 
@@ -143,18 +134,17 @@ The `coinbase transaction` is a special transaction that will be included (as tr
   - Recipient: miner address (public key)
   - Amount: sum of the mining reward and the total transaction fees
 
+### Block validation
+
+To validate a block, the following validations are performed:
+- The block hash is recalculated and compared to the existing block hash. The values must be equal.
+- The value that the block holds for the previous block hash is compared to the hash of the previous block. The values must be equal.
+
 ## Blockchain
 
-The blockchain is the collection of blocks. Each block has a reference to the previous block (except the genesis block).
+The blockchain is the collection of blocks. Each block has a reference to the previous block (except the genesis block) in order to create the chain of blocks.
 
-The blockchain is responsible for:
-- Adding a block to the blockchain.
-- Validating the blockchain.
-
-A single instance of the blockchain object will be created when the application is started and will set the following constants:
-- Mining reward
-- Transaction fees
-- Amount of coins that can be created (minted)
+A single instance of the blockchain object will be created when the application is started.
 
 ### The genesis block
 
@@ -164,35 +154,34 @@ This block has the following characteristics:
 - It has no previous block. 
 - It is created without PoW. 
 - It is created with a fixed hash.
-- Contains a single transaction that will create the first funds in the blockchain.
+- Contains a single transaction (`genesis transaction`) that will create the first funds in the blockchain.
 
 ### Blockchain validation
 
 The blockchain validation is the process of validating if the blockchain is valid. A blockchain is valid if:
-- The genesis block is valid.
-- Each block is valid.
-- Each block has a reference to the previous block.
+- The genesis block is valid. // TODO
+- Each block is valid [(block validation)](#block-validation).
 
-## Transaction and miner pools
+## Pools for transactions and blocks
 
-This project will use RabbitMQ to simulate the transaction pools and the miner pools. Different message queues will be used to send and receive messages between the different services.
+This project will use RabbitMQ to simulate the pools for the transactions and the mined blocks. Different exchanges and message queues will be used to send and receive messages between the different services.
 
 ### Global transaction pool
 
-The global transaction pool is the pool that contains all the transactions that are not yet included in a block. These transactions are waiting to be picked up by a miner.
+The global transaction pool is the pool to where all the transactions will be sent when they are submitted.
 
-The global transaction pool is responsible for:
-- Receiving a transaction from the wallet.
-- Sending the transaction to the miner mempool.
+This project will use a fanout exchange for this purpose. This exchange will be bound to a message queue [(miner mempool)](#miner-mempool) that belongs to the miner. 
 
 ### Miner mempool
 
-The miner mempool is the pool that contains the transactions that are waiting to be mined. The miner will pick up the transactions from the global transaction pool and add them to the miner mempool.
+The miner mempool is the pool that will contains the transactions that are waiting to be mined. The miner will pick up the transactions from the global transaction pool and add them to the miner mempool.
 
 ### Block anouncement pool
 
 The block anouncement pool is the pool that contains the blocks that are mined by the miner. The miner will send the block to the block anouncement pool so that the blockchain can be updated.
 
+This project will use a fanout exchange for this purpose. This exchange will be bound to a message queue [(miner pool for announced block)](#miner-pool-for-anounced-blocks) that belongs to the miner. 
+
 ### Miner pool for anounced blocks
 
-The miner pool for anounced blocks is the pool that belongs to a miner. This pool will receive the anounced blocks from the block anouncement pool. The miner will validate the block and, if the block is valid, the miner will add the block to the blockchain.
+The miner pool for anounced blocks is the pool that contains the mined blocks that are waiting to be validated so they can be added to the blockchain.

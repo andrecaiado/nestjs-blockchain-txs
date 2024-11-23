@@ -58,7 +58,7 @@ To better understand how the API works, please refer to the following guide: [AP
 
 # Contents
 
-To understand how this project was conceptualized and implemented, please refer to the following sections.
+To understand how this project was conceptualized and which dependencies are used, please refer to the following sections.
 
 - [Conceptualization](./docs/conceptualization.md)
-- [Implementation](./docs/implementation.md)
+- [Dependencies](./docs/dependencies.md)
