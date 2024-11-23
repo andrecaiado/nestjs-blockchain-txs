@@ -159,7 +159,7 @@ This block has the following characteristics:
 ### Blockchain validation
 
 The blockchain validation is the process of validating if the blockchain is valid. A blockchain is valid if:
-- The genesis block is valid. // TODO
+- The genesis block is valid.
 - Each block is valid [(block validation)](#block-validation).
 
 ## Pools for transactions and blocks

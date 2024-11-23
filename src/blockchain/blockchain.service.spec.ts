@@ -15,6 +15,8 @@ describe('BlockchainService', () => {
     get: jest.fn((key: string) => {
       if (key === 'blockchain.maxCoinSupply') {
         return 1000000;
+      } else if (key === 'blockchain.genesisBlock.hash') {
+        return '89eb0ac031a63d2421cd05a2fbe41f3ea35f5c3712ca839cbf6b85c4ee07b7a3';
       }
       return null;
     }),
@@ -265,21 +267,27 @@ describe('BlockchainService', () => {
   });
 
   it('should return the blockchain is valid', async () => {
-    const isValid = service['blockchain'].isChainValid();
+    const isValid = service['blockchain'].isChainValid(
+      '89eb0ac031a63d2421cd05a2fbe41f3ea35f5c3712ca839cbf6b85c4ee07b7a3',
+    );
 
     expect(isValid).toBeTruthy();
   });
 
   it('should return the blockchain is invalid (invalid hash)', async () => {
     service['blockchain'].chain[0].hash = 'invalid-hash';
-    const isValid = service['blockchain'].isChainValid();
+    const isValid = service['blockchain'].isChainValid(
+      '89eb0ac031a63d2421cd05a2fbe41f3ea35f5c3712ca839cbf6b85c4ee07b7a3',
+    );
 
     expect(isValid).toBeFalsy();
   });
 
   it('should return the blockchain is invalid (invalid previous has)', async () => {
     service['blockchain'].chain[1].previousHash = 'invalid-previous-hash';
-    const isValid = service['blockchain'].isChainValid();
+    const isValid = service['blockchain'].isChainValid(
+      '89eb0ac031a63d2421cd05a2fbe41f3ea35f5c3712ca839cbf6b85c4ee07b7a3',
+    );
 
     expect(isValid).toBeFalsy();
   });

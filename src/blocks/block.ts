@@ -28,11 +28,19 @@ export class Block {
     return createHash('sha256').update(this.toString()).digest('hex');
   }
 
-  isValid(previousBlock: Block): boolean {
-    if (this.hash !== this.calculateHash()) {
-      return false;
-    } else if (this.previousHash !== previousBlock.hash) {
-      return false;
+  isValid(previousBlock?: Block, genesisBlockHash?: string): boolean {
+    if (this.id === 0) {
+      // Genesis block
+      if (this.hash !== genesisBlockHash) {
+        return false;
+      }
+    } else {
+      // Other blocks
+      if (this.hash !== this.calculateHash()) {
+        return false;
+      } else if (this.previousHash !== previousBlock.hash) {
+        return false;
+      }
     }
     return true;
   }

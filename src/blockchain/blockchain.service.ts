@@ -101,7 +101,10 @@ export class BlockchainService {
       `Blockchain service: Received new block ${JSON.stringify(msg)}`,
     );
 
-    if (!this.blockchain.isChainValid()) {
+    const genesisBlockHash = this.configService.get<string>(
+      'blockchain.genesisBlock.hash',
+    );
+    if (!this.blockchain.isChainValid(genesisBlockHash)) {
       console.error(
         'Blockchain service: Blockchain is invalid, block discarded.',
       );
@@ -133,10 +136,14 @@ export class BlockchainService {
     const maxCoinSupply = this.configService.get<number>(
       'blockchain.maxCoinSupply',
     );
+    const genesisBlockHash = this.configService.get<string>(
+      'blockchain.genesisBlock.hash',
+    );
     return BlockchainMapper.toBlockchainDto(
       this.blockchain,
       this.getTotalUTXOs(),
       maxCoinSupply,
+      genesisBlockHash,
     );
   }
 

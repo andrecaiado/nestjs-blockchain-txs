@@ -7,6 +7,7 @@ export class BlockchainMapper {
     blockchain: Blockchain,
     totalUtxos: number,
     maxCoinSupply: number,
+    genesisBlockHash: string,
   ): BlockchainDto {
     const addresses = new Set();
     blockchain.chain.forEach((block) => {
@@ -26,7 +27,7 @@ export class BlockchainMapper {
         totalCoinsMined: totalUtxos,
         totalAddresses: addresses.size,
         totalCoinsLeftToMine: maxCoinSupply - totalUtxos,
-        isChainValid: blockchain.isChainValid(),
+        isChainValid: blockchain.isChainValid(genesisBlockHash),
       },
       chainPreview: blockchain.chain.map((block) =>
         BlockMapper.toBlockPreview(block),

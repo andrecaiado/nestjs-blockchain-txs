@@ -3,15 +3,26 @@ import { Block } from 'src/blocks/block';
 export class Blockchain {
   chain: Block[] = [];
 
-  isChainValid(): boolean {
-    if (this.chain.length === 1) {
-      return true;
-    }
-    for (let i = 1; i < this.chain.length; i++) {
-      const currentBlock = this.chain[i];
-      const previousBlock = this.chain[i - 1];
+  isChainValid(genesisBlockHash): boolean {
+    let index = 0;
+    while (index < this.chain.length) {
+      const currentBlock = this.chain[index];
 
-      return currentBlock.isValid(previousBlock);
+      if (index === 0) {
+        // Genesis block
+        if (!currentBlock.isValid(undefined, genesisBlockHash)) {
+          return false;
+        }
+      } else {
+        // Other blocks
+        const previousBlock = this.chain[index - 1];
+        if (!currentBlock.isValid(previousBlock, undefined)) {
+          return false;
+        }
+      }
+
+      index++;
     }
+    return true;
   }
 }
