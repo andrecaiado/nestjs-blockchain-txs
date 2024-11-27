@@ -9,6 +9,7 @@ In this section, there will be a brief explanation of how this conceptualization
   - [Wallet](#wallet)
   - [Transaction](#transaction)
     - [Inputs and outputs](#inputs-and-outputs)
+    - [Creating and submitting the transaction](#creating-and-submitting-the-transaction)
     - [Transaction validation](#transaction-validation)
   - [Block](#block)
     - [Block mining and Proof of Work (PoW)](#block-mining-and-proof-of-work-pow)
@@ -25,7 +26,7 @@ In this section, there will be a brief explanation of how this conceptualization
 
 # Conceptualization vs Real-world
 
-The following are the main characteristics of this conceptualization that differs this project from a real-world blockchain network:
+The following are some main characteristics of this conceptualization that differs this project from a real-world blockchain network:
 
 - There is no peer-to-peer network.
 - There is only one miner to mine blocks.
@@ -47,21 +48,21 @@ The wallet is basically an object containing a public key and a private key that
 - The public key is used to identify the wallet and verify signatures.
 - The private key is used to sign transactions.
 
-For more information on how the keys are generated, please refer to the [Dependencies](dependencies.md) section.
+For more information on how the keys are generated, please refer to the [Dependencies](./dependencies-configs.md#dependencies) section.
 
-There are 3 typoes of wallets in this project:
+There are 3 types of wallets in this project:
 - Regular wallet: A wallet that can send and receive funds.
 - Miner wallet: The miner wallet (can also send and receive funds).
 - Coinbase wallet: The wallet that sends the funds in the transaction of the first block (genesis block).
 
-When the applications, the following wallets are created:
+When the application starts, the following wallets are created:
 - Two regular wallets
 - One miner wallet
 - One coinbase wallet
 
 ## Transaction
 
-The transaction holds the information about the funds that are transferred from one wallet to another.
+The transaction holds the information about the funds that are transfered from one wallet to another.
 
 The information is the following:
 - `id`: The transaction id is a hash of the transaction data (sender, recipient, amount and the timestamp to prevent duplicate transaction ids).
@@ -69,9 +70,9 @@ The information is the following:
 - `recipient public key`: The recipient public key is the public key of the wallet that is receiving the funds.
 - `amount`: The amount is the funds that are being transferred.
 - `transaction fees`: The transaction fees is the amount that is payed for processing the transaction.
-- `inputs`: The inputs are the funds that are being transferred. The inputs refer to outputs of previous transactions that the sender has received and that were never spent.
-- `outputs`: The outputs are the funds that are being received. The outputs are the funds that are being transferred to another wallet.
-- `signature`: The signature is the proof that the transaction was signed by the wallet that owns the funds.
+- `inputs`: The inputs refer to outputs of previous transactions that the sender has received and that were never spent. These inputs will be used to finance the transaction.
+- `outputs`: The outputs are the funds that are being transferred to another wallet.
+- `signature`: The signature is the proof that the transaction was signed by the wallet that owns (and is sending) the funds.
 
 ### Inputs and outputs
 
@@ -89,9 +90,13 @@ Basically, an output have the following attributes:
 - Recipient public key
 - Amount of funds
 
+### Creating and submitting the transaction
+
+When we need to transfer funds, a well-formed and valid transaction must be created. The sender only needs to specify his wallet public key, the recipient public key and the amout to be transfered. A well-formed and valid transaction will be created and returned to the sender to be then submitted. 
+
 ### Transaction validation
 
-Before a transaction is submitted to the global transaction pool, the following validations are performed:
+When a transaction is received, before it is submitted to the `global transaction pool`, the following validations are performed:
 - Check if the transaction signature is valid (using the sender public key).
 - Validate the sender and recipients wallets exist.
 - Validate if the inputs belong to the sender.
@@ -103,7 +108,7 @@ When the miner gets a transaction from his mempool, the following validations ar
 
 ## Block
 
-A block is basically a collection of transactions. Multiple transactions can be added to a block so that the blockchain is smaller and the mining process is more efficient.
+A block is basically a collection of transactions. Multiple transactions can be added to a block so that the blockchain is smaller and the mining process is more efficient. For simplicity, in this project, a single transaction will be added to a block.
 
 A block will hold the following information:
 - One or multiple transactions (including the special `coinbase transaction`).
