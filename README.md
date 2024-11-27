@@ -61,4 +61,4 @@ To better understand how the API works, please refer to the following guide: [AP
 To understand how this project was conceptualized and which dependencies are used, please refer to the following sections.
 
 - [Conceptualization](./docs/conceptualization.md)
-- [Dependencies](./docs/dependencies.md)
+- [Dependencies and Configurations](./docs/dependencies-configs.md)
