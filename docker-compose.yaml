@@ -3,14 +3,22 @@ services:
     image: rabbitmq:3-management-alpine
     container_name: rabbitmq-blockchain-txs
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - 5672:5672
+      - 15672:15672
     networks:
       - rabbitmq-blockchain-txs-network
     volumes:
       - './rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro'
       - './rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro'
-
+  prometheus:
+    image: prom/prometheus:v3.0.0
+    container_name: prometheus-blockchain-txs
+    ports:
+      - 9090:9090
+    volumes:
+      - './monitoring/prometheus.yml:/etc/prometheus/prometheus.yml'
+    networks:
+      - rabbitmq-blockchain-txs-network
 networks:
   rabbitmq-blockchain-txs-network:
     driver: bridge
