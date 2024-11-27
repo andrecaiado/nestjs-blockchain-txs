@@ -3,14 +3,14 @@ import { ConfigProps } from 'src/interfaces/config.interface';
 export const config = (): ConfigProps => ({
   blockchain: {
     minerReward: parseFloat(process.env.MINE_REWARD) || 50,
-    miningDifficulty: parseInt(process.env.MINING_DIFFICULTY, 10) || 2,
+    miningDifficulty: parseInt(process.env.MINING_DIFFICULTY, 10) || 4,
     transactionFees: parseFloat(process.env.TRANSACTION_FEES) || 0.001,
     genesisBlock: {
       hash: process.env.GENESIS_BLOCK_HASH || '0',
       data: process.env.GENESIS_BLOCK_DATA || 'Genesis Block',
     },
     genesisTransaction: {
-      amount: parseFloat(process.env.GENESIS_TX_AMOUNT) || 0,
+      amount: parseFloat(process.env.GENESIS_TX_AMOUNT) || 1000,
     },
     maxCoinSupply: parseFloat(process.env.MAX_COIN_SUPPLY) || 1000000,
   },
@@ -20,23 +20,18 @@ export const config = (): ConfigProps => ({
         name:
           process.env.RABBITMQ_EXCHANGE_NAME_GLOBAL_TX_POOL ||
           'global-tx-pool-exchange',
-        type: process.env.RABBITMQ_EXCHANGE_TYPE_GLOBAL_TX_POOL || 'direct',
+        type: 'fanout',
         options: {
-          durable:
-            process.env.RABBITMQ_EXCHANGE_DURABLE_GLOBAL_TX_POOL === 'true',
+          durable: 'true',
         },
       },
       {
         name:
           process.env.RABBITMQ_EXCHANGE_NAME_BLOCKS_ANNOUNCEMENT_POOL ||
           'blocks-announcement-pool-exchange',
-        type:
-          process.env.RABBITMQ_EXCHANGE_TYPE_BLOCKS_ANNOUNCEMENT_POOL ||
-          'direct',
+        type: 'fanout',
         options: {
-          durable:
-            process.env.RABBITMQ_EXCHANGE_DURABLE_BLOCKS_ANNOUNCEMENT_POOL ===
-            'true',
+          durable: 'true',
         },
       },
     ],
@@ -52,6 +47,6 @@ export const config = (): ConfigProps => ({
           'miner-pool-announced-blocks-queue',
       },
     ],
-    uri: process.env.RABBITMQ_URI || 'amqp://localhost',
+    uri: process.env.RABBITMQ_URI || 'amqp://admin:admin@localhost:5672',
   },
 });
