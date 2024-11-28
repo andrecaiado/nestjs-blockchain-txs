@@ -7,9 +7,12 @@ import { config } from './config/config';
 import { PoolsModule } from './pools/pools.module';
 import { MiningModule } from './mining/mining.module';
 import { BlocksModule } from './blocks/blocks.module';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
+import { MetricsModule } from './metrics/metrics.module';
 
 @Module({
   imports: [
+    PrometheusModule.register(),
     WalletsModule,
     BlockchainModule,
     TransactionsModule,
@@ -20,6 +23,7 @@ import { BlocksModule } from './blocks/blocks.module';
     PoolsModule,
     MiningModule,
     BlocksModule,
+    MetricsModule,
   ],
 })
 export class AppModule {}

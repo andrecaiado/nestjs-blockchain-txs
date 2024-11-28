@@ -15,6 +15,7 @@ import { WalletDto } from './dto/wallet.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { TransactionDto } from 'src/transactions/dto/transaction.dto';
 import { TransactionsService } from 'src/transactions/transactions.service';
+import { MetricsService } from 'src/metrics/metrics.service';
 
 @ApiTags('Wallets')
 @Controller('wallets')
@@ -22,6 +23,7 @@ export class WalletsController {
   constructor(
     @Inject() private readonly walletsService: WalletsService,
     @Inject() private readonly transactionsService: TransactionsService,
+    @Inject() private readonly metricsService: MetricsService,
   ) {}
 
   @ApiOperation({
@@ -54,6 +56,10 @@ export class WalletsController {
   @HttpCode(HttpStatus.OK)
   @Get()
   getWallets(): WalletDto[] {
+    this.metricsService.incrementRequestCounter(
+      'GET',
+      HttpStatus.OK.toString(),
+    );
     return this.walletsService.getWallets();
   }
 

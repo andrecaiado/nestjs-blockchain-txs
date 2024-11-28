@@ -18,6 +18,7 @@ import { TransactionDtoMapper } from './dto/mappers/transaction.dto.mapper';
 import { Wallet } from 'src/wallets/wallet';
 import { CreateTransactionDto } from 'src/transactions/dto/create-transaction.dto';
 import { TransactionMapper } from './transaction.mapper';
+import { MetricsService } from 'src/metrics/metrics.service';
 
 @Injectable()
 export class TransactionsService {
@@ -26,6 +27,7 @@ export class TransactionsService {
     @Inject() private readonly configService: ConfigService,
     @Inject() private readonly walletsService: WalletsService,
     @Inject() private readonly poolsService: PoolsService,
+    @Inject() private readonly metricsService: MetricsService,
   ) {}
 
   public createTransaction(
@@ -189,6 +191,8 @@ export class TransactionsService {
       this.configService.get<string>('rabbitmq.exchanges[0].name'),
       transactionDto,
     );
+
+    //this.metricsService.incTransactionsCounter();
 
     const msg = `Transaction ${transactionDto.transactionId} submitted.`;
     console.log(`Transactions service: ${msg}`);
