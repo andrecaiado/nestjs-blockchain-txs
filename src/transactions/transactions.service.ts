@@ -183,6 +183,8 @@ export class TransactionsService {
       `Transactions service: Transaction ${transactionDto.transactionId} submitting...`,
     );
 
+    this.metricsService.incTotalTxsSubmitted();
+
     this.validateTransaction(
       TransactionDtoMapper.toTransaction(transactionDto),
     );
@@ -192,7 +194,7 @@ export class TransactionsService {
       transactionDto,
     );
 
-    //this.metricsService.incTransactionsCounter();
+    this.metricsService.incTotalTxsAccepted();
 
     const msg = `Transaction ${transactionDto.transactionId} submitted.`;
     console.log(`Transactions service: ${msg}`);

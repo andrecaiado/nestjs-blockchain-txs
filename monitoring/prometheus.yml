@@ -4,4 +4,4 @@ scrape_configs:
  - job_name: nestjs-blockchain-txs-app
    static_configs:
     - targets:
-       - nestjs-blockchain-txs-app:9090
+       - 'host.docker.internal:3000'
