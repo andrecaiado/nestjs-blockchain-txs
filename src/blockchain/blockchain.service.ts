@@ -8,12 +8,17 @@ import { BlockDtoMapper } from 'src/blocks/dto/mappers/block.dto.mapper';
 import { BlockchainMapper } from './blockchain.mapper';
 import { BlockMapper } from 'src/blocks/block.mapper';
 import { ConfigService } from '@nestjs/config';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { MetricsService } from 'src/metrics/metrics.service';
 
 @Injectable()
 export class BlockchainService {
   private blockchain: Blockchain;
 
-  constructor(@Inject() private readonly configService: ConfigService) {
+  constructor(
+    @Inject() private readonly configService: ConfigService,
+    @Inject() private readonly metricsService: MetricsService,
+  ) {
     console.log('Blockchain service: Creating blockchain...');
     this.blockchain = new Blockchain();
     console.log('Blockchain service: Blockchain created!');
@@ -130,6 +135,13 @@ export class BlockchainService {
         `Blockchain service: Block #${block.id} is not valid, block discarded.`,
       );
     }
+
+    const amountInBlock: number = this.getAmountFromBlock(block);
+    this.metricsService.incTotalCoinsTransfered(amountInBlock);
+  }
+
+  private getAmountFromBlock(block: Block): number {
+    return block.transactions.map((tx) => tx.amount).reduce((a, b) => a + b, 0);
   }
 
   public getBlockchainDto() {
@@ -164,5 +176,62 @@ export class BlockchainService {
     }
 
     return BlockMapper.toBlockDto(block);
+  }
+
+  @Cron(CronExpression.EVERY_5_SECONDS)
+  private setBlockchainStatusData() {
+    this.setTotalTxsInBlockchain();
+    this.setTotalCoinsMined();
+    this.setTotalCoinsLeftToMine();
+    this.setTotalAddresses();
+    this.setIsChainValid();
+  }
+
+  @Cron(CronExpression.EVERY_5_SECONDS)
+  private setBlockchainMetrics() {
+    this.metricsService.incTotalCoinsMined(this.blockchain.totalCoinsMined);
+    this.metricsService.incTotalCoinsLeftToMine(
+      this.blockchain.totalCoinsLeftToMine,
+    );
+    this.metricsService.incTotalAddresses(this.blockchain.totalAddresses);
+    this.metricsService.setBlockchainStatus(this.blockchain.status);
+  }
+
+  private setTotalTxsInBlockchain() {
+    this.blockchain.totalTxsBlockchain = this.blockchain.chain.reduce(
+      (total, block) => total + block.transactions.length,
+      0,
+    );
+  }
+
+  private setTotalCoinsMined() {
+    this.blockchain.totalCoinsMined = this.getTotalUTXOs();
+  }
+
+  private setTotalCoinsLeftToMine() {
+    const maxCoinSupply = this.configService.get<number>(
+      'blockchain.maxCoinSupply',
+    );
+    this.blockchain.totalCoinsLeftToMine =
+      maxCoinSupply - this.blockchain.totalCoinsMined;
+  }
+
+  private setTotalAddresses() {
+    const addresses = new Set();
+    this.blockchain.chain.forEach((block) => {
+      block.transactions.forEach((transaction) => {
+        transaction.outputs.forEach((output) => {
+          addresses.add(output.recipientPublicKey);
+        });
+      });
+    });
+    this.blockchain.totalAddresses = addresses.size;
+  }
+
+  private setIsChainValid() {
+    const genesisBlockHash = this.configService.get<string>(
+      'blockchain.genesisBlock.hash',
+    );
+    this.blockchain.status = this.blockchain.isChainValid(genesisBlockHash);
   }
 }

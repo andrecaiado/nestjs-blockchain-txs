@@ -211,7 +211,7 @@ export class TransactionsService {
     if (transaction.verifySignature(transaction.senderPublicKey) === false) {
       errorMsg = `Transaction ${transaction.transactionId} validation: signature is invalid`;
       console.error(`Transactions service: ${errorMsg}`);
-      this.metricsService.incTotalTxsRejected(errorMsg);
+      this.metricsService.incTotalTxsRejected('signature is invalid');
       throw new BadRequestException(errorMsg);
     }
     console.log(
@@ -225,7 +225,7 @@ export class TransactionsService {
     if (senderWallet === null || senderWallet === undefined) {
       errorMsg = `Transaction ${transaction.transactionId} validation: sender wallet not found`;
       console.error(`Transactions service: ${errorMsg}`);
-      this.metricsService.incTotalTxsRejected(errorMsg);
+      this.metricsService.incTotalTxsRejected('sender wallet not found');
       throw new NotFoundException(errorMsg);
     }
     const recipientWallet = this.walletsService.findWalletByPublicKey(
@@ -234,7 +234,7 @@ export class TransactionsService {
     if (recipientWallet === null || recipientWallet === undefined) {
       errorMsg = `Transaction ${transaction.transactionId} validation: recipient wallet not found`;
       console.error(`Transactions service: ${errorMsg}`);
-      this.metricsService.incTotalTxsRejected(errorMsg);
+      this.metricsService.incTotalTxsRejected('recipient wallet not found');
       throw new NotFoundException(errorMsg);
     }
 
@@ -250,7 +250,9 @@ export class TransactionsService {
     ) {
       errorMsg = `Transaction ${transaction.transactionId} validation: there are UTXOs in the inputs that do not belong to the sender`;
       console.error(`Transactions service: ${errorMsg}`);
-      this.metricsService.incTotalTxsRejected(errorMsg);
+      this.metricsService.incTotalTxsRejected(
+        'there are UTXOs in the inputs that do not belong to the sender',
+      );
       throw new BadRequestException(errorMsg);
     }
     console.log(
@@ -264,7 +266,9 @@ export class TransactionsService {
     if (!this.verifyUTXOsAreUnspent(txUTXOs, walletUTXOs)) {
       errorMsg = `Transaction ${transaction.transactionId}: there are UTXOs that are not unspent`;
       console.error(`Transactions service: ${errorMsg}`);
-      this.metricsService.incTotalTxsRejected(errorMsg);
+      this.metricsService.incTotalTxsRejected(
+        'there are UTXOs that are not unspent',
+      );
       throw new BadRequestException(errorMsg);
     }
     console.log(
@@ -282,7 +286,9 @@ export class TransactionsService {
     ) {
       errorMsg = `Transaction ${transaction.transactionId}: inputs are not enough to cover the outputs`;
       console.error(`Transactions service: ${errorMsg}`);
-      this.metricsService.incTotalTxsRejected(errorMsg);
+      this.metricsService.incTotalTxsRejected(
+        'inputs are not enough to cover the outputs',
+      );
       throw new BadRequestException(errorMsg);
     }
     console.log(

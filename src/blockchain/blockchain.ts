@@ -2,6 +2,11 @@ import { Block } from 'src/blocks/block';
 
 export class Blockchain {
   chain: Block[] = [];
+  totalTxsBlockchain: number = 0;
+  totalCoinsMined: number = 0;
+  totalCoinsLeftToMine: number = 0;
+  totalAddresses: number = 0;
+  status: boolean;
 
   isChainValid(genesisBlockHash): boolean {
     let index = 0;

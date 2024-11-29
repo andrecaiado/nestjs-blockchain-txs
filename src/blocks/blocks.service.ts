@@ -5,6 +5,7 @@ import { Transaction } from 'src/transactions/transaction';
 import { Wallet } from 'src/wallets/wallet';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { TransactionsService } from 'src/transactions/transactions.service';
+import { MetricsService } from 'src/metrics/metrics.service';
 
 @Injectable()
 export class BlocksService {
@@ -12,6 +13,7 @@ export class BlocksService {
     @Inject() private configService: ConfigService,
     @Inject() private blockchainService: BlockchainService,
     @Inject() private transactionsService: TransactionsService,
+    @Inject() private metricsService: MetricsService,
   ) {
     console.log('Blocks service: Creating genesis block...');
     const genesisBlock = this.createGenesisBlock();
@@ -32,6 +34,8 @@ export class BlocksService {
     genesisBlock.nonce = 0;
     genesisBlock.timestamp = new Date().getTime();
     genesisBlock.data = data;
+
+    this.metricsService.incTotalBlocks();
 
     return genesisBlock;
   }
