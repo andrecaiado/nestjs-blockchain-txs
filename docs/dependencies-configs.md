@@ -31,16 +31,18 @@ The .env file contains the following properties:
 | --- | --- | --- |
 | MINER_REWARD | The reward for the miner for mining a block | 50 |
 | TRANSACTION_FEES | The fee for the transaction | 0.001 |
-| MINING_DIFFICULTY | The number of leading zeros that a block hash must have to be mined | 2 |
+| MINING_DIFFICULTY | The number of leading zeros that a block hash must have to be mined | 4 |
 | GENESIS_BLOCK_HASH | The genesis block hash | '0' |
 | GENESIS_BLOCK_DATA | The genesis block data | 'Genesis Block' |
 | GENESIS_TX_AMOUNT | The amount of coins in the genesis transaction | 1000 |
 | MAX_COIN_SUPPLY | The maximum number of coins that can be mined | 1000000 |
-| RABBITMQ_URL | The RabbitMQ connection URL | amqp://guest:guest@localhost:5672 |
+| RABBITMQ_URL | The RabbitMQ connection URL | amqp://admin:admin@localhost:5672 |
 | RABBITMQ_EXCHANGE_NAME_GLOBAL_TX_POOL | The name of the exchange to where the transactions are published after being submitted and validated. | 'global-tx-pool-exchange' |
 | RABBITMQ_EXCHANGE_NAME_BLOCKS_ANNOUNCEMENT_POOL | The name of the exchange to where the blocks are published after being mined. | 'blocks-announcement-pool-exchange' |
 | RABBITMQ_QUEUE_NAME_MINER_MEMPOOL | The name of the queue from where the miner will consume transactions. This queue will be bound to `global-tx-pool-exchange`. | 'miner-mempool-queue' |
 | RABBITMQ_QUEUE_NAME_MINER_POOL_ANNOUNCED_BLOCKS | The name of the queue from where the miner will consume blocks in order to validate them and add them to the blockchain. This queue will be bound to `blocks-announcement-pool-exchange`. | 'miner-pool-announced-blocks-queue' |
+| GRAFANA_ADMIN_USER | The Grafana admin user |  |
+| GRAFANA_ADMIN_PASSWORD | The Grafana admin password |  |
 
 If the `.env` file is not present or the properties are not set, the default values specified in the [config](../src/config/config.ts) constant will be used.
 

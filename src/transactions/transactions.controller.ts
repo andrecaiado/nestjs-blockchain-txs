@@ -33,6 +33,7 @@ export class TransactionsController {
       return this.transactionsService.submitTransaction(transactionDto);
     } catch (error) {
       this.metricsService.incTotalTxsRejected();
+      throw error;
     }
   }
 }

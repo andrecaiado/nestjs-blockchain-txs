@@ -19,6 +19,20 @@ services:
       - './monitoring/prometheus.yml:/etc/prometheus/prometheus.yml'
     networks:
       - rabbitmq-blockchain-txs-network
+  grafana:
+    image: grafana/grafana:11.3.1
+    container_name: grafana-blockchain-txs
+    ports:
+      - 3030:3000
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+    networks:
+      - rabbitmq-blockchain-txs-network
+    volumes:
+      - ./monitoring/grafana/dashboard.yaml:/etc/grafana/provisioning/dashboards/main.yaml
+      - ./monitoring/grafana/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
 networks:
   rabbitmq-blockchain-txs-network:
     driver: bridge
