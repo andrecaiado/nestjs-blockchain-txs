@@ -10,6 +10,7 @@ import { Transaction } from 'src/transactions/transaction';
 import { TransactionsService } from 'src/transactions/transactions.service';
 import { WalletsService } from 'src/wallets/wallets.service';
 import { PoolsService } from 'src/pools/pools.service';
+import { MetricsService } from 'src/metrics/metrics.service';
 
 @Injectable()
 export class MiningService {
@@ -20,6 +21,7 @@ export class MiningService {
     @Inject() private configService: ConfigService,
     @Inject() private walletsService: WalletsService,
     @Inject() private poolsService: PoolsService,
+    @Inject() private readonly metricsService: MetricsService,
   ) {}
 
   @RabbitSubscribe({
@@ -86,6 +88,10 @@ export class MiningService {
     console.log(
       `Mining service: Block #${block.id} mined in ${duration} seconds`,
     );
+
+    this.metricsService.incTotalBlocksMined();
+    this.metricsService.incTotalBlockMiningTime(duration);
+
     return block;
   }
 

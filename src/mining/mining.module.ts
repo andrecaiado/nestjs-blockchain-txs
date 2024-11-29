@@ -5,6 +5,7 @@ import { TransactionsModule } from 'src/transactions/transactions.module';
 import { WalletsModule } from 'src/wallets/wallets.module';
 import { BlocksModule } from 'src/blocks/blocks.module';
 import { PoolsModule } from 'src/pools/pools.module';
+import { MetricsModule } from 'src/metrics/metrics.module';
 
 @Module({
   providers: [MiningService],
@@ -14,6 +15,7 @@ import { PoolsModule } from 'src/pools/pools.module';
     BlocksModule,
     WalletsModule,
     PoolsModule,
+    MetricsModule,
   ],
   exports: [MiningService],
 })

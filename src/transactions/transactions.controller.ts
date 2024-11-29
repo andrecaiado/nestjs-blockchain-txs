@@ -29,11 +29,6 @@ export class TransactionsController {
   @Post()
   @HttpCode(HttpStatus.OK)
   submitTransaction(@Body() transactionDto: TransactionDto) {
-    try {
-      return this.transactionsService.submitTransaction(transactionDto);
-    } catch (error) {
-      this.metricsService.incTotalTxsRejected();
-      throw error;
-    }
+    return this.transactionsService.submitTransaction(transactionDto);
   }
 }
