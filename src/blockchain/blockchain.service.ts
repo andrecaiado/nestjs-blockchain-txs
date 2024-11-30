@@ -134,6 +134,7 @@ export class BlockchainService {
       console.error(
         `Blockchain service: Block #${block.id} is not valid, block discarded.`,
       );
+      this.metricsService.incTotalBlocksRejected();
     }
 
     const amountInBlock: number = this.getAmountFromBlock(block);
@@ -145,18 +146,7 @@ export class BlockchainService {
   }
 
   public getBlockchainDto() {
-    const maxCoinSupply = this.configService.get<number>(
-      'blockchain.maxCoinSupply',
-    );
-    const genesisBlockHash = this.configService.get<string>(
-      'blockchain.genesisBlock.hash',
-    );
-    return BlockchainMapper.toBlockchainDto(
-      this.blockchain,
-      this.getTotalUTXOs(),
-      maxCoinSupply,
-      genesisBlockHash,
-    );
+    return BlockchainMapper.toBlockchainDto(this.blockchain);
   }
 
   public getTotalUTXOs() {
@@ -189,12 +179,16 @@ export class BlockchainService {
 
   @Cron(CronExpression.EVERY_5_SECONDS)
   private setBlockchainMetrics() {
-    this.metricsService.incTotalCoinsMined(this.blockchain.totalCoinsMined);
-    this.metricsService.incTotalCoinsLeftToMine(
+    this.metricsService.setTotalTxsInBlockchain(
+      this.blockchain.totalTxsBlockchain,
+    );
+    this.metricsService.setTotalCoinsMined(this.blockchain.totalCoinsMined);
+    this.metricsService.setTotalCoinsLeftToMine(
       this.blockchain.totalCoinsLeftToMine,
     );
-    this.metricsService.incTotalAddresses(this.blockchain.totalAddresses);
+    this.metricsService.setTotalAddresses(this.blockchain.totalAddresses);
     this.metricsService.setBlockchainStatus(this.blockchain.status);
+    this.metricsService.setTotalBlocks(this.blockchain.chain.length);
   }
 
   private setTotalTxsInBlockchain() {

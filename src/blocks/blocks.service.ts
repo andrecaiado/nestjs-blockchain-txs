@@ -35,8 +35,6 @@ export class BlocksService {
     genesisBlock.timestamp = new Date().getTime();
     genesisBlock.data = data;
 
-    this.metricsService.incTotalBlocks();
-
     return genesisBlock;
   }
 

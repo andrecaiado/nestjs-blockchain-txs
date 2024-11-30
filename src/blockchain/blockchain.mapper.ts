@@ -3,31 +3,15 @@ import { Blockchain } from './blockchain';
 import { BlockchainDto } from './dto/blockchain.dto';
 
 export class BlockchainMapper {
-  static toBlockchainDto(
-    blockchain: Blockchain,
-    totalUtxos: number,
-    maxCoinSupply: number,
-    genesisBlockHash: string,
-  ): BlockchainDto {
-    const addresses = new Set();
-    blockchain.chain.forEach((block) => {
-      block.transactions.forEach((transaction) => {
-        transaction.outputs.forEach((output) => {
-          addresses.add(output.recipientPublicKey);
-        });
-      });
-    });
+  static toBlockchainDto(blockchain: Blockchain): BlockchainDto {
     const blockchainDto = {
       status: {
-        totalTransactions: blockchain.chain.reduce(
-          (total, block) => total + block.transactions.length,
-          0,
-        ),
+        totalTransactions: blockchain.totalTxsBlockchain,
         totalBlocks: blockchain.chain.length,
-        totalCoinsMined: totalUtxos,
-        totalAddresses: addresses.size,
-        totalCoinsLeftToMine: maxCoinSupply - totalUtxos,
-        isChainValid: blockchain.isChainValid(genesisBlockHash),
+        totalCoinsMined: blockchain.totalCoinsMined,
+        totalAddresses: blockchain.totalAddresses,
+        totalCoinsLeftToMine: blockchain.totalCoinsLeftToMine,
+        isChainValid: blockchain.status,
       },
       chainPreview: blockchain.chain.map((block) =>
         BlockMapper.toBlockPreview(block),

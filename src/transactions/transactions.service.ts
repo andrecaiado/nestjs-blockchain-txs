@@ -183,8 +183,6 @@ export class TransactionsService {
       `Transactions service: Transaction ${transactionDto.transactionId} submitting...`,
     );
 
-    this.metricsService.incTotalTxsSubmitted();
-
     this.validateTransaction(
       TransactionDtoMapper.toTransaction(transactionDto),
     );
@@ -193,8 +191,6 @@ export class TransactionsService {
       this.configService.get<string>('rabbitmq.exchanges[0].name'),
       transactionDto,
     );
-
-    this.metricsService.incTotalTxsValidated();
 
     const msg = `Transaction ${transactionDto.transactionId} submitted.`;
     console.log(`Transactions service: ${msg}`);
@@ -387,6 +383,8 @@ export class TransactionsService {
     transaction.outputs = [txo];
     transaction.transactionFees = 0;
     transaction.signature = '';
+
+    this.metricsService.incTotalMinningRewards(minerReward);
 
     return transaction;
   }
