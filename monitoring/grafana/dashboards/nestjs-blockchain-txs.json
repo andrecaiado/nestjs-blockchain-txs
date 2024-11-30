@@ -703,6 +703,7 @@
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 3,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -1065,10 +1066,12 @@
     "from": "now-6h",
     "to": "now"
   },
-  "timepicker": {},
+  "timepicker": {
+    "hidden": true
+  },
   "timezone": "browser",
   "title": "NestJS Blockchain Txs",
   "uid": "de5cpk8oakhkwf",
-  "version": 3,
+  "version": 1,
   "weekStart": ""
 }
