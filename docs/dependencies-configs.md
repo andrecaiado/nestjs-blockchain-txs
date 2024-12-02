@@ -7,6 +7,8 @@ This page describes the dependencies used in the project and how the configurati
 - [Configurations](#configurations)
   - [Environment variables and configuration service](#environment-variables-and-configuration-service)
   - [RabbitMQ containerized service configuration](#rabbitmq-containerized-service-configuration)
+  - [Prometheus containerized service configuration](#prometheus-containerized-service-configuration)
+  - [Grafana containerized service configuration](#grafana-containerized-service-configuration)
 
 ## Dependencies
 
@@ -50,7 +52,7 @@ If the `.env` file is not present or the properties are not set, the default val
 
 The RabbitMQ service runs in a container and is configured and started using the docker compose file [docker-compose.yaml](../docker-compose.yaml).
 
-The docker compose file specifies 2 files to be mounted to the container: 
+The docker compose file specifies 2 files to be mounted to the RabbitMQ service container: 
 - [rabbitmq.config](../rabbitmq/rabbitmq.conf): This file is used to set the `definitions.json` file location.
 - [definitions.json](../rabbitmq/definitions.json): This file contains configurations that will automatically be applied when RabbitMQ starts. The configurations include the user credentials and the exchanges and queues (and the binding between them).
 
@@ -63,3 +65,23 @@ The RabbitMQ management console is available at `http://localhost:15672`. The us
 
 > [!NOTE]**About the user credentials**: 
 > The way the RabbitMQ service user credentials are configured is not recommended for production because these credentials are hardcoded in the `definitions.json` file. In a production environment, the user credentials should be passed as environment variables to the RabbitMQ service.
+
+### Prometheus containerized service configuration
+
+The Prometheus service runs in a container and is configured and started using the docker compose file [docker-compose.yaml](../docker-compose.yaml).
+
+The Prometheus service is available at `http://localhost:9090`.
+
+The docker compose file specifies 1 file to be mounted to the Prometheus service container:
+- [prometheus.yml](../monitoring/prometheus.yml): This file contains the configuration of the Prometheus service.
+
+### Grafana containerized service configuration
+
+The Grafana service runs in a container and is configured and started using the docker compose file [docker-compose.yaml](../docker-compose.yaml).
+
+The Grafana service is available at `http://localhost:3030`. The user credentials are specified in the `.env` file.
+
+The docker compose file specifies 3 files to be mounted to the Grafana service container:
+- [nestjs-blockchain-txs.json](../monitoring/grafana/dashboards/nestjs-blockchain-txs.json): This file contains the configuration of the dashboard.
+- [grafana-datasource.yaml](../monitoring/grafana/datasource.yaml): This file contains the configuration of the Prometheus datasource.
+- [grafana-dashboard.yaml](../monitoring/grafana/dashboard.yaml): This file specifies the path to the dashboard configuration file inside the container.
