@@ -56,6 +56,10 @@ The Swagger UI is available at: [http://localhost:3000/api](http://localhost:300
 
 To better understand how the API works, please refer to the following guide: [API guide](./docs/api-guide.md)
 
+## Visualize the metrics dashboard
+
+The metrics dahsboard in provided by Grafana and is available at: [http://localhost:3030](http://localhost:3030)
+
 # Contents
 
 To understand how this project was conceptualized and which dependencies are used, please refer to the following sections.
