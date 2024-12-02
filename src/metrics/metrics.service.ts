@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Registry, Counter, Gauge } from 'prom-client';
+import { Registry, Counter, Gauge, Metric } from 'prom-client';
 
 @Injectable()
 export class MetricsService {
@@ -81,9 +81,16 @@ export class MetricsService {
     this.registry.registerMetric(this.totalMiningRewards);
   }
 
+  async getMetricLastValue(metric: Metric): Promise<number> {
+    const metricObj = await metric.get();
+    const value = metricObj.values[metricObj.values.length - 1].value;
+    return value ? value : 0;
+  }
+
   setTotalTxsInBlockchain(total: number): void {
-    this.totalTxsInBlockchain.reset();
-    this.totalTxsInBlockchain.inc(total);
+    this.getMetricLastValue(this.totalTxsInBlockchain).then((value) => {
+      this.totalTxsInBlockchain.inc(total - value);
+    });
   }
 
   incTotalTxsRejected(errorMsg: string): void {

@@ -11,6 +11,7 @@ import { Wallet } from 'src/wallets/wallet';
 import { PoolsService } from 'src/pools/pools.service';
 import * as createTransactionDtoMock from 'src/__mocks__/create-transaction.dto.mock.json';
 import { WalletType } from 'src/enums/wallet-type.enum';
+import { MetricsService } from 'src/metrics/metrics.service';
 
 describe('MiningService', () => {
   const minerWallet = new Wallet('MinerWallet', WalletType.MINER);
@@ -47,6 +48,10 @@ describe('MiningService', () => {
   let poolsServiceMock: Partial<PoolsService> = {
     publish: jest.fn(),
   };
+  let metricsServiceMock: Partial<MetricsService> = {
+    incTotalBlocksMined: jest.fn(),
+    incTotalBlockMiningTime: jest.fn(),
+  };
 
   const msg = createTransactionDtoMock;
 
@@ -62,6 +67,7 @@ describe('MiningService', () => {
         { provide: ConfigService, useValue: configServiceMock },
         { provide: WalletsService, useValue: walletsServiceMock },
         { provide: PoolsService, useValue: poolsServiceMock },
+        { provide: MetricsService, useValue: metricsServiceMock },
       ],
     }).compile();
 
@@ -73,6 +79,7 @@ describe('MiningService', () => {
     configServiceMock = module.get<ConfigService>(ConfigService);
     walletsServiceMock = module.get<WalletsService>(WalletsService);
     poolsServiceMock = module.get<PoolsService>(PoolsService);
+    metricsServiceMock = module.get<MetricsService>(MetricsService);
   });
 
   it('should be defined', () => {

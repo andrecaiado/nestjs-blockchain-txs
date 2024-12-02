@@ -10,6 +10,7 @@ import { TransactionOutput } from './transaction';
 import * as createTransactionDtoMock from 'src/__mocks__/create-transaction.dto.mock.json';
 import { TransactionDtoMapper } from './dto/mappers/transaction.dto.mapper';
 import { WalletType } from 'src/enums/wallet-type.enum';
+import { MetricsService } from 'src/metrics/metrics.service';
 
 describe('TransactionsService', () => {
   const senderWallet = new Wallet('SenderWallet', WalletType.REGULAR);
@@ -45,6 +46,10 @@ describe('TransactionsService', () => {
   let poolsServiceMock: Partial<PoolsService> = {
     publish: jest.fn(),
   };
+  let metricsServiceMock: Partial<MetricsService> = {
+    incTotalTxsRejected: jest.fn(),
+    incTotalMinningRewards: jest.fn(),
+  };
 
   const transactionDto = createTransactionDtoMock;
 
@@ -58,6 +63,7 @@ describe('TransactionsService', () => {
         { provide: BlockchainService, useValue: blockchainServiceMock },
         { provide: WalletsService, useValue: walletsServiceMock },
         { provide: ConfigService, useValue: configServiceMock },
+        { provide: MetricsService, useValue: metricsServiceMock },
       ],
     }).compile();
 
@@ -66,6 +72,7 @@ describe('TransactionsService', () => {
     walletsServiceMock = module.get<WalletsService>(WalletsService);
     configServiceMock = module.get<ConfigService>(ConfigService);
     poolsServiceMock = module.get<PoolsService>(PoolsService);
+    metricsServiceMock = module.get<MetricsService>(MetricsService);
   });
 
   it('should be defined', () => {
