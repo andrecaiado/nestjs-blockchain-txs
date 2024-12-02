@@ -58,7 +58,7 @@ To better understand how the API works, please refer to the following guide: [AP
 
 ## Visualize the metrics dashboard
 
-The metrics dahsboard in provided by Grafana and is available at: [http://localhost:3030](http://localhost:3030)
+The metrics dahsboard in provided by Grafana and is available at: [http://localhost:3030](http://localhost:3030/d/de5cpk8oakhkwf/nestjs-blockchain-txs?orgId=1&from=now-6h&to=now&timezone=browser&refresh=5s)
 
 # Contents
 
