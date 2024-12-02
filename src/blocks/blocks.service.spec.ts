@@ -7,6 +7,7 @@ import { Wallet } from 'src/wallets/wallet';
 import { Transaction, TransactionOutput } from 'src/transactions/transaction';
 import { Block } from './block';
 import { WalletType } from 'src/enums/wallet-type.enum';
+import { MetricsService } from 'src/metrics/metrics.service';
 
 describe('BlocksService', () => {
   let service: BlocksService;
@@ -34,6 +35,7 @@ describe('BlocksService', () => {
       return null;
     }),
   };
+  let metricsServiceMock: Partial<MetricsService> = {};
 
   const coinbaseWallet = new Wallet('CoinbaseWallet', WalletType.COINBASE);
   const minerWallet = new Wallet('SenderWallet', WalletType.MINER);
@@ -49,6 +51,7 @@ describe('BlocksService', () => {
         { provide: ConfigService, useValue: configServiceMock },
         { provide: BlockchainService, useValue: blockchainServiceMock },
         { provide: TransactionsService, useValue: transactionsServiceMock },
+        { provide: MetricsService, useValue: metricsServiceMock },
       ],
     }).compile();
 
@@ -57,6 +60,7 @@ describe('BlocksService', () => {
     transactionsServiceMock =
       module.get<TransactionsService>(TransactionsService);
     configServiceMock = module.get<ConfigService>(ConfigService);
+    metricsServiceMock = module.get<MetricsService>(MetricsService);
   });
 
   it('should be defined', () => {
