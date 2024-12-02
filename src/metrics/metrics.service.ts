@@ -81,16 +81,9 @@ export class MetricsService {
     this.registry.registerMetric(this.totalMiningRewards);
   }
 
-  async getMetricLastValue(metric: Metric): Promise<number> {
-    const metricObj = await metric.get();
-    const value = metricObj.values[metricObj.values.length - 1].value;
-    return value ? value : 0;
-  }
-
   setTotalTxsInBlockchain(total: number): void {
-    this.getMetricLastValue(this.totalTxsInBlockchain).then((value) => {
-      this.totalTxsInBlockchain.inc(total - value);
-    });
+    this.totalTxsInBlockchain.reset();
+    this.totalTxsInBlockchain.inc(total);
   }
 
   incTotalTxsRejected(errorMsg: string): void {
