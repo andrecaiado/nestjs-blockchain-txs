@@ -8,6 +8,7 @@ import { BlockMapper } from 'src/blocks/block.mapper';
 import { BlockDtoMapper } from 'src/blocks/dto/mappers/block.dto.mapper';
 import { Blockchain } from './blockchain';
 import { BlockDto } from 'src/blocks/dto/block.dto';
+import { MetricsService } from 'src/metrics/metrics.service';
 
 describe('BlockchainService', () => {
   let service: BlockchainService;
@@ -21,19 +22,36 @@ describe('BlockchainService', () => {
       return null;
     }),
   };
+  let metricsServiceMock: Partial<MetricsService> = {
+    incTotalCoinsTransfered: jest.fn(),
+    setTotalTxsInBlockchain: jest.fn(),
+    setTotalCoinsMined: jest.fn(),
+    setTotalCoinsLeftToMine: jest.fn(),
+    setTotalAddresses: jest.fn(),
+    setBlockchainStatus: jest.fn(),
+    setTotalBlocks: jest.fn(),
+    incTotalBlocksRejected: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         BlockchainService,
         { provide: ConfigService, useValue: configServiceMock },
+        { provide: MetricsService, useValue: metricsServiceMock },
       ],
     }).compile();
 
     service = module.get<BlockchainService>(BlockchainService);
     configServiceMock = module.get<ConfigService>(ConfigService);
+    metricsServiceMock = module.get<MetricsService>(MetricsService);
 
     service['blockchain'] = createBlockchainFromBlockchainDtoMock();
+    service['blockchain'].totalCoinsMined = 1150;
+    service['blockchain'].totalAddresses = 4;
+    service['blockchain'].totalCoinsLeftToMine = 998850;
+    service['blockchain'].status = true;
+    service['blockchain'].totalTxsBlockchain = 7;
   });
 
   afterEach(async () => {
@@ -44,6 +62,7 @@ describe('BlockchainService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
     expect(configServiceMock).toBeDefined();
+    expect(metricsServiceMock).toBeDefined();
   });
 
   it('should create a blockchain', () => {
