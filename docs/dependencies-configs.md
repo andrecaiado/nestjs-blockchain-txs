@@ -56,14 +56,14 @@ The docker compose file specifies 2 files to be mounted to the RabbitMQ service 
 - [rabbitmq.config](../rabbitmq/rabbitmq.conf): This file is used to set the `definitions.json` file location.
 - [definitions.json](../rabbitmq/definitions.json): This file contains configurations that will automatically be applied when RabbitMQ starts. The configurations include the user credentials and the exchanges and queues (and the binding between them).
 
-> [!NOTE]**About the `definitions.json` file**: 
+> **Notes about the `definitions.json` file**  
 > The exchanges and queues names defined in the `definitions.json` file must match the exchanges and queues names specified in the `.env` file otherwise the application will not work as expected.
 
 The RabbitMQ management console is available at `http://localhost:15672`. The user credentials are:
 - Username: admin 
 - Password: admin
 
-> [!NOTE]**About the user credentials**: 
+> **Notes about the user credentials**  
 > The way the RabbitMQ service user credentials are configured is not recommended for production because these credentials are hardcoded in the `definitions.json` file. In a production environment, the user credentials should be passed as environment variables to the RabbitMQ service.
 
 ### Prometheus containerized service configuration
