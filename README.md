@@ -21,7 +21,7 @@ To run this project, you will need to have the following installedon your local 
 
 1. Clone the repository
 ```shell
-git clone git@github.com:andrecaiado/nestjs-blockchain-txs.git
+git clone https://github.com/andrecaiado/nestjs-blockchain-txs.git
 ```
 
 2. Navigate into the project directory
